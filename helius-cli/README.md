@@ -227,7 +227,7 @@ Keypair commands (`signup`, `login`, `upgrade`, `pay`, `stake`) also accept:
 
 Helius CLI supports the [NO_DNA](https://no-dna.org) convention. When the `NO_DNA` environment variable is set, the CLI adapts its behavior for non-human callers:
 - **Spinners suppressed** — no terminal animations polluting agent output
-- **Interactive prompts blocked** — commands that require confirmation (`upgrade`, `pay`) exit with a clear error instead of hanging on stdin; pass `--yes` to skip confirmation
+- **Interactive prompts return preview** — commands that require confirmation (`upgrade`, `pay`) exit with a JSON preview instead of hanging on stdin; pass `--yes` to skip confirmation
 
 ## Exit Codes
 
