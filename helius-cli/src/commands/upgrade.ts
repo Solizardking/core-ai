@@ -131,6 +131,21 @@ export async function upgradeCommand(options: UpgradeOptions): Promise<void> {
     }
 
     if (!options.yes) {
+      if (isAgent) {
+        outputJson({
+          action: "preview",
+          currentPlan,
+          upgradeTo: preview.planName,
+          period: preview.period,
+          subtotal: preview.subtotal,
+          proratedCredits: preview.proratedCredits,
+          appliedCredits: preview.appliedCredits,
+          discounts: preview.discounts,
+          coupon: preview.coupon,
+          dueToday: preview.dueToday,
+        });
+        return;
+      }
       const ok = await confirm("  Proceed with upgrade? (y/N) ");
       if (!ok) {
         console.log(chalk.gray("  Cancelled."));
