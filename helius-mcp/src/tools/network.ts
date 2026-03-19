@@ -24,7 +24,7 @@ export function registerNetworkTools(server: McpServer) {
           (helius as any).getEpochInfo(),
           (helius as any).getSupply(),
           (helius as any).getVersion(),
-          (helius as any).getRecentPerformanceSamples(Math.min(samples, 720)),
+          (helius as any).getRecentPerformanceSamples(Math.max(1, Math.min(samples, 720))),
         ]);
 
         const lines = ['**Solana Network Status**', ''];
