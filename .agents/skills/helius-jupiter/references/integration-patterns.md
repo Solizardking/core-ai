@@ -4,7 +4,7 @@
 
 End-to-end patterns for combining Jupiter APIs with Helius infrastructure. These patterns show how the two systems connect at the transaction, data, and monitoring layers.
 
-**Jupiter** handles DeFi operations — token swaps (Ultra), lending/borrowing (Lend), limit orders (Trigger), DCA (Recurring), and token/price data.
+**Jupiter** handles DeFi operations — token swaps (Swap API V2), lending/borrowing (Lend), limit orders (Trigger), DCA (Recurring), and token/price data.
 
 **Helius** handles infrastructure — transaction submission (Sender), fee optimization (Priority Fees), token/NFT data (DAS), real-time on-chain monitoring (WebSockets), shred-level streaming (LaserStream), and wallet intelligence (Wallet API).
 
@@ -12,11 +12,11 @@ End-to-end patterns for combining Jupiter APIs with Helius infrastructure. These
 
 ## Pattern 1: Jupiter Swap via Helius Sender
 
-The most common integration. Jupiter Ultra provides the swap transaction; Helius Sender submits it for optimal block inclusion.
+The most common integration. Jupiter Swap API provides the swap transaction; Helius Sender submits it for optimal block inclusion.
 
 ### Flow
 
-1. Get a quote from Jupiter `/ultra/v1/order`
+1. Get a quote from Jupiter `/swap/v2/order`
 2. Deserialize the returned base64 transaction
 3. Sign the transaction
 4. Submit via Helius Sender endpoint
@@ -44,7 +44,7 @@ async function swapViaJupiterAndSender(
     taker: keypair.publicKey.toBase58(),
   });
 
-  const orderRes = await fetch(`${JUPITER_API}/ultra/v1/order?${params}`, {
+  const orderRes = await fetch(`${JUPITER_API}/swap/v2/order?${params}`, {
     headers: { 'x-api-key': process.env.JUPITER_API_KEY! },
   });
   const order = await orderRes.json();
@@ -265,13 +265,13 @@ const [walletBalances, lendPositions, limitOrders, dcaOrders] = await Promise.al
 
 ## Pattern 6: Trading Bot with LaserStream
 
-Build a high-speed trading bot using LaserStream for market data and Jupiter Ultra for execution.
+Build a high-speed trading bot using LaserStream for market data and Jupiter Swap API for execution.
 
 ### Architecture
 
 ```
 LaserStream (gRPC)  →  Shred-level on-chain data (price changes, liquidity shifts)
-Jupiter Ultra API   →  Swap execution with optimized routing
+Jupiter Swap API API   →  Swap execution with optimized routing
 Helius Sender       →  Transaction submission with Jito bundles
 ```
 
@@ -279,7 +279,7 @@ Helius Sender       →  Transaction submission with Jito bundles
 
 1. Subscribe to relevant accounts via LaserStream
 2. Detect trading opportunity (price divergence, arbitrage, etc.)
-3. Get quote from Jupiter Ultra
+3. Get quote from Jupiter Swap API
 4. Sign and submit via Helius Sender
 5. Monitor confirmation via LaserStream
 

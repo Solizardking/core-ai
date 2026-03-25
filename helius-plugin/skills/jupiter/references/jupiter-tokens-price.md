@@ -112,11 +112,11 @@ console.log(`Decimals: ${solPrice.decimals}`);
 
 Jupiter provides a security check endpoint to detect potentially dangerous tokens.
 
-### GET /ultra/v1/shield — Check Token Safety
+### GET /swap/v2/shield — Check Token Safety
 
 ```typescript
 const response = await fetch(
-  `https://api.jup.ag/ultra/v1/shield?mints=${mintAddress}`,
+  `https://api.jup.ag/swap/v2/shield?mints=${mintAddress}`,
   { headers: { 'x-api-key': process.env.JUPITER_API_KEY! } }
 );
 

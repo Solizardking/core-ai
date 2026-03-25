@@ -2,7 +2,7 @@
 
 ## What This Covers
 
-Jupiter Plugin — a drop-in swap UI component that can be embedded in any web application. No backend required, powered by Jupiter Ultra.
+Jupiter Plugin — a drop-in swap UI component that can be embedded in any web application. No backend required, powered by Jupiter's Swap API.
 
 ---
 

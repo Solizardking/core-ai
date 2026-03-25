@@ -2,6 +2,7 @@
 
 ---
 name: helius-jupiter
+version: "1.0.0"
 description: >
   Build Solana DeFi applications combining Jupiter APIs with Helius
   infrastructure. Use this skill when: building token swap UIs or trading terminals,
@@ -45,7 +46,7 @@ Identify what the user is building, then read the relevant reference files befor
 
 These intents map to different Jupiter APIs. Route them correctly:
 
-- **"swap" / "trade" / "exchange tokens"** — Jupiter Ultra Swap + Helius Sender: `references/jupiter-swap.md` + `references/helius-sender.md` + `references/integration-patterns.md`. For priority fee control, also read `references/helius-priority-fees.md`.
+- **"swap" / "trade" / "exchange tokens"** — Jupiter Swap API Swap + Helius Sender: `references/jupiter-swap.md` + `references/helius-sender.md` + `references/integration-patterns.md`. For priority fee control, also read `references/helius-priority-fees.md`.
 - **"limit order" / "buy at price"** — Jupiter Trigger: `references/jupiter-trigger.md` + `references/helius-sender.md`.
 - **"DCA" / "dollar cost average" / "recurring buy"** — Jupiter Recurring: `references/jupiter-recurring.md` + `references/helius-sender.md`.
 - **"lend" / "earn yield" / "deposit" / "supply"** — Jupiter Lend (earn): `references/jupiter-lend.md` + `references/helius-sender.md`.
@@ -61,7 +62,7 @@ These intents map to different Jupiter APIs. Route them correctly:
 - **"swap widget" / "embed swap" / "drop-in swap"** — Jupiter Plugin: `references/jupiter-plugin.md`.
 - **"token safety" / "is this token safe"** — Token Shield: `references/jupiter-tokens-price.md`.
 
-### Token Swaps (Ultra API)
+### Token Swaps (Swap API V2)
 **Read**: `references/jupiter-swap.md`, `references/helius-sender.md`, `references/helius-priority-fees.md`, `references/integration-patterns.md`
 **MCP tools**: Helius (`getPriorityFeeEstimate`, `getSenderInfo`, `parseTransactions`)
 
@@ -203,19 +204,19 @@ Many real tasks span multiple domains. Here's how to compose them:
 
 ### "Build a swap/trading app"
 1. Read `references/jupiter-swap.md` + `references/helius-sender.md` + `references/helius-priority-fees.md` + `references/integration-patterns.md`
-2. Architecture: Jupiter Ultra API for quotes/routing, Helius Sender for submission, DAS for token lists
+2. Architecture: Jupiter Swap API API for quotes/routing, Helius Sender for submission, DAS for token lists
 3. Use Pattern 1 from integration-patterns for the swap execution flow
 4. Use Pattern 2 for building the token selector
 5. Use `requestId` for idempotent retries
 
 ### "Build a DeFi dashboard with swap + lending"
 1. Read `references/jupiter-swap.md` + `references/jupiter-lend.md` + `references/helius-wallet-api.md` + `references/helius-das.md` + `references/integration-patterns.md`
-2. Architecture: Wallet API for holdings, DAS for token metadata, Jupiter Lend for yield data, Jupiter Ultra for swap execution
+2. Architecture: Wallet API for holdings, DAS for token metadata, Jupiter Lend for yield data, Jupiter Swap API for swap execution
 3. Use Pattern 5 from integration-patterns
 
 ### "Build a trading bot"
 1. Read `references/jupiter-swap.md` + `references/helius-laserstream.md` + `references/helius-sender.md` + `references/integration-patterns.md`
-2. Architecture: LaserStream for price signals, Jupiter Ultra for execution, Helius Sender for submission
+2. Architecture: LaserStream for price signals, Jupiter Swap API for execution, Helius Sender for submission
 3. Use Pattern 6 from integration-patterns
 
 ### "Build a lending/borrowing dApp"
@@ -240,7 +241,7 @@ Many real tasks span multiple domains. Here's how to compose them:
 
 ### "Build a high-frequency / latency-critical trading system"
 1. Read `references/helius-laserstream.md` + `references/jupiter-swap.md` + `references/helius-sender.md` + `references/helius-priority-fees.md` + `references/integration-patterns.md`
-2. Architecture: LaserStream for shred-level on-chain data, Jupiter Ultra for execution, Helius Sender for submission
+2. Architecture: LaserStream for shred-level on-chain data, Jupiter Swap API for execution, Helius Sender for submission
 3. Choose the closest LaserStream regional endpoint for minimal latency
 
 ## Rules
@@ -250,19 +251,19 @@ Follow these rules in ALL implementations:
 ### Transaction Sending
 - ALWAYS submit Jupiter swap transactions via Helius Sender endpoints — never raw `sendTransaction` to standard RPC
 - ALWAYS include `skipPreflight: true` and `maxRetries: 0` when using Sender
-- Jupiter Ultra API handles priority fees automatically — do not add duplicate compute budget instructions for Ultra swaps
+- Jupiter Swap API handles priority fees automatically — do not add duplicate compute budget instructions for `/order` swaps
 - If building custom transactions (lending, vaults), include a Jito tip (minimum 0.0002 SOL) and priority fee via `ComputeBudgetProgram.setComputeUnitPrice`
 - Use `getPriorityFeeEstimate` MCP tool for fee levels — never hardcode fees
 
 ### Jupiter APIs
 - ALWAYS include the `x-api-key` header for all Jupiter REST endpoints
 - ALWAYS use atomic units for token amounts (e.g., `1_000_000_000` for 1 SOL, `1_000_000` for 1 USDC)
-- ALWAYS use `requestId` for Ultra swap execute calls for idempotent retries (2-minute window)
+- ALWAYS use `requestId` for `/execute` calls for idempotent retries (2-minute window)
 - Set appropriate timeouts: 5s for quotes, 30s for executions
 - Handle HTTP 429 with exponential backoff and jitter — rate limits are dynamic based on volume
 - For Jupiter Lend SDK operations, always build versioned (v0) transactions and deduplicate Address Lookup Tables when combining instructions
-- ALWAYS include gasless support check for Ultra swaps — wallets with <0.01 SOL can use gasless mode
-- Use Token Shield (`/ultra/v1/shield`) to check token safety before displaying in UIs
+- ALWAYS include gasless support check for `/order` swaps — wallets with <0.01 SOL can use gasless mode
+- Use Token Shield (`/swap/v2/shield`) to check token safety before displaying in UIs
 - Jupiter Perps has NO REST API — interact via on-chain Anchor IDL only
 - Prediction Markets are geo-restricted (US, South Korea blocked) and in beta
 

@@ -1,4 +1,5 @@
 <!-- Generated from helius-skills/helius-jupiter/SKILL.md — do not edit -->
+<!-- Version: 1.0.0 -->
 
 
 # Helius x Jupiter — Build DeFi Apps on Solana
@@ -35,7 +36,7 @@ Identify what the user is building, then read the relevant reference files befor
 
 These intents map to different Jupiter APIs. Route them correctly:
 
-- **"swap" / "trade" / "exchange tokens"** — Jupiter Ultra Swap + Helius Sender: `references/jupiter-swap.md` + `references/helius-sender.md` + `references/integration-patterns.md`. For priority fee control, also read `references/helius-priority-fees.md`.
+- **"swap" / "trade" / "exchange tokens"** — Jupiter Swap API Swap + Helius Sender: `references/jupiter-swap.md` + `references/helius-sender.md` + `references/integration-patterns.md`. For priority fee control, also read `references/helius-priority-fees.md`.
 - **"limit order" / "buy at price"** — Jupiter Trigger: `references/jupiter-trigger.md` + `references/helius-sender.md`.
 - **"DCA" / "dollar cost average" / "recurring buy"** — Jupiter Recurring: `references/jupiter-recurring.md` + `references/helius-sender.md`.
 - **"lend" / "earn yield" / "deposit" / "supply"** — Jupiter Lend (earn): `references/jupiter-lend.md` + `references/helius-sender.md`.
@@ -51,7 +52,7 @@ These intents map to different Jupiter APIs. Route them correctly:
 - **"swap widget" / "embed swap" / "drop-in swap"** — Jupiter Plugin: `references/jupiter-plugin.md`.
 - **"token safety" / "is this token safe"** — Token Shield: `references/jupiter-tokens-price.md`.
 
-### Token Swaps (Ultra API)
+### Token Swaps (Swap API V2)
 **Reference**: See jupiter-swap.md (inlined below), `references/helius-sender.md`, `references/helius-priority-fees.md`, `references/integration-patterns.md`
 **MCP tools**: Helius (`getPriorityFeeEstimate`, `getSenderInfo`, `parseTransactions`)
 
@@ -193,19 +194,19 @@ Many real tasks span multiple domains. Here's how to compose them:
 
 ### "Build a swap/trading app"
 1. Read `references/jupiter-swap.md` + `references/helius-sender.md` + `references/helius-priority-fees.md` + `references/integration-patterns.md`
-2. Architecture: Jupiter Ultra API for quotes/routing, Helius Sender for submission, DAS for token lists
+2. Architecture: Jupiter Swap API API for quotes/routing, Helius Sender for submission, DAS for token lists
 3. Use Pattern 1 from integration-patterns for the swap execution flow
 4. Use Pattern 2 for building the token selector
 5. Use `requestId` for idempotent retries
 
 ### "Build a DeFi dashboard with swap + lending"
 1. Read `references/jupiter-swap.md` + `references/jupiter-lend.md` + `references/helius-wallet-api.md` + `references/helius-das.md` + `references/integration-patterns.md`
-2. Architecture: Wallet API for holdings, DAS for token metadata, Jupiter Lend for yield data, Jupiter Ultra for swap execution
+2. Architecture: Wallet API for holdings, DAS for token metadata, Jupiter Lend for yield data, Jupiter Swap API for swap execution
 3. Use Pattern 5 from integration-patterns
 
 ### "Build a trading bot"
 1. Read `references/jupiter-swap.md` + `references/helius-laserstream.md` + `references/helius-sender.md` + `references/integration-patterns.md`
-2. Architecture: LaserStream for price signals, Jupiter Ultra for execution, Helius Sender for submission
+2. Architecture: LaserStream for price signals, Jupiter Swap API for execution, Helius Sender for submission
 3. Use Pattern 6 from integration-patterns
 
 ### "Build a lending/borrowing dApp"
@@ -230,7 +231,7 @@ Many real tasks span multiple domains. Here's how to compose them:
 
 ### "Build a high-frequency / latency-critical trading system"
 1. Read `references/helius-laserstream.md` + `references/jupiter-swap.md` + `references/helius-sender.md` + `references/helius-priority-fees.md` + `references/integration-patterns.md`
-2. Architecture: LaserStream for shred-level on-chain data, Jupiter Ultra for execution, Helius Sender for submission
+2. Architecture: LaserStream for shred-level on-chain data, Jupiter Swap API for execution, Helius Sender for submission
 3. Choose the closest LaserStream regional endpoint for minimal latency
 
 ## Rules
@@ -240,19 +241,19 @@ Follow these rules in ALL implementations:
 ### Transaction Sending
 - ALWAYS submit Jupiter swap transactions via Helius Sender endpoints — never raw `sendTransaction` to standard RPC
 - ALWAYS include `skipPreflight: true` and `maxRetries: 0` when using Sender
-- Jupiter Ultra API handles priority fees automatically — do not add duplicate compute budget instructions for Ultra swaps
+- Jupiter Swap API handles priority fees automatically — do not add duplicate compute budget instructions for `/order` swaps
 - If building custom transactions (lending, vaults), include a Jito tip (minimum 0.0002 SOL) and priority fee via `ComputeBudgetProgram.setComputeUnitPrice`
 - Use `getPriorityFeeEstimate` MCP tool for fee levels — never hardcode fees
 
 ### Jupiter APIs
 - ALWAYS include the `x-api-key` header for all Jupiter REST endpoints
 - ALWAYS use atomic units for token amounts (e.g., `1_000_000_000` for 1 SOL, `1_000_000` for 1 USDC)
-- ALWAYS use `requestId` for Ultra swap execute calls for idempotent retries (2-minute window)
+- ALWAYS use `requestId` for `/execute` calls for idempotent retries (2-minute window)
 - Set appropriate timeouts: 5s for quotes, 30s for executions
 - Handle HTTP 429 with exponential backoff and jitter — rate limits are dynamic based on volume
 - For Jupiter Lend SDK operations, always build versioned (v0) transactions and deduplicate Address Lookup Tables when combining instructions
-- ALWAYS include gasless support check for Ultra swaps — wallets with <0.01 SOL can use gasless mode
-- Use Token Shield (`/ultra/v1/shield`) to check token safety before displaying in UIs
+- ALWAYS include gasless support check for `/order` swaps — wallets with <0.01 SOL can use gasless mode
+- Use Token Shield (`/swap/v2/shield`) to check token safety before displaying in UIs
 - Jupiter Perps has NO REST API — interact via on-chain Anchor IDL only
 - Prediction Markets are geo-restricted (US, South Korea blocked) and in beta
 
@@ -2439,7 +2440,7 @@ For Standard WebSockets:
 
 End-to-end patterns for combining Jupiter APIs with Helius infrastructure. These patterns show how the two systems connect at the transaction, data, and monitoring layers.
 
-**Jupiter** handles DeFi operations — token swaps (Ultra), lending/borrowing (Lend), limit orders (Trigger), DCA (Recurring), and token/price data.
+**Jupiter** handles DeFi operations — token swaps (Swap API V2), lending/borrowing (Lend), limit orders (Trigger), DCA (Recurring), and token/price data.
 
 **Helius** handles infrastructure — transaction submission (Sender), fee optimization (Priority Fees), token/NFT data (DAS), real-time on-chain monitoring (WebSockets), shred-level streaming (LaserStream), and wallet intelligence (Wallet API).
 
@@ -2447,11 +2448,11 @@ End-to-end patterns for combining Jupiter APIs with Helius infrastructure. These
 
 ## Pattern 1: Jupiter Swap via Helius Sender
 
-The most common integration. Jupiter Ultra provides the swap transaction; Helius Sender submits it for optimal block inclusion.
+The most common integration. Jupiter Swap API provides the swap transaction; Helius Sender submits it for optimal block inclusion.
 
 ### Flow
 
-1. Get a quote from Jupiter `/ultra/v1/order`
+1. Get a quote from Jupiter `/swap/v2/order`
 2. Deserialize the returned base64 transaction
 3. Sign the transaction
 4. Submit via Helius Sender endpoint
@@ -2479,7 +2480,7 @@ async function swapViaJupiterAndSender(
     taker: keypair.publicKey.toBase58(),
   });
 
-  const orderRes = await fetch(`${JUPITER_API}/ultra/v1/order?${params}`, {
+  const orderRes = await fetch(`${JUPITER_API}/swap/v2/order?${params}`, {
     headers: { 'x-api-key': process.env.JUPITER_API_KEY! },
   });
   const order = await orderRes.json();
@@ -2700,13 +2701,13 @@ const [walletBalances, lendPositions, limitOrders, dcaOrders] = await Promise.al
 
 ## Pattern 6: Trading Bot with LaserStream
 
-Build a high-speed trading bot using LaserStream for market data and Jupiter Ultra for execution.
+Build a high-speed trading bot using LaserStream for market data and Jupiter Swap API for execution.
 
 ### Architecture
 
 ```
 LaserStream (gRPC)  →  Shred-level on-chain data (price changes, liquidity shifts)
-Jupiter Ultra API   →  Swap execution with optimized routing
+Jupiter Swap API API   →  Swap execution with optimized routing
 Helius Sender       →  Transaction submission with Jito bundles
 ```
 
@@ -2714,7 +2715,7 @@ Helius Sender       →  Transaction submission with Jito bundles
 
 1. Subscribe to relevant accounts via LaserStream
 2. Detect trading opportunity (price divergence, arbitrage, etc.)
-3. Get quote from Jupiter Ultra
+3. Get quote from Jupiter Swap API
 4. Sign and submit via Helius Sender
 5. Monitor confirmation via LaserStream
 
@@ -3379,7 +3380,7 @@ const claim = await response.json();
 
 ## What This Covers
 
-Jupiter Plugin — a drop-in swap UI component that can be embedded in any web application. No backend required, powered by Jupiter Ultra.
+Jupiter Plugin — a drop-in swap UI component that can be embedded in any web application. No backend required, powered by Jupiter's Swap API.
 
 ---
 
@@ -3610,10 +3611,8 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-const response = await fetch('https://api.jup.ag/ultra/v1/order', {
-  method: 'POST',
+const response = await fetch('https://api.jup.ag/swap/v2/order?inputMint=...&outputMint=...&amount=...&taker=...', {
   headers,
-  body: JSON.stringify(orderPayload),
 });
 ```
 
@@ -3637,9 +3636,9 @@ https://api.jup.ag
 
 ## Rate Limits
 
-### Ultra Swap — Dynamic Rate Limits
+### Swap API — Dynamic Rate Limits
 
-Ultra Swap rate limits scale dynamically based on your 24-hour execute volume:
+Swap API rate limits scale dynamically based on your 24-hour execute volume:
 
 | 24h Execute Volume | Rate Limit |
 |---|---|
@@ -3694,7 +3693,7 @@ Jupiter provides these API families, all under `https://api.jup.ag`:
 
 | API | Path Prefix | Purpose |
 |---|---|---|
-| Ultra Swap | `/ultra/v1` | Token swaps with optimized routing |
+| Swap API V2 | `/swap/v2` | Token swaps with optimized routing |
 | Trigger | `/trigger/v1` | Limit orders |
 | Recurring | `/recurring/v1` | DCA orders |
 | Tokens | `/tokens/v2` | Token search and metadata |
@@ -3899,18 +3898,18 @@ All Recurring API responses that modify state return `transaction` and `requestI
 
 ## jupiter-swap.md
 
-# Jupiter Ultra Swap API
+# Jupiter Swap API V2
 
 ## What This Covers
 
-Token swaps via Jupiter's Ultra API — getting quotes, executing swaps, handling idempotency, and production hardening. Ultra provides optimized routing across all Solana DEXes.
+Token swaps via Jupiter's Swap API V2 — getting quotes, executing swaps, building custom transactions, handling idempotency, and production hardening. V2 provides optimized routing across all Solana DEXes through multi-router competition.
 
 ---
 
 ## Base URL & Auth
 
 ```
-Base: https://api.jup.ag/ultra/v1
+Base: https://api.jup.ag/swap/v2
 Auth: x-api-key header (required)
 ```
 
@@ -3918,11 +3917,27 @@ Rate limits are dynamic — see `references/jupiter-portal.md` for details.
 
 ---
 
-## Endpoints
+## Two Paths
 
-### GET /order — Get Quote
+Jupiter V2 offers two integration paths:
 
-Returns a swap quote with routing information. Omit `taker` to get a quote-only response (no `transaction` field).
+| Feature | `/order` + `/execute` | `/build` |
+|---------|----------------------|----------|
+| Routing | All routers (Metis, JupiterZ RFQ, DFlow, OKX) | Metis only |
+| Swap fees | Jupiter platform fee included | None |
+| Execution | Managed via `/execute` (Jupiter Beam) | Self-managed (your own RPC) |
+| Transaction control | None (pre-built) | Full (raw instructions) |
+| Compute budget | Included in transaction | Instructions provided (overridable) |
+
+**Use `/order` + `/execute`** for most integrations (recommended). **Use `/build`** only when you need custom instructions, CPI, or full transaction control.
+
+---
+
+## Path 1: Order & Execute (Recommended)
+
+### GET /order — Get Quote + Transaction
+
+Returns a swap quote with a pre-built transaction. Omit `taker` to get a quote-only response (no `transaction` field).
 
 ```typescript
 const params = new URLSearchParams({
@@ -3932,118 +3947,74 @@ const params = new URLSearchParams({
   taker: walletPublicKey, // Optional — omit for quote-only
 });
 
-const response = await fetch(`https://api.jup.ag/ultra/v1/order?${params}`, {
+const response = await fetch(`https://api.jup.ag/swap/v2/order?${params}`, {
   headers: { 'x-api-key': process.env.JUPITER_API_KEY! },
 });
 
-const quote = await response.json();
-// Returns: { transaction, requestId, inputMint, outputMint, inAmount, outAmount, ... }
+const order = await response.json();
+// Returns: { transaction, requestId, inputMint, outputMint, inAmount, outAmount, router, mode, feeBps, feeMint }
 // If taker is omitted: no transaction or requestId, just quote data
 ```
 
-**Key parameters**:
+**Required parameters**:
 - `inputMint` — Source token mint address
 - `outputMint` — Destination token mint address
 - `amount` — Amount in atomic units (lamports for SOL, raw units for SPL tokens)
-- `taker` — (Optional) Wallet public key that will sign the transaction. Omit for quote-only.
-- `slippageBps` — Slippage tolerance in basis points (optional, default is auto)
-- `receiver` — (Optional) Destination wallet for output tokens (defaults to `taker`)
-- `referralAccount` — (Optional) Referral account for integrator fees
-- `referralFee` — (Optional) Referral fee in basis points (50-255 bps). Replaces the default 5-10 bps Jupiter fee. Jupiter takes 20% of integrator fees.
-- `excludeRouters` — (Optional) Comma-separated routers to exclude: `iris`, `jupiterz`, `dflow`, `okx`
-- `excludeDexes` — (Optional) Comma-separated DEXes to exclude from routing
+- `taker` — Wallet public key that will sign (required for transaction, omit for quote-only)
+
+**Optional parameters**:
+- `slippageBps` — Slippage tolerance in basis points (default: auto via RTSE)
+- `receiver` — Destination wallet for output tokens (defaults to `taker`)
+- `referralAccount` — Referral account for integrator fees
+- `referralFee` — Referral fee in basis points (50-255 bps)
+- `excludeRouters` — Comma-separated routers to exclude: `iris`, `jupiterz`, `dflow`, `okx`
+- `excludeDexes` — Comma-separated DEXes to exclude from routing
+
+**Response fields**:
+- `transaction` — Base64-encoded transaction (null without `taker`)
+- `requestId` — Required for `/execute` (idempotent retries)
+- `outAmount` — Expected output before slippage
+- `router` — Winning router (`iris`, `jupiterz`, `dflow`, `okx`)
+- `mode` — `ultra` (default params, all routers) or `manual` (optional params detected, routing restricted)
+- `feeBps` — Fee basis points applied
+- `feeMint` — Token used for fee
 
 ### POST /execute — Execute Swap
 
-Submit the signed transaction for execution.
+Submit the signed transaction for managed execution.
 
 ```typescript
-const executeResponse = await fetch('https://api.jup.ag/ultra/v1/execute', {
+// 1. Deserialize and sign
+const txBuffer = Buffer.from(order.transaction, 'base64');
+const transaction = VersionedTransaction.deserialize(txBuffer);
+transaction.sign([keypair]);
+
+// 2. Execute via Jupiter
+const signedTx = Buffer.from(transaction.serialize()).toString('base64');
+const execRes = await fetch('https://api.jup.ag/swap/v2/execute', {
   method: 'POST',
   headers: {
     'x-api-key': process.env.JUPITER_API_KEY!,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    signedTransaction: base64SignedTx,
-    requestId: quote.requestId, // From the /order response
+    signedTransaction: signedTx,
+    requestId: order.requestId,
   }),
 });
 
-const result = await executeResponse.json();
+const result = await execRes.json();
 // Success: { status: "Success", signature, inputAmountResult, outputAmountResult, swapEvents }
 // Failure: { status: "Failed", code, error }
-// code < 0 = Jupiter-internal error; code > 0 = on-chain program error
 ```
 
-**CRITICAL**: Always include `requestId` from the `/order` response. This enables idempotent retries — if the request fails mid-flight, you can safely re-call `POST /execute` with the same `requestId` and `signedTransaction` to check status or retry.
+**CRITICAL**: Always include `requestId` from the `/order` response. This enables idempotent retries — if the request fails mid-flight, re-call `POST /execute` with the same `requestId` and `signedTransaction` to check status.
 
-**Response fields**:
-- `inputAmountResult` — Actual input amount consumed
-- `outputAmountResult` — Actual output amount received
-- `swapEvents` — Array of individual swap legs executed
-- On failure: `code` (negative = Jupiter error, positive = on-chain error) + `error` message
-
----
-
-## Complete Swap Flow
-
-### Using Jupiter Ultra (Recommended)
-
-Jupiter Ultra handles routing, transaction building, and execution:
-
-```typescript
-import { Keypair, VersionedTransaction } from '@solana/web3.js';
-
-async function swapWithUltra(
-  keypair: Keypair,
-  inputMint: string,
-  outputMint: string,
-  amount: string,
-): Promise<string> {
-  const API_KEY = process.env.JUPITER_API_KEY!;
-  const headers = { 'x-api-key': API_KEY };
-
-  // 1. Get quote and transaction
-  const params = new URLSearchParams({
-    inputMint,
-    outputMint,
-    amount,
-    taker: keypair.publicKey.toBase58(),
-  });
-
-  const orderRes = await fetch(
-    `https://api.jup.ag/ultra/v1/order?${params}`,
-    { headers }
-  );
-  const order = await orderRes.json();
-
-  if (order.error) throw new Error(`Jupiter order error: ${order.error}`);
-
-  // 2. Deserialize and sign
-  const txBuffer = Buffer.from(order.transaction, 'base64');
-  const transaction = VersionedTransaction.deserialize(txBuffer);
-  transaction.sign([keypair]);
-
-  // 3. Execute via Jupiter
-  const signedTx = Buffer.from(transaction.serialize()).toString('base64');
-  const execRes = await fetch('https://api.jup.ag/ultra/v1/execute', {
-    method: 'POST',
-    headers: { ...headers, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      signedTransaction: signedTx,
-      requestId: order.requestId,
-    }),
-  });
-
-  const result = await execRes.json();
-  if (result.status === 'Failed') {
-    throw new Error(`Swap failed (code ${result.code}): ${result.error || 'unknown error'}`);
-  }
-
-  return result.signature;
-}
-```
+**Jupiter execution features**:
+- RTSE (Real-Time Slippage Estimator) — adjusts slippage at execution time
+- Optimized priority fee strategy for current network conditions
+- Jupiter Beam — proprietary transaction execution pipeline across multiple RPC providers
+- Confirmation polling and transaction parsing
 
 ### Using Jupiter Quote + Helius Sender (Alternative)
 
@@ -4051,89 +4022,122 @@ For more control over transaction submission, you can use Jupiter for the quote/
 
 ---
 
-## Fees
+## Path 2: Build Custom Transactions (Advanced)
 
-### Default Fees
+### GET /build — Get Instructions
 
-Jupiter Ultra charges 5-10 basis points (0.05-0.10%) on swaps. This is included in the quoted output amount — no separate fee calculation needed.
+Returns raw swap instructions for custom transaction assembly.
 
-### Integrator Fees (Referral Program)
+```typescript
+const params = new URLSearchParams({
+  inputMint: 'So11111111111111111111111111111111111111112',
+  outputMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+  amount: '1000000000',
+  taker: walletPublicKey,
+});
 
-Use the `referralAccount` and `referralFee` parameters to earn fees on swaps:
-- `referralFee` range: 50-255 basis points
-- When set, integrator fees **replace** the default 5-10 bps Jupiter fee
-- Jupiter takes 20% of the integrator fee; you receive 80%
+const response = await fetch(`https://api.jup.ag/swap/v2/build?${params}`, {
+  headers: { 'x-api-key': process.env.JUPITER_API_KEY! },
+});
+
+const buildResult = await response.json();
+```
+
+**Response fields**:
+- `computeBudgetInstructions` — Compute unit price instruction (no limit — you must simulate)
+- `setupInstructions` — Pre-swap setup (ATA creation, etc.)
+- `swapInstruction` — Main swap instruction
+- `cleanupInstruction` — Post-swap cleanup (nullable)
+- `otherInstructions` — Additional instructions
+- `addressesByLookupTableAddress` — V0 transaction lookup tables
+- `blockhashWithMetadata` — Blockhash and expiry height
+
+**Build flow**:
+1. Call `/build` with required params
+2. Add your custom instructions alongside swap instructions
+3. Simulate with max CU limit (1,400,000) to estimate actual usage
+4. Build V0 transaction with estimated CU limit (1.2x simulated, capped at 1,400,000)
+5. Sign and send via your own RPC
+
+**Optional parameters**:
+- `slippageBps` — Slippage tolerance (default: 50 bps)
+- `mode` — `"fast"` for reduced latency routing
+- `maxAccounts` — Max accounts for swap route (1-64, default 64)
+- `platformFeeBps` — Integrator platform fee in bps
+- `feeAccount` — Token account for platform fees (required if `platformFeeBps` > 0)
+- `wrapAndUnwrapSol` — Auto wrap/unwrap SOL (default: true)
+- `dexes` / `excludeDexes` — Include/exclude specific DEXes
+- `blockhashSlotsToExpiry` — Slots until blockhash expires (1-300, default 150)
+
+**Note**: `/build` only supports ExactIn mode. You are responsible for sending the transaction via your own RPC and handling confirmation. Jupiter does not charge swap fees on `/build`.
 
 ---
 
-## Routers
+## Routing
 
-Ultra routes swaps through multiple routers for optimal pricing:
-- **Iris** — Jupiter's primary router
-- **JupiterZ** — Zero-fee routing engine
-- **DFlow** — Order flow auction router
-- **OKX** — OKX DEX aggregator integration
+Four routers compete for best pricing on `/order`:
 
-Use `excludeRouters` to exclude specific routers from routing (e.g., for compliance reasons).
+- **Metis** — Jupiter's on-chain aggregator (core routing engine)
+- **JupiterZ** — RFQ market makers (off-chain liquidity, often beats on-chain by 5-20 bps on major pairs)
+- **DFlow** — Third-party order flow
+- **OKX** — Third-party liquidity provider
+
+**Parameter impact on routing**: Adding `receiver`, `referralAccount`, `referralFee`, or `payer` disables JupiterZ. The `payer` parameter additionally excludes DFlow and OKX. Check the `mode` field in the response (`ultra` = all routers, `manual` = restricted).
+
+---
+
+## Fees
+
+### `/order` Platform Fees
+
+| Token Pair | Fee |
+|------------|-----|
+| Jupiter tokens (SOL/Stable → JUP/JLP/jupSOL) | 0 bps |
+| Pegged assets (LST-LST, Stable-Stable) | 0 bps |
+| SOL-Stable | 2 bps |
+| LST-Stable | 5 bps |
+| Most other pairs | 10 bps |
+| New tokens (within 24 hours) | 50 bps |
+
+### Integrator Fees (Referral Program)
+
+Use `referralAccount` and `referralFee` parameters on `/order`:
+- `referralFee` range: 50-255 basis points
+- Jupiter retains 20% of referral fees; you receive 80%
+- **Adding `referralAccount` disables RFQ (JupiterZ) routing**
+
+### `/build` Fees
+
+No Jupiter platform fee. Implement custom fees via `platformFeeBps` and `feeAccount`.
 
 ---
 
 ## Gasless Swaps
 
-Ultra supports gasless swaps for wallets with insufficient SOL for transaction fees. Jupiter covers the gas fee within the swap transaction.
+### Automatic Gasless (`/order`)
 
-### Requirements & Constraints
+Jupiter automatically covers all gas when the taker has insufficient SOL:
+- Requires < 0.01 SOL in taker wallet
+- Minimum trade: ~$10 USD equivalent
+- Default `/order` parameters only (no integrator/manual mode params)
+- Increases swap fee to compensate (reduces output tokens)
 
-- **Minimum trade size**: ~$10 USD equivalent
-- **Router**: Only works via the Iris router
-- **Incompatible with**: `slippageBps` and `referralFee` parameters (these are ignored for gasless swaps)
-- **Fee impact**: Slightly increases the swap fee (gas cost absorbed into the spread)
-- **Automatic**: No extra parameters needed — when the taker's SOL balance is below the threshold, Jupiter automatically enables gasless mode
+### JupiterZ Gasless
 
-### Helius Synergy
+When RFQ market makers win the quote, they cover network and priority fees — but not ATA rent. Taker must have SOL for account creation.
 
-Combine gasless swaps with Helius Wallet API to detect low-SOL wallets and proactively offer gasless mode:
+### Integrator Payer
 
-```typescript
-// Check if wallet qualifies for gasless
-// Use getBalance MCP tool
-// If balance < 0.01 SOL, inform user that gasless swap is available
-// Note: trade must be >= ~$10 USD for gasless to work
-```
-
----
-
-## Metis Swap API (Advanced Alternative)
-
-For advanced use cases requiring low-level routing control, Jupiter also offers the Metis API:
-
-```
-GET  https://api.jup.ag/swap/v1/quote    — Get routing quote
-POST https://api.jup.ag/swap/v1/swap     — Build transaction
-```
-
-**When to use Metis over Ultra**:
-- You need custom compute unit budgets
-- You need to inspect and modify the transaction before signing
-- You want direct control over slippage parameters
-- You're integrating into an existing transaction pipeline
-
-**When to use Ultra** (recommended for most cases):
-- Simpler API (fewer parameters)
-- Built-in gasless support
-- `requestId` idempotency
-- Jupiter handles execution and retries
-
-Most integrations should use Ultra. Only use Metis if you have a specific need for low-level control.
+Pass `payer` parameter on `/order` or `/build` to subsidize all gas costs. Routes through Metis only.
 
 ---
 
 ## Slippage
 
-- Default: auto-calculated by Jupiter
+- Default: auto-calculated by Jupiter's RTSE (Real-Time Slippage Estimator)
 - Custom: pass `slippageBps` parameter (e.g., `50` = 0.5%)
 - Recommended: use auto unless the user has a specific requirement
-- Note: `slippageBps` is incompatible with gasless swaps
+- Note: `slippageBps` is incompatible with automatic gasless swaps
 
 ---
 
@@ -4149,21 +4153,34 @@ For other tokens, use the Jupiter Tokens API (`references/jupiter-tokens-price.m
 
 ---
 
-## Error Handling
+## Error Codes
 
-### Negative Error Codes (Jupiter-Specific)
+### `/execute` Error Codes
 
-Negative error codes from `/execute` indicate Jupiter-internal errors (routing, slippage, etc.). These are typically transient — retry with a fresh quote.
+| Code | Category | Meaning |
+|------|----------|---------|
+| 0 | Success | Transaction confirmed |
+| -1 | Execute | Missing cached order (requestId not found or expired) |
+| -2 | Execute | Invalid signed transaction |
+| -3 | Execute | Invalid message bytes |
+| -1000 | Aggregator | Failed to land |
+| -1001 | Aggregator | Unknown error |
+| -1002 | Aggregator | Invalid transaction |
+| -1003 | Aggregator | Transaction not fully signed |
+| -1004 | Aggregator | Invalid block height |
+| -2000 | RFQ | Failed to land |
+| -2001 | RFQ | Unknown error |
+| -2002 | RFQ | Invalid payload |
+| -2003 | RFQ | Quote expired |
+| -2004 | RFQ | Swap rejected |
 
-### Positive Error Codes (On-Chain Program Errors)
-
-Positive error codes indicate on-chain program failures. Inspect the error message for details (insufficient balance, slippage exceeded, etc.).
+Negative codes = Jupiter-internal (routing, slippage, etc.) — typically transient, retry with fresh quote. Positive codes = on-chain program errors.
 
 ### Timeout Handling
 
 - Set 5-second timeout for `/order` (quote) requests
 - Set 30-second timeout for `/execute` requests
-- If `/execute` times out, re-call `POST /execute` with the same `requestId` and `signedTransaction` to check status — do NOT get a new quote and re-execute without checking first
+- If `/execute` times out, re-call with the same `requestId` and `signedTransaction` to check status — do NOT get a new quote without checking first
 
 ---
 
@@ -4176,13 +4193,21 @@ Positive error codes indicate on-chain program failures. Inspect the error messa
 5. Validate mint addresses before calling the API
 6. Enforce slippage guardrails for user protection
 7. On timeout, re-call `/execute` with same requestId to check status
-8. Log all API interactions with latency metrics
+8. Check `mode` field to verify expected routing behavior
+9. Log all API interactions with latency metrics
+
+---
+
+## Migration from Ultra / Metis
+
+- **From Ultra**: Update base URL from `https://ultra-api.jup.ag` to `https://api.jup.ag/swap/v2`. Request params and response format are identical.
+- **From Metis**: Consolidates `/quote` + `/swap-instructions` into single `/build` endpoint. `userPublicKey` becomes `taker`. Route plan uses `bps` instead of `percent` (10000 bps = 100%).
 
 ---
 
 ## Resources
 
-- Ultra Swap Docs: [dev.jup.ag/docs/ultra](https://dev.jup.ag/docs/ultra)
+- Swap API V2 Docs: [dev.jup.ag/docs/swap](https://dev.jup.ag/docs/swap)
 - Jupiter Portal (API keys): [portal.jup.ag](https://portal.jup.ag/)
 
 
@@ -4304,11 +4329,11 @@ console.log(`Decimals: ${solPrice.decimals}`);
 
 Jupiter provides a security check endpoint to detect potentially dangerous tokens.
 
-### GET /ultra/v1/shield — Check Token Safety
+### GET /swap/v2/shield — Check Token Safety
 
 ```typescript
 const response = await fetch(
-  `https://api.jup.ag/ultra/v1/shield?mints=${mintAddress}`,
+  `https://api.jup.ag/swap/v2/shield?mints=${mintAddress}`,
   { headers: { 'x-api-key': process.env.JUPITER_API_KEY! } }
 );
 

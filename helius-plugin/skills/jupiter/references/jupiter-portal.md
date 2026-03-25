@@ -23,10 +23,8 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-const response = await fetch('https://api.jup.ag/ultra/v1/order', {
-  method: 'POST',
+const response = await fetch('https://api.jup.ag/swap/v2/order?inputMint=...&outputMint=...&amount=...&taker=...', {
   headers,
-  body: JSON.stringify(orderPayload),
 });
 ```
 
@@ -50,9 +48,9 @@ https://api.jup.ag
 
 ## Rate Limits
 
-### Ultra Swap — Dynamic Rate Limits
+### Swap API — Dynamic Rate Limits
 
-Ultra Swap rate limits scale dynamically based on your 24-hour execute volume:
+Swap API rate limits scale dynamically based on your 24-hour execute volume:
 
 | 24h Execute Volume | Rate Limit |
 |---|---|
@@ -107,7 +105,7 @@ Jupiter provides these API families, all under `https://api.jup.ag`:
 
 | API | Path Prefix | Purpose |
 |---|---|---|
-| Ultra Swap | `/ultra/v1` | Token swaps with optimized routing |
+| Swap API V2 | `/swap/v2` | Token swaps with optimized routing |
 | Trigger | `/trigger/v1` | Limit orders |
 | Recurring | `/recurring/v1` | DCA orders |
 | Tokens | `/tokens/v2` | Token search and metadata |
