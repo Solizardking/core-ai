@@ -3162,7 +3162,7 @@ const mergedAlts = allAlts.filter((alt) => {
 
 1. **Don't calculate exact repay amounts** — Always use `MAX_REPAY_AMOUNT` sentinel for full repayment. Dust borrow amounts make exact calculation unreliable.
 2. **Don't forget to deduplicate ALTs** — When combining multiple instructions, duplicate ALTs cause transaction failures.
-3. **Always use versioned (v0) transactions** — Legacy transactions don't support Address Lookup Tables.
+3. **Always use versioned (v0) transactions** — Non-versioned transactions don't support Address Lookup Tables.
 4. **Check borrowable limits before prompting users** — Use the read SDK to verify vault capacity.
 5. **Use Helius RPC** — The Lend SDKs need an RPC connection. Helius provides reliable, high-performance endpoints.
 6. **`getOperateIx` returns `nftId`** — Not `positionId`. Use the returned `nftId` for subsequent operations on the same position.
