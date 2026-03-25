@@ -11,15 +11,27 @@
  * expects ({ address, signTransactions, signMessages }), so it plugs directly
  * into the Helius SDK's sendTransactionWithSender / sendSmartTransaction
  * without losing priority-fee estimation, SWQoS routing, or Jito tips.
+ *
+ * NOTE: The CLI helpers (isOwsInstalled, getOwsSolanaAddress) are mirrored in
+ * helius-cli/src/lib/ows.ts.  Keep the two copies in sync when changing
+ * argument handling, CAIP-2 lookup logic, or OWS CLI flags.
  */
 
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { address, createKeyPairSignerFromBytes, type Address } from '@solana/kit';
-import { loadSignerOrFail } from './helius.js';
+import { loadSignerOrFail, getNetwork } from './helius.js';
 import { mcpError } from './errors.js';
 
 const execFileAsync = promisify(execFile);
+
+// CAIP-2 chain identifiers for Solana networks.
+// See OWS spec 07-supported-chains.md.
+const SOLANA_CAIP2_MAINNET = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp';
+const SOLANA_CAIP2_DEVNET = 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG';
+
+/** Alphanumeric, hyphens, and underscores — matches OWS wallet naming rules. */
+const WALLET_NAME_RE = /^[a-zA-Z0-9_-]{1,64}$/;
 
 // ── CLI helpers ──
 
@@ -36,9 +48,27 @@ export async function isOwsInstalled(): Promise<boolean> {
 }
 
 /**
+ * Validate wallet name format before passing to execFile.
+ * While execFile prevents shell injection, a garbage name produces
+ * confusing OWS CLI errors — better to catch it early.
+ */
+function validateWalletName(name: string): void {
+  if (!WALLET_NAME_RE.test(name)) {
+    throw new Error(
+      `Invalid OWS wallet name "${name}". ` +
+      `Names must be 1-64 characters using letters, digits, hyphens, or underscores.`,
+    );
+  }
+}
+
+/**
  * Return the Solana address for the named OWS wallet.
+ * Uses the current MCP session network (mainnet or devnet) to select
+ * the correct CAIP-2 chain key.
  */
 export async function getOwsSolanaAddress(walletName: string): Promise<string> {
+  validateWalletName(walletName);
+
   const { stdout } = await execFileAsync(
     'ows',
     ['wallet', 'info', '--wallet', walletName, '--json'],
@@ -47,10 +77,11 @@ export async function getOwsSolanaAddress(walletName: string): Promise<string> {
   const info = JSON.parse(stdout);
 
   // The CLI outputs accounts keyed by CAIP-2 chain id.
-  // Look for the Solana mainnet account.
-  const solanaKey = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp';
+  // Pick the key matching the active network.
+  const network = getNetwork();
+  const primaryKey = network === 'devnet' ? SOLANA_CAIP2_DEVNET : SOLANA_CAIP2_MAINNET;
   const account =
-    info.accounts?.[solanaKey] ??
+    info.accounts?.[primaryKey] ??
     info.accounts?.solana ??
     // Fallback: scan for any key containing "solana"
     Object.entries(info.accounts ?? {}).find(([k]) => k.includes('solana'))?.[1];
@@ -72,6 +103,7 @@ export async function getOwsSolanaAddress(walletName: string): Promise<string> {
 
 /**
  * Sign raw message bytes via OWS.  Returns the 64-byte Ed25519 signature.
+ * Assumes walletName was already validated by the caller (createOwsSigner).
  */
 async function owsSignBytes(walletName: string, messageHex: string): Promise<Uint8Array> {
   const { stdout } = await execFileAsync(
@@ -119,6 +151,12 @@ export interface OwsSigner {
  *
  * The returned `signer` is typed as `any` to avoid @solana/kit branded-type
  * friction — it satisfies `isTransactionSigner()` at runtime.
+ *
+ * ⚠ If @solana/kit changes its signer interface (signTransactions /
+ * signMessages argument or return shapes), these casts will pass type-checking
+ * but fail at runtime.  After any @solana/kit upgrade, verify the OWS signer
+ * still passes `isTransactionSigner()` and produces valid signatures in the
+ * full `signTransactionMessageWithSigners` pipeline.
  */
 export async function resolveOwsOrKeypairSigner(owsWallet?: string): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -126,6 +164,12 @@ export async function resolveOwsOrKeypairSigner(owsWallet?: string): Promise<
   | { ok: false; error: ReturnType<typeof mcpError> }
 > {
   if (owsWallet) {
+    if (!WALLET_NAME_RE.test(owsWallet)) {
+      return { ok: false, error: mcpError(
+        `Invalid OWS wallet name "${owsWallet}". Names must be 1-64 characters using letters, digits, hyphens, or underscores.`,
+        { type: 'VALIDATION', code: 'INVALID_WALLET_NAME', retryable: false, recovery: 'Provide a valid wallet name (letters, digits, hyphens, underscores).' },
+      ) };
+    }
     if (!await isOwsInstalled()) {
       return { ok: false, error: mcpError(
         'OWS CLI is not installed. Install it with `curl -fsSL https://docs.openwallet.sh/install.sh | bash` or `npm install -g @open-wallet-standard/core`.',

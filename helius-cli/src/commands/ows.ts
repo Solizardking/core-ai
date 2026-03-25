@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { isOwsInstalled, listOwsWallets, getOwsSolanaAddress } from "../lib/ows.js";
+import { isOwsInstalled, listOwsWallets, getOwsSolanaAddress, validateWalletName } from "../lib/ows.js";
 import { setOwsWallet, getOwsWallet, clearOwsWallet } from "../lib/config.js";
 import { handleCommandError, createSpinner, type OutputOptions, outputJson } from "../lib/output.js";
 
@@ -13,6 +13,8 @@ export async function owsLinkCommand(
 ): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    validateWalletName(walletName);
+
     spinner?.start("Checking OWS installation...");
     if (!(await isOwsInstalled())) {
       spinner?.stop();
