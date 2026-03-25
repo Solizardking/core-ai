@@ -2,7 +2,7 @@
 
 ## What This Covers
 
-Token-level analysis on Solana: search tokens by name/symbol, view metadata, check trending rankings, analyze holders and liquidity, inspect top traders, and review trade history. All commands use the `onchainos` CLI binary.
+Token-level analysis on Solana: search tokens by name/symbol, view metadata, check trending rankings, analyze holders and liquidity, inspect top traders, review trade history, and run holder cluster analysis for rug pull risk. All commands use the `onchainos` CLI binary.
 
 ## Commands
 
@@ -18,7 +18,7 @@ onchainos token search --query "bonk" --chains solana
 
 **Returns per token:** address, symbol, name, logo, price, 24h change, market cap, liquidity, holders, explorer URL, `communityRecognized` flag.
 
-**Note:** `communityRecognized = false` warrants extra caution — the token may be unverified.
+**Note:** `communityRecognized = false` warrants extra caution — the token may be unverified. This flag is informational only, NOT a safety guarantee.
 
 ### 2. Token Info (Basic Metadata)
 
@@ -106,7 +106,7 @@ onchainos token advanced-info --address <MINT_ADDRESS> --chain solana
 ```
 
 Returns risk intelligence:
-- `riskControlLevel`: Overall risk rating
+- `riskControlLevel`: Overall risk rating (0=undefined, 1=low, 2=medium, 3=medium-high, 4=high, 5=high-manual)
 - `totalFee`: Trading fee
 - `lpBurnedPercent`: Percentage of LP tokens burned
 - `progress`: Bonding curve progress for pump.fun-style tokens (0-100%)
@@ -140,6 +140,45 @@ onchainos token trades --address <MINT_ADDRESS> --chain solana --limit 100
 
 **Returns per trade:** trade ID, direction (buy/sell), price, volume, timestamp, DEX name, tx hash URL, trader address, filter match flag, token change details.
 
+### 11. Cluster Overview
+
+```bash
+onchainos token cluster-overview --address <MINT_ADDRESS> --chain solana
+```
+
+Returns holder cluster concentration analysis:
+- Rug pull probability percentage
+- New wallet percentage among holders
+- Suspicious holding percentage
+- Bundle hold percentage
+- Overall cluster concentration level
+
+Use `onchainos token cluster-supported-chains` to verify Solana support first.
+
+### 12. Cluster Top Holders
+
+```bash
+onchainos token cluster-top-holders --address <MINT_ADDRESS> --chain solana
+```
+
+Analyzes top 10/50/100 holder behavior including average PnL, average cost basis, and trend patterns. Useful for understanding whether large holders are accumulating or distributing.
+
+### 13. Cluster List
+
+```bash
+onchainos token cluster-list --address <MINT_ADDRESS> --chain solana
+```
+
+Returns holder cluster groups from the top 300 holders — wallets grouped by shared behavior, funding source, or coordination patterns. Each cluster includes member addresses and their holdings.
+
+### 14. Cluster Supported Chains
+
+```bash
+onchainos token cluster-supported-chains
+```
+
+Check which chains support cluster analysis before calling cluster commands.
+
 ## Tag Filter Reference
 
 Used by `holders`, `top-trader`, and `trades` commands:
@@ -156,6 +195,49 @@ Used by `holders`, `top-trader`, and `trades` commands:
 | 8 | Suspicious Phishing | Known phishing wallets |
 | 9 | Bundler | Bundle transaction wallets |
 
+## Cross-Skill Workflows
+
+### Workflow A: Search → Research → Buy
+
+```
+1. onchainos token search --query BONK --chains solana        → get address
+2. onchainos token price-info --address <addr> --chain solana  → market data
+3. onchainos token holders --address <addr> --chain solana     → holder distribution
+4. onchainos market kline --address <addr> --chain solana      → K-line chart (okx-dex-market)
+   ↓ user decides to buy
+5. onchainos swap execute --from sol --to <addr> ... --chain solana (okx-dex-swap)
+```
+
+### Workflow B: Discover Trending → Investigate → Trade
+
+```
+1. onchainos token trending --chains solana --sort-by 5        → find by volume
+2. onchainos token advanced-info --address <addr> --chain solana → risk check
+3. onchainos token liquidity --address <addr> --chain solana    → pool depth
+   ↓ passes checks
+4. onchainos swap execute ... (okx-dex-swap)
+```
+
+### Workflow C: Follow Smart Money → Cluster Check → Trade
+
+```
+1. onchainos token holders --address <addr> --chain solana --tag-filter 3,4  → smart money + whales
+2. onchainos token cluster-overview --address <addr> --chain solana           → rug pull risk
+3. onchainos token cluster-top-holders --address <addr> --chain solana        → top holder behavior
+   ↓ low rug risk, accumulation pattern
+4. onchainos swap execute ... (okx-dex-swap)
+```
+
+### Workflow D: Hot Token Discovery → Cluster Safety → Buy
+
+```
+1. onchainos token hot-tokens --ranking-type 4 --chain solana  → trending tokens
+2. onchainos token advanced-info --address <addr> --chain solana → risk tags, dev stats
+3. onchainos token cluster-overview --address <addr> --chain solana → cluster concentration
+   ↓ passes safety checks
+4. onchainos swap execute ... (okx-dex-swap)
+```
+
 ## Due Diligence Workflow
 
 When a user asks about a specific token, combine multiple commands for a complete picture:
@@ -165,14 +247,15 @@ When a user asks about a specific token, combine multiple commands for a complet
 3. **`token advanced-info`** — risk tags, dev reputation, holding concentration
 4. **`token liquidity`** — pool depth and LP status
 5. **`token holders --tag-filter 3,4`** — smart money and whale positions
-6. **Helius `getAsset`** — on-chain metadata verification via MCP tool
+6. **`token cluster-overview`** — rug pull probability, suspicious holder %
+7. **Helius `getAsset`** — on-chain metadata verification via MCP tool
 
 Present findings as a structured report with risk indicators highlighted.
 
 ## Safety Notes
 
-- Contract addresses must be independently verified before trading — names/symbols can be spoofed
-- `communityRecognized = false` warrants extra caution
+- **Contract address is the only reliable identifier** — names/symbols can be spoofed
+- `communityRecognized` is informational only — NOT a safety guarantee
 - Liquidity below $10,000 signals elevated slippage risk
 - Liquidity below $1,000 is substantial loss risk
 - Different tokens can share identical symbols — ALWAYS show contract addresses for disambiguation
@@ -181,7 +264,8 @@ Present findings as a structured report with risk indicators highlighted.
 ## Common Mistakes
 
 - Trusting token names/symbols without verifying contract addresses
-- Not checking `communityRecognized` flag before recommending tokens
+- Treating `communityRecognized` as a safety guarantee
 - Deduplicating tokens by symbol (different tokens can share the same symbol)
 - Not using `--chain solana` flag (defaults may include other chains)
 - Forgetting that `hot-tokens` returns max 100 results
+- Not calling `cluster-supported-chains` before cluster commands

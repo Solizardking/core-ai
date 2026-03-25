@@ -1,12 +1,13 @@
-# OKX Signals & Trenches — Smart Money Tracking & Meme Token Analysis
+# OKX Signals & Trenches — Smart Money Tracking, Leaderboards & Meme Token Analysis
 
 ## What This Covers
 
-Two complementary capabilities:
+Three complementary capabilities:
 1. **Signals**: Track what smart money, whales, and KOL/influencer wallets are buying on Solana
-2. **Trenches**: Meme token discovery and due diligence on pump.fun-style launchpads — dev reputation, bundle/sniper detection, rug pull analysis
+2. **Leaderboard**: Rank top traders by PnL, win rate, volume, or ROI
+3. **Trenches**: Meme token discovery and due diligence on pump.fun-style launchpads — dev reputation, bundle/sniper detection, rug pull analysis
 
-All commands use the `onchainos` CLI binary. Solana (chainIndex `501`) is a primary supported chain for both.
+All commands use the `onchainos` CLI binary. Solana (chainIndex `501`) is a primary supported chain for all three.
 
 ---
 
@@ -65,6 +66,41 @@ This finds tokens where 3+ smart money or whale wallets bought $10K+ worth.
 
 ---
 
+## Leaderboard Commands
+
+### List Supported Chains
+
+```bash
+onchainos leaderboard supported-chains
+```
+
+Verify Solana support before querying leaderboards.
+
+### Get Leaderboard
+
+```bash
+onchainos leaderboard list --chain solana --time-frame 3 --sort-by 1
+```
+
+**Parameters:**
+- `--chain` (required): Chain name or index
+- `--time-frame` (optional): `1` = 1D, `2` = 3D, `3` = 7D, `4` = 30D, `5` = 90D
+- `--sort-by` (optional): `1` = PnL, `2` = Win Rate, `3` = Tx Count, `4` = Volume, `5` = ROI
+
+Returns ranked traders with their PnL, win rate, trade count, volume, and wallet addresses. Useful for discovering consistently profitable traders to monitor.
+
+### Leaderboard → Signal Workflow
+
+```
+1. onchainos leaderboard list --chain solana --sort-by 1        → find top PnL traders
+2. onchainos market address-tracker-activities --tracker-type multi_address --wallet-address <top_addresses>
+   → track their latest trades (okx-dex-market)
+3. onchainos token advanced-info --address <token> --chain solana → risk check
+4. onchainos swap execute ... (if user approves)
+```
+
+---
+
 ## Trenches Commands (Meme Token Analysis)
 
 ### List Supported Chains & Protocols
@@ -73,7 +109,7 @@ This finds tokens where 3+ smart money or whale wallets bought $10K+ worth.
 onchainos memepump chains
 ```
 
-Returns supported chains and protocol IDs (pumpfun, bonkers, believe, bags, etc.).
+Returns supported chains and protocol IDs (pumpfun, bonkers, believe, bags, etc.). Solana is supported.
 
 ### List Tokens by Stage
 
@@ -90,17 +126,17 @@ onchainos memepump tokens --chain solana --stage NEW
 - **Wallet quality**: `--min/max-fresh-wallets-percent`, `--min/max-suspected-phishing-wallet-percent`, `--min/max-bot-traders`
 - **Dev history**: `--min/max-dev-migrated` (number of dev's tokens that successfully migrated)
 - **Market data**: `--min/max-market-cap`, `--min/max-volume`, `--min/max-tx-count`, `--min/max-bonding-percent`, `--min/max-holders`, `--min/max-token-age` (minutes)
-- **Social filters**: `--has-x`, `--has-telegram`, `--has-website`, `--has-at-least-one-social-link`, `--dex-screener-paid`, `--live-on-pump-fun`
-- **Dev status**: `--dev-sell-all`, `--dev-still-holding`
-- **Keywords**: `--keywords-include`, `--keywords-exclude`
-- **Wallet filter**: `--wallet-address` (filter by specific wallet)
-- **Protocol filter**: `--protocol-id-list` (comma-separated protocol IDs, e.g., `pumpfun,believe`)
-- **Quote token filter**: `--quote-token-address-list` (filter by quote token addresses)
 - **Transaction counts**: `--min/max-buy-tx-count`, `--min/max-sell-tx-count`
 - **Symbol length**: `--min/max-token-symbol-length`
-- **Website type**: `--website-type-list` (filter by website type)
-- **Community takeover**: `--community-takeover` flag
+- **Social filters**: `--has-x`, `--has-telegram`, `--has-website`, `--has-at-least-one-social-link`, `--dex-screener-paid`, `--live-on-pump-fun`
+- **Dev status**: `--dev-sell-all`, `--dev-still-holding`
+- **Protocol filter**: `--protocol-id-list` (comma-separated, e.g., `pumpfun,believe`)
+- **Quote token filter**: `--quote-token-address-list` (filter by quote token addresses)
+- **Community**: `--community-takeover` flag
 - **Bags fee**: `--bags-fee-claimed` flag, `--min/max-fees-native`
+- **Keywords**: `--keywords-include`, `--keywords-exclude`
+- **Wallet filter**: `--wallet-address` (filter by specific wallet)
+- **Website type**: `--website-type-list`
 
 ### Token Details
 
@@ -184,8 +220,9 @@ When evaluating a meme or pump.fun token, run this sequence:
 4. **`memepump similar-tokens`** — other tokens by same dev
 5. **`memepump aped-wallet`** — who else is invested (smart money validation)
 6. **`token advanced-info`** — risk tags, LP burned status, holding concentration
-7. **`token liquidity`** — pool depth check
-8. **Helius `getAsset`** — on-chain metadata verification
+7. **`token cluster-overview`** — rug pull probability, suspicious holder %
+8. **`token liquidity`** — pool depth check
+9. **Helius `getAsset`** — on-chain metadata verification
 
 Present as a structured risk report:
 - **Dev reputation**: rug history, successful launches, holding %
@@ -205,7 +242,7 @@ When a user wants to follow smart money:
 3. **`memepump token-dev-info`** — if it's a new token, check dev reputation
 4. **`token liquidity`** — verify sufficient liquidity for entry/exit
 5. **Present risk assessment** — let the user decide
-6. **If approved**: `onchainos swap quote` → user confirms → `onchainos swap swap` → Helius Sender
+6. **If approved**: `onchainos swap execute` → Helius Sender
 
 ---
 
@@ -225,3 +262,4 @@ When a user wants to follow smart money:
 - Not checking bundle/sniper analysis for new tokens
 - Assuming high `triggerWalletCount` alone means a good trade (could be wash trading)
 - Trusting `goldenGemCount` without verifying the actual tokens
+- Not calling `signal chains` / `leaderboard supported-chains` / `memepump chains` to verify support before querying

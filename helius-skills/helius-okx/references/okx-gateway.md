@@ -109,6 +109,12 @@ onchainos gateway orders --address <SENDER_ADDRESS> --chain solana
 - `cursor`: Pagination cursor for subsequent requests
 - **Per order:** `txStatus` (`1` = Pending, `2` = Success, `3` = Failed), `orderId`, `txHash`, `failReason` (if failed), timestamp, and other metadata
 
+## MEV Protection (Gateway Layer)
+
+On Solana, use Jito tips (`--tips` param). **Mutually exclusive with `computeUnitPrice`** — do NOT set both.
+
+The `swap execute` command handles MEV protection automatically via `--tips`. The gateway layer is only relevant when broadcasting raw pre-signed transactions.
+
 ---
 
 ## Portfolio Commands
@@ -134,7 +140,7 @@ onchainos portfolio total-value \
 - `--address` (required): Wallet address
 - `--chains` (required): Comma-separated chain names or IDs (max 50)
 - `--asset-type` (optional, default `"0"`): `0` = all assets, `1` = tokens only, `2` = DeFi positions only
-- `--exclude-risk` (optional, default `true`): Filter risky/scam tokens (works on ETH, BSC, SOL, BASE)
+- `--exclude-risk` (optional, default `true`): Filter risky/scam tokens
 
 Returns: `totalValue` in USD.
 
@@ -178,29 +184,46 @@ Returns same `tokenAssets[]` schema as `all-balances`.
 
 | Feature | OKX Portfolio | Helius Wallet API |
 |---------|--------------|-------------------|
-| Multi-chain | Yes (50+ chains) | Solana only |
 | USD pricing | Yes | Yes (top 10K tokens, hourly) |
-| Risk filtering | Yes (SOL, ETH, BSC, BASE) | No |
+| Risk filtering | Yes | No |
 | NFT support | No | Yes (`showNfts`) |
 | Identity resolution | No | Yes (Orb-powered) |
 | Funding source | No | Yes (`getWalletFundedBy`) |
 | Transaction history | No | Yes (`getWalletHistory`) |
 | Credits | Uses OKX API | 100 credits/request |
 
-**Use OKX Portfolio when**: You need multi-chain balances or risk-filtered token lists.
+**Use OKX Portfolio when**: You need risk-filtered token lists.
 **Use Helius Wallet API when**: You need Solana-specific intelligence — identity, funding source, transaction history, or NFTs. See `references/helius-wallet-api.md`.
 
 ---
 
-## Cross-Chain Portfolio View
+## Cross-Skill Workflows
 
-For a comprehensive portfolio that includes Solana and other chains:
+### Simulate → Broadcast → Track
 
-1. **Solana holdings**: Use Helius `getWalletBalances` for detailed Solana data with identity enrichment
-2. **Other chains**: Use `onchainos portfolio all-balances --chains ethereum,base,bsc` for EVM chains
-3. **Total value**: Use `onchainos portfolio total-value --chains solana,ethereum,base` for aggregate USD value
+```
+1. onchainos gateway simulate --from <wallet> --to <program> --data <data> --chain solana
+   ↓ simulation passes
+2. onchainos gateway broadcast --signed-tx <base58_tx> --address <wallet> --chain solana
+3. onchainos gateway orders --address <wallet> --chain solana --order-id <orderId>
+```
+
+### Gas Check → Swap
+
+```
+1. onchainos gateway gas --chain solana                         → check fees
+2. onchainos swap execute --from ... --to ... --chain solana    → one-shot swap (handles broadcast)
+```
 
 ---
+
+## Error Handling
+
+| Error | Action |
+|-------|--------|
+| `50125` / `80001` | Region restricted — display: "This service is unavailable in your region" |
+| Rate limit | Suggest creating an OKX API key at the Developer Portal |
+| Node rejection | Insufficient compute, or program revert — surface cause to user |
 
 ## Safety Notes
 
@@ -208,14 +231,13 @@ For a comprehensive portfolio that includes Solana and other chains:
 - Solana signed transactions use base58 encoding (not hex)
 - Always simulate transactions before broadcasting when possible
 - Check `risks[]` in simulation results for drainer contracts or suspicious transfers
-- `isRiskToken` flag only works on ETH, BSC, SOL, and BASE — tokens on other chains are unfiltered
-- EVM addresses cannot query Solana chains and vice versa — separate API calls required
+- `isRiskToken` flag is supported on Solana
 
 ## Common Mistakes
 
 - Broadcasting via OKX Gateway when Helius Sender would give better inclusion rates on Solana
 - Using hex encoding for Solana transactions (must be base58)
-- Mixing EVM and Solana addresses in the same portfolio query
 - Not checking simulation `failReason` before broadcasting
 - Forgetting that `--exclude-risk` defaults differ between `total-value` (true) and `all-balances` ("0" = filter)
 - Using `total-value` for detailed balances (it only returns a single USD figure)
+- Broadcasting same signed tx twice without handling idempotently
