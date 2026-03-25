@@ -186,6 +186,7 @@ export const HELIUS_WRITE_SCHEMA = withTelemetry({
   sendMax: optionalBoolean(),
   stakeAccount: optionalString(),
   destination: optionalString(),
+  owsWallet: optionalString(),
 });
 
 export const HELIUS_COMPRESSION_SCHEMA = withTelemetry({

@@ -13,6 +13,7 @@ interface Config {
   apiKey?: string;
   network?: "mainnet" | "devnet";
   projectId?: string;
+  owsWallet?: string;
 }
 
 function ensureDir(): void {
@@ -75,6 +76,22 @@ export function getProjectId(): string | undefined {
 export function setProjectId(projectId: string): void {
   const config = load();
   config.projectId = projectId;
+  save(config);
+}
+
+export function getOwsWallet(): string | undefined {
+  return load().owsWallet;
+}
+
+export function setOwsWallet(name: string): void {
+  const config = load();
+  config.owsWallet = name;
+  save(config);
+}
+
+export function clearOwsWallet(): void {
+  const config = load();
+  delete config.owsWallet;
   save(config);
 }
 
