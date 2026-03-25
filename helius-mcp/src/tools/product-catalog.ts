@@ -14,6 +14,11 @@ export interface CatalogProduct {
   description: string;
 }
 
+// ─── Plan Ranking ───
+// Pure data constant — lives here (zero imports) to avoid circular dependencies.
+
+export const PLAN_RANK: Record<string, number> = { free: 0, developer: 1, business: 2, professional: 3 };
+
 export const PRODUCT_CATALOG: Record<string, CatalogProduct> = {
   'das-api': {
     name: 'DAS API',
@@ -52,7 +57,7 @@ export const PRODUCT_CATALOG: Record<string, CatalogProduct> = {
   },
   'webhooks': {
     name: 'Webhooks',
-    mcpTools: ['createWebhook', 'getAllWebhooks', 'updateWebhook', 'deleteWebhook'],
+    mcpTools: ['createWebhook', 'getAllWebhooks', 'getWebhookByID', 'updateWebhook', 'deleteWebhook'],
     creditCostPerCall: '100 credits to create, 1 credit per event',
     minimumPlan: 'free',
     docKey: 'webhooks',
@@ -121,6 +126,36 @@ export const PRODUCT_CATALOG: Record<string, CatalogProduct> = {
     docKey: 'sender',
     referenceFile: 'references/sender.md',
     description: 'Send native SOL or SPL tokens from the MCP keypair to any Solana address. Uses Helius Sender for optimal landing rates. Requires a configured keypair.',
+  },
+  'zk-compression': {
+    name: 'ZK Compression',
+    mcpTools: [
+      'getCompressedAccount', 'getCompressedAccountsByOwner', 'getMultipleCompressedAccounts',
+      'getCompressedBalance', 'getCompressedBalanceByOwner',
+      'getCompressedMintTokenHolders', 'getCompressedTokenAccountBalance',
+      'getCompressedTokenAccountsByOwner', 'getCompressedTokenAccountsByDelegate',
+      'getCompressedTokenBalancesByOwnerV2',
+      'getCompressedAccountProof', 'getMultipleCompressedAccountProofs', 'getMultipleNewAddressProofs',
+      'getCompressionSignaturesForAccount', 'getCompressionSignaturesForAddress',
+      'getCompressionSignaturesForOwner', 'getCompressionSignaturesForTokenOwner',
+      'getLatestCompressionSignatures', 'getLatestNonVotingSignatures',
+      'getTransactionWithCompressionInfo', 'getValidityProof',
+      'getIndexerHealth', 'getIndexerSlot',
+    ],
+    creditCostPerCall: '10 credits',
+    minimumPlan: 'free',
+    docKey: 'zk-compression',
+    referenceFile: 'references/zk-compression.md',
+    description: 'Query compressed accounts, token balances, Merkle proofs, validity proofs, and compression transaction history via the ZK Compression / Light Protocol indexer. Powers state compression for cost-efficient on-chain data storage.',
+  },
+  'native-staking': {
+    name: 'Native Staking',
+    mcpTools: ['stakeSOL', 'unstakeSOL', 'withdrawStake', 'getStakeAccounts', 'getWithdrawableAmount'],
+    creditCostPerCall: '~3-10 credits + on-chain fees',
+    minimumPlan: 'free',
+    docKey: 'sender',
+    referenceFile: 'references/sender.md',
+    description: 'Stake, unstake, and withdraw native SOL via the Helius validator. Earn staking yield with one-click delegation. Query stake accounts and withdrawable amounts.',
   },
   'token-holders': {
     name: 'Token Holders',

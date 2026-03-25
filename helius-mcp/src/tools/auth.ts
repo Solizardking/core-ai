@@ -26,6 +26,10 @@ import { HELIUS_PLANS } from './plans.js';
 
 const PAID_PLAN_ORDER = ['developer', 'business', 'professional'] as const;
 
+/** Tracks consecutive insufficient-balance checks to prevent agent polling loops. */
+let insufficientBalanceChecks = 0;
+const MAX_BALANCE_CHECKS_BEFORE_STOP = 3;
+
 export function registerAuthTools(server: McpServer) {
   // ── Getting Started Guide ──
 
@@ -166,6 +170,9 @@ export function registerAuthTools(server: McpServer) {
     {},
     async () => {
       try {
+        // Reset balance-check counter for fresh signup flow
+        insufficientBalanceChecks = 0;
+
         // Check disk first — reuse existing keypair if available
         const existingKey = loadKeypairFromDisk();
         if (existingKey) {
@@ -231,7 +238,10 @@ export function registerAuthTools(server: McpServer) {
         }
 
         if (!address) {
-          return mcpError('No signup wallet found. Call `generateKeypair` first to create a wallet.');
+          return mcpError(
+            'No signup wallet found. Call `generateKeypair` first to create a wallet.',
+            { type: 'AUTH', code: 'NO_KEYPAIR', retryable: false, recovery: 'Call `generateKeypair` to create a wallet.' }
+          );
         }
 
         const solBalance = await checkSolBalance(address);
@@ -243,22 +253,53 @@ export function registerAuthTools(server: McpServer) {
         const solOk = solBalance >= 1_000_000n;
         const usdcOk = usdcBalance >= 1_000_000n; // 1 USDC for basic plan
 
-        let status: string;
-        if (solOk && usdcOk) {
-          status = 'Ready for signup (basic plan). For paid plans, ensure sufficient USDC for the plan price.';
-        } else {
-          const missing: string[] = [];
-          if (!solOk) missing.push(`~0.001 SOL (have ${solAmount.toFixed(6)})`);
-          if (!usdcOk) missing.push(`1 USDC (have ${usdcAmount.toFixed(2)})`);
-          status = `Need more funds: ${missing.join(', ')}`;
+        const funded = solOk && usdcOk;
+
+        // Reset counter when balance is sufficient
+        if (funded) {
+          insufficientBalanceChecks = 0;
+          return mcpText(
+            `**Signup Wallet Balance** (\`${address}\`)\n\n` +
+            `- **SOL:** ${solAmount.toFixed(6)} (sufficient)\n` +
+            `- **USDC:** ${usdcAmount.toFixed(2)} (sufficient for basic)\n\n` +
+            `**Status:** Ready for signup (basic plan). For paid plans, ensure sufficient USDC for the plan price.\n\n` +
+            `Call \`agenticSignup\` to proceed.`
+          );
         }
 
-        return mcpText(
+        // Insufficient — increment counter and escalate guidance
+        insufficientBalanceChecks++;
+
+        const missing: string[] = [];
+        if (!solOk) missing.push(`~0.001 SOL (have ${solAmount.toFixed(6)})`);
+        if (!usdcOk) missing.push(`1 USDC (have ${usdcAmount.toFixed(2)})`);
+
+        let balanceBlock =
           `**Signup Wallet Balance** (\`${address}\`)\n\n` +
           `- **SOL:** ${solAmount.toFixed(6)} ${solOk ? '(sufficient)' : '(insufficient)'}\n` +
           `- **USDC:** ${usdcAmount.toFixed(2)} ${usdcOk ? '(sufficient for basic)' : '(insufficient)'}\n\n` +
-          `**Status:** ${status}`
-        );
+          `**Status:** Need more funds: ${missing.join(', ')}`;
+
+        if (insufficientBalanceChecks === 1) {
+          // First check — normal guidance
+          balanceBlock +=
+            `\n\n**Action required:** Ask the user to send the missing funds to \`${address}\`. ` +
+            `Do **not** call \`checkSignupBalance\` again until the user confirms they have sent the funds.`;
+        } else if (insufficientBalanceChecks < MAX_BALANCE_CHECKS_BEFORE_STOP) {
+          // Second check — firmer nudge
+          balanceBlock +=
+            `\n\n**⚠ Balance still insufficient (check ${insufficientBalanceChecks}/${MAX_BALANCE_CHECKS_BEFORE_STOP}).** ` +
+            `The wallet has not been funded yet. Ask the user to confirm they have sent funds to \`${address}\` before calling this tool again.`;
+        } else {
+          // Third+ check — hard stop
+          balanceBlock +=
+            `\n\n**🛑 Balance checked ${insufficientBalanceChecks} times — still insufficient. Stop polling.** ` +
+            `The wallet \`${address}\` has not received funds. ` +
+            `Tell the user the exact amounts needed and the wallet address, then **wait for the user to explicitly confirm** they have sent funds before calling \`checkSignupBalance\` again. ` +
+            `Do not retry automatically.`;
+        }
+
+        return mcpText(balanceBlock);
       } catch (err) {
         return handleToolError(err, 'Error checking balances');
       }
@@ -291,7 +332,10 @@ export function registerAuthTools(server: McpServer) {
         try {
           signerData = await loadSignerOrFail();
         } catch {
-          return mcpError('No signup keypair found. Call `generateKeypair` first to create a wallet, fund it, then call this tool.');
+          return mcpError(
+            'No signup keypair found. Call `generateKeypair` first to create a wallet, fund it, then call this tool.',
+            { type: 'AUTH', code: 'NO_KEYPAIR', retryable: false, recovery: 'Call `generateKeypair` to create a wallet, fund it, then retry.' }
+          );
         }
 
         const result = await agenticSignup({
@@ -376,12 +420,18 @@ export function registerAuthTools(server: McpServer) {
       try {
         const jwt = getJwt();
         if (!jwt) {
-          return mcpError('Not authenticated. Call `agenticSignup` or authenticate first.');
+          return mcpError(
+            'Not authenticated. Call `agenticSignup` or authenticate first.',
+            { type: 'AUTH', code: 'NOT_AUTHENTICATED', retryable: false, recovery: 'Call `agenticSignup` to authenticate.' }
+          );
         }
 
         const projects = await listProjects(jwt, MCP_USER_AGENT);
         if (projects.length === 0) {
-          return mcpError('No projects found. Call `agenticSignup` to create an account first.');
+          return mcpError(
+            'No projects found. Call `agenticSignup` to create an account first.',
+            { type: 'AUTH', code: 'NO_PROJECT', retryable: false, recovery: 'Call `agenticSignup` to create an account first.' }
+          );
         }
 
         const projectId = projects[0].id;
@@ -449,7 +499,8 @@ export function registerAuthTools(server: McpServer) {
             !lastName && 'lastName',
           ].filter(Boolean);
           return mcpError(
-            `Partial customer info provided. If any of email/firstName/lastName is given, all three are required. Missing: ${missing.join(', ')}`
+            `Partial customer info provided. If any of email/firstName/lastName is given, all three are required. Missing: ${missing.join(', ')}`,
+            { type: 'VALIDATION', code: 'MISSING_PARAM', retryable: false, recovery: `Provide all three: email, firstName, and lastName. Missing: ${missing.join(', ')}` }
           );
         }
 
@@ -457,17 +508,26 @@ export function registerAuthTools(server: McpServer) {
         try {
           signerData = await loadSignerOrFail();
         } catch {
-          return mcpError('No keypair found. Call `generateKeypair` first.');
+          return mcpError(
+            'No keypair found. Call `generateKeypair` first.',
+            { type: 'AUTH', code: 'NO_KEYPAIR', retryable: false, recovery: 'Call `generateKeypair` to create a wallet.' }
+          );
         }
 
         const jwt = getJwt();
         if (!jwt) {
-          return mcpError('Not authenticated. Call `agenticSignup` or authenticate first.');
+          return mcpError(
+            'Not authenticated. Call `agenticSignup` or authenticate first.',
+            { type: 'AUTH', code: 'NOT_AUTHENTICATED', retryable: false, recovery: 'Call `agenticSignup` to authenticate.' }
+          );
         }
 
         const projects = await listProjects(jwt, MCP_USER_AGENT);
         if (projects.length === 0) {
-          return mcpError('No projects found. Call `agenticSignup` to create an account first.');
+          return mcpError(
+            'No projects found. Call `agenticSignup` to create an account first.',
+            { type: 'AUTH', code: 'NO_PROJECT', retryable: false, recovery: 'Call `agenticSignup` to create an account first.' }
+          );
         }
 
         const projectId = projects[0].id;
@@ -486,7 +546,8 @@ export function registerAuthTools(server: McpServer) {
             `**Upgrade ${result.status}**\n\n` +
             (result.error ? `Error: ${result.error}\n` : '') +
             (result.txSignature ? `TX: \`${result.txSignature}\`\n` : '') +
-            `\nIf you need help, contact support with the payment intent ID: \`${result.paymentIntentId}\``
+            `\nIf you need help, contact support with the payment intent ID: \`${result.paymentIntentId}\``,
+            { type: 'API', code: 'OPERATION_FAILED', retryable: false, recovery: `Upgrade ${result.status}. Contact support with payment intent ID: ${result.paymentIntentId}` }
           );
         }
 
@@ -539,7 +600,10 @@ export function registerAuthTools(server: McpServer) {
         // ── Tier 3: full status via JWT ──
         const projects = await listProjects(jwt, MCP_USER_AGENT);
         if (projects.length === 0) {
-          return mcpError('No projects found. Call `agenticSignup` to create an account first.');
+          return mcpError(
+            'No projects found. Call `agenticSignup` to create an account first.',
+            { type: 'AUTH', code: 'NO_PROJECT', retryable: false, recovery: 'Call `agenticSignup` to create an account first.' }
+          );
         }
 
         const projectId = projects[0].id;
@@ -646,12 +710,18 @@ export function registerAuthTools(server: McpServer) {
         try {
           signerData = await loadSignerOrFail();
         } catch {
-          return mcpError('No keypair found. Call `generateKeypair` first.');
+          return mcpError(
+            'No keypair found. Call `generateKeypair` first.',
+            { type: 'AUTH', code: 'NO_KEYPAIR', retryable: false, recovery: 'Call `generateKeypair` to create a wallet.' }
+          );
         }
 
         const jwt = getJwt();
         if (!jwt) {
-          return mcpError('Not authenticated. Call `agenticSignup` or authenticate first.');
+          return mcpError(
+            'Not authenticated. Call `agenticSignup` or authenticate first.',
+            { type: 'AUTH', code: 'NOT_AUTHENTICATED', retryable: false, recovery: 'Call `agenticSignup` to authenticate.' }
+          );
         }
 
         const result = await executeRenewal(signerData.secretKey, jwt, paymentIntentId, MCP_USER_AGENT);
@@ -661,7 +731,8 @@ export function registerAuthTools(server: McpServer) {
             `**Payment ${result.status}**\n\n` +
             (result.error ? `Error: ${result.error}\n` : '') +
             (result.txSignature ? `TX: \`${result.txSignature}\`\n` : '') +
-            `\nIf you need help, contact support with the payment intent ID: \`${result.paymentIntentId}\``
+            `\nIf you need help, contact support with the payment intent ID: \`${result.paymentIntentId}\``,
+            { type: 'API', code: 'OPERATION_FAILED', retryable: false, recovery: `Payment ${result.status}. Contact support with payment intent ID: ${result.paymentIntentId}` }
           );
         }
 
