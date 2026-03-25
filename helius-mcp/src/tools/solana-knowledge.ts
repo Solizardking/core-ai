@@ -308,8 +308,9 @@ export function registerSolanaKnowledgeTools(server: McpServer) {
             .map((e) => `  SIMD-${e.number}: ${e.slug}`)
             .join('\n');
 
-          return mcpText(
-            `SIMD-${paddedNumber} not found.\n\n${nearby ? `Nearby proposals:\n${nearby}` : `Total proposals available: ${index.length}`}`
+          return mcpError(
+            `SIMD-${paddedNumber} not found.\n\n${nearby ? `Nearby proposals:\n${nearby}` : `Total proposals available: ${index.length}`}`,
+            { type: 'NOT_FOUND', code: 'RESOURCE_NOT_FOUND', retryable: false, recovery: 'Check the SIMD number. Use listSIMDs to see available proposals.' }
           );
         }
 
@@ -389,7 +390,10 @@ export function registerSolanaKnowledgeTools(server: McpServer) {
     async ({ path, repo, branch }) => {
       try {
         if (path.includes('..')) {
-          return mcpText('Invalid path: must not contain ".." segments.');
+          return mcpError(
+            'Invalid path: must not contain ".." segments.',
+            { type: 'VALIDATION', code: 'INVALID_PARAM', retryable: false, recovery: 'Remove ".." segments from the path.' }
+          );
         }
 
         const repoMap: Record<string, { fullName: string; defaultBranch: string }> = {
@@ -429,8 +433,9 @@ export function registerSolanaKnowledgeTools(server: McpServer) {
           {
             match: (msg) => msg.includes('404'),
             respond: () =>
-              mcpText(
-                `**File not found:** \`${path}\`\n\nTips:\n- Check the path is correct\n- Browse https://github.com/${repoInfo} to find the right path\n- The default branch for ${repo} is "${defaultBr}"`
+              mcpError(
+                `**File not found:** \`${path}\`\n\nTips:\n- Check the path is correct\n- Browse https://github.com/${repoInfo} to find the right path\n- The default branch for ${repo} is "${defaultBr}"`,
+                { type: 'NOT_FOUND', code: 'HTTP_404', retryable: false, recovery: `Check the file path. Browse https://github.com/${repoInfo} to find the right path.` }
               ),
           },
         ]);
@@ -569,7 +574,8 @@ export function registerSolanaKnowledgeTools(server: McpServer) {
     {
       action: z
         .enum(['fetch', 'list'])
-        .describe('"fetch" to read a specific post, "list" to see available posts by category'),
+        .optional()
+        .describe('"fetch" to read a specific post, "list" to see available posts by category. Defaults to "fetch" if slug provided, "list" otherwise.'),
       slug: z
         .string()
         .optional()
@@ -581,7 +587,9 @@ export function registerSolanaKnowledgeTools(server: McpServer) {
         .default('all')
         .describe('Filter by category when listing posts'),
     },
-    async ({ action, slug, category }) => {
+    async ({ action: rawAction, slug: rawSlug, category }) => {
+      let slug = rawSlug;
+      const action = rawAction ?? (slug ? 'fetch' : 'list');
       try {
         if (action === 'list') {
           const entries = Object.entries(BLOG_INDEX);
@@ -626,9 +634,28 @@ export function registerSolanaKnowledgeTools(server: McpServer) {
 
         // Fetch a specific post
         if (!slug) {
-          return mcpText(
-            'Please provide a slug. Use `fetchHeliusBlog` with action "list" to see available posts.'
+          return mcpError(
+            'Please provide a slug. Use `fetchHeliusBlog` with action "list" to see available posts.',
+            { type: 'VALIDATION', code: 'MISSING_PARAM', retryable: false, recovery: 'Provide a slug. Use fetchHeliusBlog with action "list" to see available posts.' }
           );
+        }
+
+        // Fuzzy slug matching — if exact slug isn't in index, find close matches
+        if (!BLOG_INDEX[slug]) {
+          const lower = slug.toLowerCase();
+          const matches = Object.keys(BLOG_INDEX).filter(
+            (k) => k.includes(lower) || lower.includes(k) || k.split('-').some((w) => lower.includes(w) && w.length > 3),
+          );
+          if (matches.length === 1) {
+            // Single match — auto-correct
+            slug = matches[0];
+          } else if (matches.length > 1) {
+            return mcpError(
+              `No exact blog post "${slug}". Did you mean one of these?\n${matches.map((m) => `- \`${m}\` — ${BLOG_INDEX[m].title}`).join('\n')}`,
+              { type: 'VALIDATION', code: 'UNKNOWN_SLUG', retryable: true, recovery: 'Retry with one of the suggested slugs.' },
+            );
+          }
+          // If no matches, let it proceed — the fetch will 404 with a helpful message
         }
 
         const url = `https://www.helius.dev/blog/${slug}`;
