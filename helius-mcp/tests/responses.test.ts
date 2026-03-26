@@ -138,8 +138,10 @@ describe('compactErrorText', () => {
   it('uses default maxChars of 1200', () => {
     const text = 'e'.repeat(2000);
     const result = compactErrorText(text);
-    // [truncated] suffix is \n\n[truncated] = 13 chars
+    // \n\n[truncated] suffix is 13 chars
     expect(result.length).toBeLessThanOrEqual(1200 + 13);
+    // Lower bound: truncation should snap near the limit, not far below it
+    expect(result.length).toBeGreaterThan(1100);
     expect(result).toContain('[truncated]');
   });
 
@@ -253,9 +255,12 @@ describe('toPlainText', () => {
   });
 
   it('falls back to stringified structuredContent', () => {
-    const response = { content: [], structuredContent: { key: 'value' } };
+    const data = { key: 'value' };
+    const response = { content: [], structuredContent: data };
     const result = toPlainText(response);
-    expect(JSON.parse(result)).toEqual({ key: 'value' });
+    expect(JSON.parse(result)).toEqual(data);
+    // Verify pretty-print format (null, 2 indentation)
+    expect(result).toBe(JSON.stringify(data, null, 2));
   });
 
   it('returns empty string when content is undefined', () => {
@@ -306,8 +311,8 @@ describe('buildTextVariant', () => {
     const text = longText(1000);
     const limit = getFamilyLimit(family, 'summary');
     const result = buildTextVariant(family, 'summary', text);
-    // Result should be within limit + [truncated] suffix
-    expect(result.length).toBeLessThanOrEqual(limit + 15);
+    // Result should be within limit + \n\n[truncated] suffix (13 chars)
+    expect(result.length).toBeLessThanOrEqual(limit + 13);
   });
 
   // Test all families at standard detail
@@ -468,7 +473,8 @@ describe('applySectionSelection', () => {
     const result = applySectionSelection(text, 'Billing');
     expect(result).toContain('Billing');
     expect(result).toContain('Billing details here.');
-    // Should not include the Support section (same heading depth resets)
+    // Should not include the next same-level heading or its content
+    expect(result).not.toContain('## Support');
     expect(result).not.toContain('Support info.');
   });
 
