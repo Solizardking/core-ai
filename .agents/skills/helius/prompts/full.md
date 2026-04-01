@@ -2065,6 +2065,10 @@ import {
   SystemProgram,
   PublicKey,
   LAMPORTS_PER_SOL,
+  Keypair,
+  Connection,
+  ComputeBudgetProgram,
+  AddressLookupTableAccount,
 } from '@solana/web3.js';
 
 async function addTipAndSend(
@@ -2075,13 +2079,21 @@ async function addTipAndSend(
   // 1. Deserialize the existing transaction
   const originalTx = VersionedTransaction.deserialize(serializedTx);
 
-  // 2. Decompile into a mutable message
-  const addressLookupTableAccounts = []; // resolve any ALTs the tx uses
+  // 2. Resolve any address lookup tables the transaction uses
+  const addressLookupTableAccounts = await Promise.all(
+    originalTx.message.addressTableLookups.map(async (lookup) => {
+      const { value } = await connection.getAddressLookupTable(lookup.accountKey);
+      if (!value) throw new Error(`ALT not found: ${lookup.accountKey.toBase58()}`);
+      return value;
+    })
+  );
+
+  // 3. Decompile into a mutable message
   const message = TransactionMessage.decompile(originalTx.message, {
     addressLookupTableAccounts,
   });
 
-  // 3. Append the Jito tip instruction
+  // 4. Append the Sender tip instruction
   const tipAccount = TIP_ACCOUNTS[Math.floor(Math.random() * TIP_ACCOUNTS.length)];
   const tipAmountSOL = await getDynamicTipAmount();
   message.instructions.push(
@@ -2092,7 +2104,7 @@ async function addTipAndSend(
     })
   );
 
-  // 4. Recompile, re-sign, and send
+  // 5. Recompile, re-sign, and send
   const newTx = new VersionedTransaction(
     message.compileToV0Message(addressLookupTableAccounts)
   );
