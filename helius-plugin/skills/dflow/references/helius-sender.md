@@ -139,7 +139,8 @@ import {
   PublicKey,
   Keypair,
   LAMPORTS_PER_SOL,
-  ComputeBudgetProgram
+  ComputeBudgetProgram,
+  TransactionInstruction
 } from '@solana/web3.js';
 
 const TIP_ACCOUNTS = [
