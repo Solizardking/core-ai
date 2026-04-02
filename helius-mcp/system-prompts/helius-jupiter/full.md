@@ -73,13 +73,14 @@ Use this when the user wants to:
 - Build a lending/borrowing UI
 - Manage leveraged positions
 
-### Limit Orders (Trigger API)
+### Limit Orders (Trigger API V2)
 **Reference**: See jupiter-trigger.md (inlined below), `references/helius-sender.md`
 **MCP tools**: Helius (`getPriorityFeeEstimate`, `parseTransactions`)
 
 Use this when the user wants to:
-- Place limit orders (buy/sell at a specific price)
-- View or cancel open orders
+- Place limit orders (buy/sell at a USD price target)
+- Set up OCO (take-profit + stop-loss) or OTOCO orders
+- View, update, or cancel open orders
 - Build an order book UI
 
 ### Dollar-Cost Averaging (Recurring API)
@@ -308,7 +309,7 @@ Follow these rules in ALL implementations:
 
 ### Jupiter
 - Jupiter Docs: `https://dev.jup.ag`
-- LLM-Optimized Docs: `https://dev.jup.ag/llms.txt`
+- LLM-Optimized Docs: `https://dev.jup.ag/docs/llms.txt`
 - Jupiter Portal (API keys): `https://portal.jup.ag`
 - Jupiter Lend Docs: `https://dev.jup.ag/docs/lend`
 - Jupiter Lend SDKs: `@jup-ag/lend-read` (read) and `@jup-ag/lend` (write)
@@ -2624,38 +2625,64 @@ Set up limit orders and DCA orders, then track their execution status.
 
 ### Flow
 
-1. Create orders via Jupiter Trigger/Recurring APIs
-2. Submit order transactions via Helius Sender
-3. Use Helius `parseTransactions` to get human-readable execution history
-4. Use Helius WebSockets to get real-time notifications when orders fill
+1. Authenticate via JWT challenge-response (Trigger V2)
+2. Register vault and craft deposit transaction
+3. Create orders via Jupiter Trigger V2 / Recurring APIs
+4. Use Helius `parseTransactions` to get human-readable execution history
+5. Use Helius WebSockets to get real-time notifications when orders fill
 
 ```typescript
-// 1. Create a limit order
-const orderRes = await fetch('https://api.jup.ag/trigger/v1/createOrder', {
+// 1. Authenticate (see references/jupiter-trigger.md for full JWT flow)
+const { token: jwtToken } = await authenticateJupiterTrigger(walletPublicKey, wallet);
+
+// 2. Craft deposit and create a limit order (Trigger V2)
+const depositRes = await fetch('https://api.jup.ag/trigger/v2/deposit/craft', {
   method: 'POST',
   headers: {
     'x-api-key': process.env.JUPITER_API_KEY!,
+    'Authorization': `Bearer ${jwtToken}`,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    payer: walletPublicKey,
-    params: {
-      inputMint: SOL_MINT,
-      outputMint: USDC_MINT,
-      makingAmount: '1000000000', // 1 SOL
-      takingAmount: '200000000',  // Min 200 USDC (limit price)
-      expiredAt: null,
-    },
+    inputMint: SOL_MINT,
+    outputMint: USDC_MINT,
+    userAddress: walletPublicKey,
+    amount: '1000000000', // 1 SOL
   }),
 });
+const deposit = await depositRes.json();
 
-const result = await orderRes.json();
-// result: { order, transaction, requestId }
+// Sign the deposit transaction
+const depositTx = VersionedTransaction.deserialize(Buffer.from(deposit.transaction, 'base64'));
+depositTx.sign([keypair]);
+const depositSignedTx = Buffer.from(depositTx.serialize()).toString('base64');
 
-// 2. Sign and submit via Helius Sender
-// ...
+// 3. Create the order
+const orderRes = await fetch('https://api.jup.ag/trigger/v2/orders/price', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Authorization': `Bearer ${jwtToken}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    orderType: 'single',
+    depositRequestId: deposit.requestId,
+    depositSignedTx,
+    userPubkey: walletPublicKey,
+    inputMint: SOL_MINT,
+    inputAmount: '1000000000',
+    outputMint: USDC_MINT,
+    triggerMint: SOL_MINT,
+    triggerCondition: 'above',
+    triggerPriceUsd: 200, // Sell when SOL > $200
+    expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+  }),
+});
+const order = await orderRes.json();
+// order: { id, txSignature }
 
-// 3. Check order execution history via Helius
+// 4. Check order execution history via Helius
 // Use parseTransactions MCP tool with the wallet address
 // Jupiter order fills show as "SWAP" transaction types
 ```
@@ -2669,12 +2696,12 @@ Build a comprehensive dashboard showing token holdings, lending positions, and o
 ### Architecture
 
 ```
-Helius Wallet API  →  Token holdings + USD values
-Helius DAS API     →  Token metadata + NFT positions
-Jupiter Lend Read  →  Lending positions + yield data
-Jupiter Trigger    →  Open limit orders
-Jupiter Recurring  →  Active DCA orders
-Jupiter Price API  →  Live price feeds
+Helius Wallet API   →  Token holdings + USD values
+Helius DAS API      →  Token metadata + NFT positions
+Jupiter Lend Read   →  Lending positions + yield data
+Jupiter Trigger V2  →  Open limit orders (requires JWT)
+Jupiter Recurring   →  Active DCA orders
+Jupiter Price API   →  Live price feeds
 ```
 
 ### Data Flow
@@ -2686,9 +2713,12 @@ const [walletBalances, lendPositions, limitOrders, dcaOrders] = await Promise.al
   heliusWalletBalances(walletAddress),
   // Jupiter Lend: vault positions
   lendClient.vault.getAllUserPositions(walletPublicKey),
-  // Jupiter Trigger: open limit orders
-  fetch(`https://api.jup.ag/trigger/v1/getTriggerOrders?user=${walletAddress}&orderStatus=active`, {
-    headers: { 'x-api-key': JUPITER_API_KEY },
+  // Jupiter Trigger V2: open limit orders (requires JWT auth)
+  fetch('https://api.jup.ag/trigger/v2/orders/history?state=active', {
+    headers: {
+      'x-api-key': JUPITER_API_KEY,
+      'Authorization': `Bearer ${jwtToken}`,
+    },
   }).then(r => r.json()),
   // Jupiter Recurring: active DCA orders
   fetch(`https://api.jup.ag/recurring/v1/getRecurringOrders?user=${walletAddress}&orderStatus=active&recurringType=time`, {
@@ -2931,7 +2961,87 @@ const earningsRes = await fetch(
   `https://api.jup.ag/lend/v1/earn/earnings?user=${walletPublicKey}`,
   { headers: { 'x-api-key': process.env.JUPITER_API_KEY! } }
 );
+
+// Mint vault shares (specify shares, not underlying amount)
+const mintRes = await fetch('https://api.jup.ag/lend/v1/earn/mint', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    asset: mintAddress,
+    shares: '1000000', // vault shares to mint
+    signer: walletPublicKey,
+  }),
+});
+
+// Redeem vault shares back to underlying tokens
+const redeemRes = await fetch('https://api.jup.ag/lend/v1/earn/redeem', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    asset: mintAddress,
+    shares: '1000000', // vault shares to redeem
+    signer: walletPublicKey,
+  }),
+});
 ```
+
+### Instruction Endpoints (for Composability)
+
+These return raw instructions instead of full transactions, allowing you to compose earn operations with other instructions in a single transaction.
+
+```typescript
+// Deposit instructions
+const depositIxRes = await fetch('https://api.jup.ag/lend/v1/earn/deposit-instructions', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ asset: mintAddress, amount: '1000000', signer: walletPublicKey }),
+});
+// Returns: { programId, accounts: [{ pubkey, isSigner, isWritable }], data }
+
+// Withdraw instructions
+const withdrawIxRes = await fetch('https://api.jup.ag/lend/v1/earn/withdraw-instructions', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ asset: mintAddress, amount: '1000000', signer: walletPublicKey }),
+});
+
+// Mint instructions (shares-based)
+const mintIxRes = await fetch('https://api.jup.ag/lend/v1/earn/mint-instructions', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ asset: mintAddress, shares: '1000000', signer: walletPublicKey }),
+});
+
+// Redeem instructions (shares-based)
+const redeemIxRes = await fetch('https://api.jup.ag/lend/v1/earn/redeem-instructions', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ asset: mintAddress, shares: '1000000', signer: walletPublicKey }),
+});
+```
+
+**Transaction vs Instruction endpoints**:
+- `/earn/deposit`, `/earn/withdraw`, `/earn/mint`, `/earn/redeem` — return `{ transaction }` (base64-encoded, ready to sign and send)
+- `/earn/deposit-instructions`, `/earn/withdraw-instructions`, `/earn/mint-instructions`, `/earn/redeem-instructions` — return `{ programId, accounts, data }` for custom transaction assembly
+- **Amount vs Shares**: `/deposit` and `/withdraw` use `amount` (underlying token units). `/mint` and `/redeem` use `shares` (vault share units).
 
 ---
 
@@ -3694,7 +3804,7 @@ Jupiter provides these API families, all under `https://api.jup.ag`:
 | API | Path Prefix | Purpose |
 |---|---|---|
 | Swap API V2 | `/swap/v2` | Token swaps with optimized routing |
-| Trigger | `/trigger/v1` | Limit orders |
+| Trigger V2 | `/trigger/v2` | Limit orders (JWT auth, vault deposits, OCO/OTOCO) |
 | Recurring | `/recurring/v1` | DCA orders |
 | Tokens | `/tokens/v2` | Token search and metadata |
 | Price | `/price/v3` | Token prices |
@@ -3719,7 +3829,7 @@ Portfolio, Prediction Markets, Send, and Studio are currently in beta. Their int
 
 - Jupiter Portal: [portal.jup.ag](https://portal.jup.ag/)
 - Jupiter Docs: [dev.jup.ag](https://dev.jup.ag/)
-- LLM-Optimized Docs: [dev.jup.ag/llms.txt](https://dev.jup.ag/llms.txt)
+- LLM-Optimized Docs: [dev.jup.ag/docs/llms.txt](https://dev.jup.ag/docs/llms.txt)
 
 
 ---
@@ -3755,7 +3865,14 @@ Jupiter Recurring creates on-chain DCA orders that automatically execute at regu
 ### Minimums
 
 - **Minimum total order value**: $100 USD equivalent
-- Orders below this minimum will be rejected
+- **Minimum per-order value**: $50 USD equivalent
+- **Minimum number of orders**: 2
+- Orders that violate any of these minimums will be rejected
+
+### Limitations
+
+- **Token-2022 not supported** — Only standard SPL tokens are compatible with the Recurring API. Token-2022 mints will be rejected.
+- **Price-based orders are deprecated** — The `params.price` field and `/priceDeposit` / `/priceWithdraw` endpoints are deprecated and no longer actively supported. Use time-based orders only.
 
 ---
 
@@ -3880,12 +3997,16 @@ All Recurring API responses that modify state return `transaction` and `requestI
 ## Common Pitfalls
 
 1. **Minimum $100 total** — Total spend (`inAmount * numberOfOrders`) must be >= $100 USD equivalent
-2. **Amounts are in atomic units** — 500 USDC = 500_000_000
-3. **Interval is in seconds** — Not a string like `'weekly'`. Use 86400 for daily, 604800 for weekly.
-4. **Unspent funds returned on cancel** — Remaining input tokens go back to the wallet
-5. **Each execution is a separate swap** — Price varies per execution (that's the point of DCA)
-6. **Frequency determines the schedule** — The keeper network handles timing; you don't need to trigger executions manually
-7. **Use `user` not `maker`** — The field is `user` for all Recurring endpoints
+2. **Minimum $50 per order** — Each individual `inAmount` must be >= $50 USD equivalent
+3. **Minimum 2 orders** — `numberOfOrders` must be >= 2
+4. **Token-2022 not supported** — Only standard SPL tokens work; Token-2022 mints are rejected
+5. **Amounts are in atomic units** — 500 USDC = 500_000_000
+6. **Interval is in seconds** — Not a string like `'weekly'`. Use 86400 for daily, 604800 for weekly.
+7. **Unspent funds returned on cancel** — Remaining input tokens go back to the wallet
+8. **Each execution is a separate swap** — Price varies per execution (that's the point of DCA)
+9. **Frequency determines the schedule** — The keeper network handles timing; you don't need to trigger executions manually
+10. **Use `user` not `maker`** — The field is `user` for all Recurring endpoints
+11. **Price-based orders are deprecated** — Use time-based orders (`params.time`) only
 
 ---
 
@@ -4082,7 +4203,11 @@ Four routers compete for best pricing on `/order`:
 - **DFlow** — Third-party order flow
 - **OKX** — Third-party liquidity provider
 
-**Parameter impact on routing**: Adding `receiver`, `referralAccount`, `referralFee`, or `payer` disables JupiterZ. The `payer` parameter additionally excludes DFlow and OKX. Check the `mode` field in the response (`ultra` = all routers, `manual` = restricted).
+**Parameter impact on routing**:
+- `receiver`, `referralAccount`, `referralFee` — disables JupiterZ only (Metis, DFlow, OKX still compete)
+- `payer` — disables JupiterZ, DFlow, AND OKX (reduces to **Metis only**)
+
+Check the `mode` field in the response (`ultra` = all routers, `manual` = restricted).
 
 ---
 
@@ -4404,26 +4529,111 @@ See `references/integration-patterns.md` Pattern 2 for the complete implementati
 
 ## jupiter-trigger.md
 
-# Jupiter Trigger API — Limit Orders
+# Jupiter Trigger API V2 — Limit Orders
 
 ## What This Covers
 
-Limit orders via Jupiter's Trigger API — placing buy/sell orders at specific prices, viewing open orders, canceling orders, and executing signed transactions.
+Limit orders via Jupiter's Trigger API V2 — placing price-triggered orders (single, OCO, OTOCO), managing vault deposits, viewing order history, canceling orders, and updating order parameters. V2 uses JWT authentication, vault-based deposits, and USD price triggers.
 
 ---
 
 ## Base URL & Auth
 
 ```
-Base: https://api.jup.ag/trigger/v1
-Auth: x-api-key header (required)
+Base: https://api.jup.ag/trigger/v2
+Auth: x-api-key header (required) + JWT Bearer token (required for most endpoints)
+Status: Beta, under active development
 ```
 
 ---
 
-## How Limit Orders Work
+## Authentication (JWT Challenge-Response)
 
-Jupiter Trigger creates on-chain limit orders that execute automatically when the target price is reached. Jupiter's keeper network monitors prices and executes orders when conditions are met.
+Before placing or managing orders, authenticate via a two-step challenge-response flow to obtain a JWT.
+
+### Step 1: Request Challenge
+
+```typescript
+const challengeRes = await fetch('https://api.jup.ag/trigger/v2/auth/challenge', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    walletPubkey: walletPublicKey,
+    type: 'message', // 'message' for software wallets, 'transaction' for hardware wallets
+  }),
+});
+
+const challenge = await challengeRes.json();
+// message type: { type: "message", challenge: "Sign this message to authenticate..." }
+// transaction type: { type: "transaction", transaction: "<base64 tx with memo>" }
+```
+
+Challenge TTL: **5 minutes**. Request a new one if it expires.
+
+### Step 2: Sign & Verify
+
+```typescript
+// Sign the challenge message with the wallet
+const signature = await wallet.signMessage(new TextEncoder().encode(challenge.challenge));
+
+const verifyRes = await fetch('https://api.jup.ag/trigger/v2/auth/verify', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    type: 'message',
+    walletPubkey: walletPublicKey,
+    signature: bs58.encode(signature), // base58-encoded signature
+  }),
+});
+
+const { token } = await verifyRes.json();
+// token: JWT valid for 24 hours
+```
+
+JWT TTL: **24 hours**. No refresh endpoint — re-authenticate when expired.
+
+**Security**: A leaked JWT allows order cancellation and parameter edits, but **not** fund withdrawal — all fund operations require wallet-signed transactions.
+
+---
+
+## Vault Management
+
+Each wallet gets **one vault** (Privy-managed custodial account). Deposits go from wallet into vault, which backs all orders.
+
+```typescript
+const headers = {
+  'x-api-key': process.env.JUPITER_API_KEY!,
+  'Authorization': `Bearer ${jwtToken}`,
+};
+
+// Check if vault exists
+const vaultRes = await fetch('https://api.jup.ag/trigger/v2/vault', { headers });
+// Returns: { userPubkey, vaultPubkey, privyVaultId, privyUserId? }
+// Returns 404 if no vault exists
+
+// Register vault (first-time, idempotent)
+const registerRes = await fetch('https://api.jup.ag/trigger/v2/vault/register', { headers });
+// Returns 201: { userPubkey, vaultPubkey, privyVaultId }
+// Returns 409 if already exists
+```
+
+---
+
+## How Trigger V2 Orders Work
+
+Jupiter Trigger V2 creates off-chain limit orders that execute automatically when the target **USD price** is reached. Orders are stored off-chain (MEV-resistant) and executed by Jupiter's keeper network.
+
+### Order Types
+
+- **Single** — Triggers when USD price crosses above or below a threshold. Standard limit orders and stop-losses.
+- **OCO (One-Cancels-Other)** — Two orders sharing one deposit: one take-profit, one stop-loss. When one fills, the other cancels automatically.
+- **OTOCO (One-Triggers-One-Cancels-Other)** — A parent order triggers first, then activates a TP/SL pair (OCO) on the output tokens.
 
 ### Fees
 
@@ -4434,210 +4644,288 @@ Fees are deducted from the output amount at execution time.
 
 ### Minimums
 
-- **Minimum order value**: $5 USD equivalent
+- **Minimum order value**: $10 USD equivalent
 
 ---
 
-## Endpoints
+## Order Creation (3-Step Process)
 
-### POST /createOrder — Create Limit Order
+### Step 1: Craft Deposit Transaction
 
 ```typescript
-const response = await fetch('https://api.jup.ag/trigger/v1/createOrder', {
+const depositRes = await fetch('https://api.jup.ag/trigger/v2/deposit/craft', {
   method: 'POST',
   headers: {
     'x-api-key': process.env.JUPITER_API_KEY!,
+    'Authorization': `Bearer ${jwtToken}`,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    payer: walletPublicKey,
-    params: {
-      inputMint: 'So11111111111111111111111111111111111111112', // SOL
-      outputMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC
-      makingAmount: '1000000000', // 1 SOL in lamports
-      takingAmount: '150000000', // 150 USDC (min output, sets the limit price)
-      expiredAt: null, // null = no expiration (Good Till Cancelled)
-      // Optional:
-      // slippageBps: 50,
-      // feeBps: 100,
-    },
-    // Optional:
-    // feeAccount: referralFeeAccount,
-    // computeUnitPrice: '50000',
+    inputMint: 'So11111111111111111111111111111111111111112', // SOL
+    outputMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC
+    userAddress: walletPublicKey,
+    amount: '1000000000', // 1 SOL in lamports
   }),
 });
 
-const result = await response.json();
-// Returns: { order, transaction, requestId }
+const deposit = await depositRes.json();
+// Returns: { transaction, requestId, receiverAddress, mint, amount, tokenDecimals }
 ```
 
-**Top-level parameters**:
-- `payer` — Wallet public key placing the order
-
-**Params (nested inside `params`)**:
-- `inputMint` — Token you're selling
-- `outputMint` — Token you're buying
-- `makingAmount` — Amount of input token (atomic units)
-- `takingAmount` — Minimum amount of output token (atomic units) — this sets the limit price
-- `expiredAt` — Unix timestamp for expiration, or `null` for GTC (Good Till Cancelled)
-- `slippageBps` — (Optional) Slippage tolerance in basis points
-- `feeBps` — (Optional) Referral fee in basis points
-
-**Optional top-level**:
-- `feeAccount` — Referral fee account
-- `computeUnitPrice` — Priority fee in micro-lamports
-
-### Calculating Limit Price
-
-The limit price is implied by the ratio of `takingAmount / makingAmount`:
+### Step 2: Sign the Deposit Transaction
 
 ```typescript
-// Example: Buy SOL at $150
-// Selling 150 USDC to get at least 1 SOL
-const inputAmount = 150_000_000; // 150 USDC (6 decimals)
-const outputAmount = 1_000_000_000; // 1 SOL (9 decimals)
-// Implied price: 150 USDC per SOL
+import { VersionedTransaction } from '@solana/web3.js';
+
+const transaction = VersionedTransaction.deserialize(
+  Buffer.from(deposit.transaction, 'base64')
+);
+transaction.sign([keypair]);
+const depositSignedTx = Buffer.from(transaction.serialize()).toString('base64');
 ```
 
-### GET /getTriggerOrders — List Orders
+### Step 3: Create Order with Signed Deposit
 
 ```typescript
-const response = await fetch(
-  `https://api.jup.ag/trigger/v1/getTriggerOrders?user=${walletPublicKey}&orderStatus=active`,
-  { headers: { 'x-api-key': process.env.JUPITER_API_KEY! } }
+// Single limit order example: sell 1 SOL when price hits $200
+const orderRes = await fetch('https://api.jup.ag/trigger/v2/orders/price', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Authorization': `Bearer ${jwtToken}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    orderType: 'single',
+    depositRequestId: deposit.requestId,
+    depositSignedTx: depositSignedTx,
+    userPubkey: walletPublicKey,
+    inputMint: 'So11111111111111111111111111111111111111112',
+    inputAmount: '1000000000',
+    outputMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+    triggerMint: 'So11111111111111111111111111111111111111112', // Monitor SOL price
+    triggerCondition: 'above', // Trigger when price goes above target
+    triggerPriceUsd: 200, // $200 USD
+    expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days (milliseconds)
+    // Optional:
+    // slippageBps: 50,
+  }),
+});
+
+const order = await orderRes.json();
+// Returns: { id, txSignature }
+```
+
+### Common Required Fields (All Order Types)
+
+| Field | Type | Description |
+|---|---|---|
+| `orderType` | `"single"` / `"oco"` / `"otoco"` | Order type |
+| `depositRequestId` | string | From `/deposit/craft` response |
+| `depositSignedTx` | string | Base64-encoded signed deposit transaction |
+| `userPubkey` | string | Wallet public key |
+| `inputMint` | string | Token being sold |
+| `inputAmount` | string | Amount in atomic units |
+| `outputMint` | string | Token being bought |
+| `triggerMint` | string | Token whose USD price to monitor |
+| `expiresAt` | number | Expiration timestamp in **milliseconds** |
+
+### Single Order Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `triggerCondition` | `"above"` / `"below"` | Yes | Price direction trigger |
+| `triggerPriceUsd` | number | Yes | USD price threshold |
+| `slippageBps` | number | No | 0-10000 basis points |
+
+### OCO Order Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `tpPriceUsd` | number | Yes | Take-profit USD price |
+| `slPriceUsd` | number | Yes | Stop-loss USD price |
+| `tpSlippageBps` | number | No | Take-profit slippage in bps |
+| `slSlippageBps` | number | No | Stop-loss slippage in bps |
+
+Constraint: `tpPriceUsd` must be greater than `slPriceUsd`.
+
+### OTOCO Order Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `triggerCondition` | `"above"` / `"below"` | Yes | Parent trigger direction |
+| `triggerPriceUsd` | number | Yes | Parent trigger USD price |
+| `tpPriceUsd` | number | Yes | Secondary take-profit price |
+| `slPriceUsd` | number | Yes | Secondary stop-loss price |
+| `slippageBps` | number | No | Parent slippage |
+| `tpSlippageBps` | number | No | Secondary TP slippage |
+| `slSlippageBps` | number | No | Secondary SL slippage |
+
+---
+
+## OCO Example (Take-Profit + Stop-Loss)
+
+```typescript
+const ocoOrder = await fetch('https://api.jup.ag/trigger/v2/orders/price', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Authorization': `Bearer ${jwtToken}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    orderType: 'oco',
+    depositRequestId: deposit.requestId,
+    depositSignedTx: depositSignedTx,
+    userPubkey: walletPublicKey,
+    inputMint: 'So11111111111111111111111111111111111111112',
+    inputAmount: '1000000000',
+    outputMint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+    triggerMint: 'So11111111111111111111111111111111111111112',
+    tpPriceUsd: 200, // Take profit at $200
+    slPriceUsd: 120, // Stop loss at $120
+    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
+  }),
+});
+```
+
+---
+
+## Order Update
+
+Update trigger prices and slippage on existing orders without canceling:
+
+```typescript
+const updateRes = await fetch(`https://api.jup.ag/trigger/v2/orders/price/${orderId}`, {
+  method: 'PATCH',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Authorization': `Bearer ${jwtToken}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    orderType: 'single',
+    triggerPriceUsd: 210, // Updated price
+    slippageBps: 100,
+  }),
+});
+// Returns: { id }
+```
+
+Editable fields: trigger prices and slippage only. Amount/mint changes require canceling and recreating the order.
+
+---
+
+## Order Cancellation (2-Step Process)
+
+### Step 1: Initiate Cancellation
+
+```typescript
+const cancelRes = await fetch(`https://api.jup.ag/trigger/v2/orders/price/cancel/${orderId}`, {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Authorization': `Bearer ${jwtToken}`,
+  },
+});
+
+const cancel = await cancelRes.json();
+// Returns: { id, transaction, requestId }
+// Order transitions to "ready_to_cancel" — will NOT be filled even before step 2
+```
+
+### Step 2: Sign & Confirm
+
+```typescript
+// Sign the withdrawal transaction
+const cancelTx = VersionedTransaction.deserialize(
+  Buffer.from(cancel.transaction, 'base64')
+);
+cancelTx.sign([keypair]);
+
+const confirmRes = await fetch(
+  `https://api.jup.ag/trigger/v2/orders/price/confirm-cancel/${orderId}`,
+  {
+    method: 'POST',
+    headers: {
+      'x-api-key': process.env.JUPITER_API_KEY!,
+      'Authorization': `Bearer ${jwtToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      signedTransaction: Buffer.from(cancelTx.serialize()).toString('base64'),
+      cancelRequestId: cancel.requestId,
+    }),
+  },
+);
+// Returns: { id, txSignature }
+```
+
+If step 2 fails, retry with the **same** `cancelRequestId`. Expired orders use this same 2-step flow to recover vault funds.
+
+---
+
+## Order History
+
+```typescript
+const historyRes = await fetch(
+  'https://api.jup.ag/trigger/v2/orders/history?state=active&limit=20&offset=0&sort=updated_at&dir=desc',
+  {
+    headers: {
+      'x-api-key': process.env.JUPITER_API_KEY!,
+      'Authorization': `Bearer ${jwtToken}`,
+    },
+  },
 );
 
-const orders = await response.json();
-// Returns array of orders with status, amounts, mints, etc.
+const history = await historyRes.json();
+// Returns: { orders: OrderHistoryItem[], pagination: { total, limit, offset } }
 ```
 
-**Parameters**:
-- `user` — Wallet public key
-- `orderStatus` — Required: `active` or `history`
+**Query parameters**:
+- `state` — `active` or `past`
+- `mint` — Filter by token mint address
+- `limit` — 1-100 (default: 20)
+- `offset` — Pagination offset (default: 0)
+- `sort` — `updated_at`, `created_at`, or `expires_at` (default: `updated_at`)
+- `dir` — `asc` or `desc` (default: `desc`)
 
-### POST /cancelOrder — Cancel Order
-
-```typescript
-const response = await fetch('https://api.jup.ag/trigger/v1/cancelOrder', {
-  method: 'POST',
-  headers: {
-    'x-api-key': process.env.JUPITER_API_KEY!,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    payer: walletPublicKey,
-    order: orderAddressToCancel,
-  }),
-});
-
-const cancelResult = await response.json();
-// Returns: { transaction, requestId }
-```
-
-### POST /cancelOrders — Batch Cancel
-
-Cancel multiple orders in a single transaction:
-
-```typescript
-const response = await fetch('https://api.jup.ag/trigger/v1/cancelOrders', {
-  method: 'POST',
-  headers: {
-    'x-api-key': process.env.JUPITER_API_KEY!,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    payer: walletPublicKey,
-    orders: [orderAddress1, orderAddress2],
-  }),
-});
-
-const cancelResult = await response.json();
-// Returns: { transaction, requestId }
-```
-
-### POST /execute — Submit Signed Transaction
-
-After signing a transaction from `/createOrder` or `/cancelOrder`, submit it back to Jupiter:
-
-```typescript
-const executeResponse = await fetch('https://api.jup.ag/trigger/v1/execute', {
-  method: 'POST',
-  headers: {
-    'x-api-key': process.env.JUPITER_API_KEY!,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    signedTransaction: base64SignedTx,
-    requestId: result.requestId, // From /createOrder or /cancelOrder
-  }),
-});
-```
+**Order states**: `pending`, `open`, `executing`, `filled`, `pending_withdraw`, `cancelled`, `expired`, `failed`
 
 ---
 
-## Transaction Flow
+## Slippage Defaults
 
-All Trigger API responses that modify state return `transaction` (base64-encoded) and `requestId`. You must:
+| Order Type | Default | Recommendation |
+|---|---|---|
+| Take-profit / buy-below | Auto via RTSE | Keep default |
+| Stop-loss / buy-above | 20% (2000 bps) | Keep high for execution reliability |
+| OTOCO parent | Auto via RTSE | Keep default |
 
-1. Deserialize the transaction
-2. Sign with the payer's keypair
-3. Submit via `/execute` or Helius Sender (see `references/helius-sender.md`)
-
-```typescript
-import { VersionedTransaction, Keypair } from '@solana/web3.js';
-
-const txBuffer = Buffer.from(result.transaction, 'base64');
-const transaction = VersionedTransaction.deserialize(txBuffer);
-transaction.sign([keypair]);
-
-// Option A: Submit via Jupiter /execute
-const signedTx = Buffer.from(transaction.serialize()).toString('base64');
-await fetch('https://api.jup.ag/trigger/v1/execute', {
-  method: 'POST',
-  headers: {
-    'x-api-key': process.env.JUPITER_API_KEY!,
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    signedTransaction: signedTx,
-    requestId: result.requestId,
-  }),
-});
-
-// Option B: Submit via Helius Sender
-const SENDER_URL = `https://sender.helius-rpc.com/fast?api-key=${HELIUS_API_KEY}`;
-const sendRes = await fetch(SENDER_URL, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    jsonrpc: '2.0',
-    id: '1',
-    method: 'sendTransaction',
-    params: [
-      Buffer.from(transaction.serialize()).toString('base64'),
-      { encoding: 'base64', skipPreflight: true, maxRetries: 0 },
-    ],
-  }),
-});
-```
+Stop-loss orders use a higher default because execution certainty matters more than price precision when cutting losses.
 
 ---
 
 ## Common Pitfalls
 
-1. **Minimum $5 order value** — Orders below this are rejected
-2. **Amounts are in atomic units** — 1 SOL = 1_000_000_000 lamports, 1 USDC = 1_000_000
-3. **takingAmount sets the limit price** — It's the minimum output, not the exact output
-4. **Orders may partially fill** — Check order status for partial fills
-5. **GTC orders persist indefinitely** — Set `expiredAt` if the user wants time-limited orders
-6. **Params are nested** — `inputMint`, `outputMint`, etc. go inside `params`, not at the top level
-7. **Use `payer` not `maker`** — The top-level field is `payer`
+1. **Minimum $10 order value** — Orders below this are rejected
+2. **USD price triggers** — V2 uses `triggerPriceUsd` (USD price), not token ratios or raw amounts
+3. **Expiration is required** — No indefinite (GTC) orders in V2. Use 7-30 days; renew via `PATCH` for longer duration
+4. **`expiresAt` is in milliseconds** — Not seconds. Use `Date.now() + duration_ms`
+5. **JWT expires after 24 hours** — Re-authenticate via challenge-response; no refresh endpoint
+6. **Vault must be registered first** — Call `/vault/register` before first deposit
+7. **3-step order creation** — Craft deposit → sign → create order. All three steps are required
+8. **2-step cancellation** — Initiate → sign withdrawal. Order won't fill after step 1 even if step 2 is delayed
+9. **Amounts are in atomic units** — 1 SOL = 1_000_000_000 lamports, 1 USDC = 1_000_000
+10. **Orders are stored off-chain** — Private by default, reducing MEV attack vectors
+11. **Token-2022 (transfer tax tokens) not supported**
+12. **Open orders continue executing after JWT expiration** — JWT is for management, not execution
 
 ---
 
 ## Resources
 
-- Trigger API Docs: [dev.jup.ag/docs/trigger](https://dev.jup.ag/docs/trigger)
+- Trigger API V2 Docs: [dev.jup.ag/docs/trigger](https://dev.jup.ag/docs/trigger)
 
 
 ---

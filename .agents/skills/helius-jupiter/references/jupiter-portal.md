@@ -106,7 +106,7 @@ Jupiter provides these API families, all under `https://api.jup.ag`:
 | API | Path Prefix | Purpose |
 |---|---|---|
 | Swap API V2 | `/swap/v2` | Token swaps with optimized routing |
-| Trigger | `/trigger/v1` | Limit orders |
+| Trigger V2 | `/trigger/v2` | Limit orders (JWT auth, vault deposits, OCO/OTOCO) |
 | Recurring | `/recurring/v1` | DCA orders |
 | Tokens | `/tokens/v2` | Token search and metadata |
 | Price | `/price/v3` | Token prices |
@@ -131,4 +131,4 @@ Portfolio, Prediction Markets, Send, and Studio are currently in beta. Their int
 
 - Jupiter Portal: [portal.jup.ag](https://portal.jup.ag/)
 - Jupiter Docs: [dev.jup.ag](https://dev.jup.ag/)
-- LLM-Optimized Docs: [dev.jup.ag/llms.txt](https://dev.jup.ag/llms.txt)
+- LLM-Optimized Docs: [dev.jup.ag/docs/llms.txt](https://dev.jup.ag/docs/llms.txt)

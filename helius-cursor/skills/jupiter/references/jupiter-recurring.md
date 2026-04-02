@@ -27,7 +27,14 @@ Jupiter Recurring creates on-chain DCA orders that automatically execute at regu
 ### Minimums
 
 - **Minimum total order value**: $100 USD equivalent
-- Orders below this minimum will be rejected
+- **Minimum per-order value**: $50 USD equivalent
+- **Minimum number of orders**: 2
+- Orders that violate any of these minimums will be rejected
+
+### Limitations
+
+- **Token-2022 not supported** — Only standard SPL tokens are compatible with the Recurring API. Token-2022 mints will be rejected.
+- **Price-based orders are deprecated** — The `params.price` field and `/priceDeposit` / `/priceWithdraw` endpoints are deprecated and no longer actively supported. Use time-based orders only.
 
 ---
 
@@ -152,12 +159,16 @@ All Recurring API responses that modify state return `transaction` and `requestI
 ## Common Pitfalls
 
 1. **Minimum $100 total** — Total spend (`inAmount * numberOfOrders`) must be >= $100 USD equivalent
-2. **Amounts are in atomic units** — 500 USDC = 500_000_000
-3. **Interval is in seconds** — Not a string like `'weekly'`. Use 86400 for daily, 604800 for weekly.
-4. **Unspent funds returned on cancel** — Remaining input tokens go back to the wallet
-5. **Each execution is a separate swap** — Price varies per execution (that's the point of DCA)
-6. **Frequency determines the schedule** — The keeper network handles timing; you don't need to trigger executions manually
-7. **Use `user` not `maker`** — The field is `user` for all Recurring endpoints
+2. **Minimum $50 per order** — Each individual `inAmount` must be >= $50 USD equivalent
+3. **Minimum 2 orders** — `numberOfOrders` must be >= 2
+4. **Token-2022 not supported** — Only standard SPL tokens work; Token-2022 mints are rejected
+5. **Amounts are in atomic units** — 500 USDC = 500_000_000
+6. **Interval is in seconds** — Not a string like `'weekly'`. Use 86400 for daily, 604800 for weekly.
+7. **Unspent funds returned on cancel** — Remaining input tokens go back to the wallet
+8. **Each execution is a separate swap** — Price varies per execution (that's the point of DCA)
+9. **Frequency determines the schedule** — The keeper network handles timing; you don't need to trigger executions manually
+10. **Use `user` not `maker`** — The field is `user` for all Recurring endpoints
+11. **Price-based orders are deprecated** — Use time-based orders (`params.time`) only
 
 ---
 

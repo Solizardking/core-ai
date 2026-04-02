@@ -182,7 +182,11 @@ Four routers compete for best pricing on `/order`:
 - **DFlow** — Third-party order flow
 - **OKX** — Third-party liquidity provider
 
-**Parameter impact on routing**: Adding `receiver`, `referralAccount`, `referralFee`, or `payer` disables JupiterZ. The `payer` parameter additionally excludes DFlow and OKX. Check the `mode` field in the response (`ultra` = all routers, `manual` = restricted).
+**Parameter impact on routing**:
+- `receiver`, `referralAccount`, `referralFee` — disables JupiterZ only (Metis, DFlow, OKX still compete)
+- `payer` — disables JupiterZ, DFlow, AND OKX (reduces to **Metis only**)
+
+Check the `mode` field in the response (`ultra` = all routers, `manual` = restricted).
 
 ---
 

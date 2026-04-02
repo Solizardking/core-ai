@@ -188,38 +188,64 @@ Set up limit orders and DCA orders, then track their execution status.
 
 ### Flow
 
-1. Create orders via Jupiter Trigger/Recurring APIs
-2. Submit order transactions via Helius Sender
-3. Use Helius `parseTransactions` to get human-readable execution history
-4. Use Helius WebSockets to get real-time notifications when orders fill
+1. Authenticate via JWT challenge-response (Trigger V2)
+2. Register vault and craft deposit transaction
+3. Create orders via Jupiter Trigger V2 / Recurring APIs
+4. Use Helius `parseTransactions` to get human-readable execution history
+5. Use Helius WebSockets to get real-time notifications when orders fill
 
 ```typescript
-// 1. Create a limit order
-const orderRes = await fetch('https://api.jup.ag/trigger/v1/createOrder', {
+// 1. Authenticate (see references/jupiter-trigger.md for full JWT flow)
+const { token: jwtToken } = await authenticateJupiterTrigger(walletPublicKey, wallet);
+
+// 2. Craft deposit and create a limit order (Trigger V2)
+const depositRes = await fetch('https://api.jup.ag/trigger/v2/deposit/craft', {
   method: 'POST',
   headers: {
     'x-api-key': process.env.JUPITER_API_KEY!,
+    'Authorization': `Bearer ${jwtToken}`,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    payer: walletPublicKey,
-    params: {
-      inputMint: SOL_MINT,
-      outputMint: USDC_MINT,
-      makingAmount: '1000000000', // 1 SOL
-      takingAmount: '200000000',  // Min 200 USDC (limit price)
-      expiredAt: null,
-    },
+    inputMint: SOL_MINT,
+    outputMint: USDC_MINT,
+    userAddress: walletPublicKey,
+    amount: '1000000000', // 1 SOL
   }),
 });
+const deposit = await depositRes.json();
 
-const result = await orderRes.json();
-// result: { order, transaction, requestId }
+// Sign the deposit transaction
+const depositTx = VersionedTransaction.deserialize(Buffer.from(deposit.transaction, 'base64'));
+depositTx.sign([keypair]);
+const depositSignedTx = Buffer.from(depositTx.serialize()).toString('base64');
 
-// 2. Sign and submit via Helius Sender
-// ...
+// 3. Create the order
+const orderRes = await fetch('https://api.jup.ag/trigger/v2/orders/price', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Authorization': `Bearer ${jwtToken}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    orderType: 'single',
+    depositRequestId: deposit.requestId,
+    depositSignedTx,
+    userPubkey: walletPublicKey,
+    inputMint: SOL_MINT,
+    inputAmount: '1000000000',
+    outputMint: USDC_MINT,
+    triggerMint: SOL_MINT,
+    triggerCondition: 'above',
+    triggerPriceUsd: 200, // Sell when SOL > $200
+    expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+  }),
+});
+const order = await orderRes.json();
+// order: { id, txSignature }
 
-// 3. Check order execution history via Helius
+// 4. Check order execution history via Helius
 // Use parseTransactions MCP tool with the wallet address
 // Jupiter order fills show as "SWAP" transaction types
 ```
@@ -233,12 +259,12 @@ Build a comprehensive dashboard showing token holdings, lending positions, and o
 ### Architecture
 
 ```
-Helius Wallet API  →  Token holdings + USD values
-Helius DAS API     →  Token metadata + NFT positions
-Jupiter Lend Read  →  Lending positions + yield data
-Jupiter Trigger    →  Open limit orders
-Jupiter Recurring  →  Active DCA orders
-Jupiter Price API  →  Live price feeds
+Helius Wallet API   →  Token holdings + USD values
+Helius DAS API      →  Token metadata + NFT positions
+Jupiter Lend Read   →  Lending positions + yield data
+Jupiter Trigger V2  →  Open limit orders (requires JWT)
+Jupiter Recurring   →  Active DCA orders
+Jupiter Price API   →  Live price feeds
 ```
 
 ### Data Flow
@@ -250,9 +276,12 @@ const [walletBalances, lendPositions, limitOrders, dcaOrders] = await Promise.al
   heliusWalletBalances(walletAddress),
   // Jupiter Lend: vault positions
   lendClient.vault.getAllUserPositions(walletPublicKey),
-  // Jupiter Trigger: open limit orders
-  fetch(`https://api.jup.ag/trigger/v1/getTriggerOrders?user=${walletAddress}&orderStatus=active`, {
-    headers: { 'x-api-key': JUPITER_API_KEY },
+  // Jupiter Trigger V2: open limit orders (requires JWT auth)
+  fetch('https://api.jup.ag/trigger/v2/orders/history?state=active', {
+    headers: {
+      'x-api-key': JUPITER_API_KEY,
+      'Authorization': `Bearer ${jwtToken}`,
+    },
   }).then(r => r.json()),
   // Jupiter Recurring: active DCA orders
   fetch(`https://api.jup.ag/recurring/v1/getRecurringOrders?user=${walletAddress}&orderStatus=active&recurringType=time`, {

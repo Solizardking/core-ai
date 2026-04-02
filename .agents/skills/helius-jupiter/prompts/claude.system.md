@@ -83,13 +83,14 @@ Use this when the user wants to:
 - Build a lending/borrowing UI
 - Manage leveraged positions
 
-### Limit Orders (Trigger API)
+### Limit Orders (Trigger API V2)
 **Reference**: See jupiter-trigger.md, `references/helius-sender.md`
 **MCP tools**: Helius (`getPriorityFeeEstimate`, `parseTransactions`)
 
 Use this when the user wants to:
-- Place limit orders (buy/sell at a specific price)
-- View or cancel open orders
+- Place limit orders (buy/sell at a USD price target)
+- Set up OCO (take-profit + stop-loss) or OTOCO orders
+- View, update, or cancel open orders
 - Build an order book UI
 
 ### Dollar-Cost Averaging (Recurring API)
@@ -318,7 +319,7 @@ Follow these rules in ALL implementations:
 
 ### Jupiter
 - Jupiter Docs: `https://dev.jup.ag`
-- LLM-Optimized Docs: `https://dev.jup.ag/llms.txt`
+- LLM-Optimized Docs: `https://dev.jup.ag/docs/llms.txt`
 - Jupiter Portal (API keys): `https://portal.jup.ag`
 - Jupiter Lend Docs: `https://dev.jup.ag/docs/lend`
 - Jupiter Lend SDKs: `@jup-ag/lend-read` (read) and `@jup-ag/lend` (write)

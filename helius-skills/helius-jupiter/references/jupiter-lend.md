@@ -80,7 +80,87 @@ const earningsRes = await fetch(
   `https://api.jup.ag/lend/v1/earn/earnings?user=${walletPublicKey}`,
   { headers: { 'x-api-key': process.env.JUPITER_API_KEY! } }
 );
+
+// Mint vault shares (specify shares, not underlying amount)
+const mintRes = await fetch('https://api.jup.ag/lend/v1/earn/mint', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    asset: mintAddress,
+    shares: '1000000', // vault shares to mint
+    signer: walletPublicKey,
+  }),
+});
+
+// Redeem vault shares back to underlying tokens
+const redeemRes = await fetch('https://api.jup.ag/lend/v1/earn/redeem', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    asset: mintAddress,
+    shares: '1000000', // vault shares to redeem
+    signer: walletPublicKey,
+  }),
+});
 ```
+
+### Instruction Endpoints (for Composability)
+
+These return raw instructions instead of full transactions, allowing you to compose earn operations with other instructions in a single transaction.
+
+```typescript
+// Deposit instructions
+const depositIxRes = await fetch('https://api.jup.ag/lend/v1/earn/deposit-instructions', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ asset: mintAddress, amount: '1000000', signer: walletPublicKey }),
+});
+// Returns: { programId, accounts: [{ pubkey, isSigner, isWritable }], data }
+
+// Withdraw instructions
+const withdrawIxRes = await fetch('https://api.jup.ag/lend/v1/earn/withdraw-instructions', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ asset: mintAddress, amount: '1000000', signer: walletPublicKey }),
+});
+
+// Mint instructions (shares-based)
+const mintIxRes = await fetch('https://api.jup.ag/lend/v1/earn/mint-instructions', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ asset: mintAddress, shares: '1000000', signer: walletPublicKey }),
+});
+
+// Redeem instructions (shares-based)
+const redeemIxRes = await fetch('https://api.jup.ag/lend/v1/earn/redeem-instructions', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.JUPITER_API_KEY!,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ asset: mintAddress, shares: '1000000', signer: walletPublicKey }),
+});
+```
+
+**Transaction vs Instruction endpoints**:
+- `/earn/deposit`, `/earn/withdraw`, `/earn/mint`, `/earn/redeem` — return `{ transaction }` (base64-encoded, ready to sign and send)
+- `/earn/deposit-instructions`, `/earn/withdraw-instructions`, `/earn/mint-instructions`, `/earn/redeem-instructions` — return `{ programId, accounts, data }` for custom transaction assembly
+- **Amount vs Shares**: `/deposit` and `/withdraw` use `amount` (underlying token units). `/mint` and `/redeem` use `shares` (vault share units).
 
 ---
 
