@@ -37,6 +37,16 @@ The Phantom skill (`helius-skills/helius-phantom/`, `helius-plugin/skills/phanto
 - The Helius copies have modified cross-references (e.g., LaserStream and Webhooks point to `docs.helius.dev` instead of local references, since those are excluded from the frontend skill).
 - When updating Phantom reference files, update in `helius-skills/helius-phantom/references/` first, then copy to both `helius-plugin/skills/phantom/references/` and `helius-cursor/skills/phantom/references/`.
 
+### OKX Skill References
+
+The OKX skill (`helius-skills/helius-okx/`, `helius-plugin/skills/okx/`, and `helius-cursor/skills/okx/`) has its own reference files that **must also be kept in sync**.
+
+- **Canonical source**: `helius-skills/helius-okx/references/`
+- **Copies**: `helius-plugin/skills/okx/references/`, `helius-cursor/skills/okx/references/`
+- The OKX skill contains 13 reference files: 7 Helius copies (prefixed with `helius-`), 5 OKX-specific files (swap, token-discovery, market-data, signals-trenches, gateway), and 1 integration-patterns file.
+- The Helius copies have modified cross-references (e.g., `references/helius-laserstream.md` instead of `references/laserstream.md`) to work alongside OKX files in the same directory.
+- When updating OKX reference files, update in `helius-skills/helius-okx/references/` first, then copy to both `helius-plugin/skills/okx/references/` and `helius-cursor/skills/okx/references/`.
+
 ### SVM Skill References
 
 The SVM skill (`helius-skills/svm/`, `helius-plugin/skills/svm/`, and `helius-cursor/skills/svm/`) has its own reference files that **must also be kept in sync**.
@@ -72,11 +82,29 @@ All skill content flows from `helius-skills/` to four destinations:
 
 CI validates all sync paths. After modifying any `SKILL.md` or reference file in `helius-skills/`, run `npx tsx scripts/compile-skills.ts` to regenerate output.
 
+## Router Surface Maintenance
+
+The Helius MCP public surface is a coordinated contract: 10 public tools total, shared `action` routing, and summary-first responses with `expandResult`.
+
+If you change the router surface, routed tool descriptions, action-routing guidance, or summary-first response behavior, update all of these in the same pass:
+
+- `AGENTS.md`
+- `README.md`
+- `helius-mcp/README.md`
+- `helius-plugin/README.md`
+- `helius-cursor/README.md`
+- canonical `helius-skills/*/SKILL.md`
+- manual plugin/cursor `SKILL.md` copies
+- generated `.agents/skills/` output
+- generated `helius-mcp/system-prompts/` output
+
+Do not leave router/runtime changes documented in only one layer.
+
 ## SKILL.md Files
 
 The SKILL.md files in each package are intentionally **not identical** — they share most content but differ in:
 
-- Skill name (`helius` vs `build`, `helius-dflow` vs `dflow`, `helius-phantom` vs `phantom`, `svm` vs `svm`)
+- Skill name (`helius` vs `build`, `helius-dflow` vs `dflow`, `helius-okx` vs `okx`, `helius-phantom` vs `phantom`, `svm` vs `svm`)
 - Metadata/frontmatter
 - MCP prerequisite messaging (manual install vs plugin auto-start, Cursor vs Claude Code restart instructions)
 

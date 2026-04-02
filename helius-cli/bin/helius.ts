@@ -52,6 +52,8 @@ import {
 import { sendBroadcastCommand, sendRawCommand, sendSenderCommand, sendPollCommand, sendComputeUnitsCommand } from "../src/commands/send.js";
 import { wsAccountCommand, wsLogsCommand, wsSlotCommand, wsSignatureCommand, wsProgramCommand } from "../src/commands/ws.js";
 import { simdListCommand, simdGetCommand } from "../src/commands/simd.js";
+import { owsLinkCommand, owsUnlinkCommand, owsStatusCommand } from "../src/commands/ows.js";
+import { updateCommand } from "../src/commands/update.js";
 import { VERSION } from "../src/constants.js";
 import { sendCommandEvent, sendCliFeedback, setCurrentCommand } from "../src/lib/feedback.js";
 
@@ -446,6 +448,24 @@ walletCmd
   .option("--json", "Output in JSON format")
   .action(function(this: any, address: string) { walletFundedByCommand(address, opts(this)); });
 
+walletCmd
+  .command("ows-link <wallet-name>")
+  .description("Link an OWS wallet for policy-gated signing (requires ows CLI)")
+  .option("--json", "Output in JSON format")
+  .action(function(this: any, name: string) { owsLinkCommand(name, opts(this)); });
+
+walletCmd
+  .command("ows-unlink")
+  .description("Remove the linked OWS wallet")
+  .option("--json", "Output in JSON format")
+  .action(function(this: any) { owsUnlinkCommand(opts(this)); });
+
+walletCmd
+  .command("ows-status")
+  .description("Show OWS installation status and linked wallet")
+  .option("--json", "Output in JSON format")
+  .action(function(this: any) { owsStatusCommand(opts(this)); });
+
 // ── Webhooks ──
 
 const webhookCmd = program
@@ -817,6 +837,15 @@ simdCmd
   .description("Read a specific SIMD proposal by number")
   .option("--json", "Output in JSON format")
   .action(function(this: any, number: string) { simdGetCommand(number, opts(this)); });
+
+// ── Update ──
+
+program
+  .command("update")
+  .description("Check for and install CLI updates")
+  .option("--check", "Check for updates without installing")
+  .option("--json", "Output in JSON format")
+  .action(function(this: any) { updateCommand(opts(this)); });
 
 // ── Feedback ──
 
