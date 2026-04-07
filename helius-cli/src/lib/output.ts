@@ -1,6 +1,7 @@
 // Output utilities for JSON mode
 import chalk from "chalk";
 import ora from "ora";
+import readline from "readline";
 import { sendCommandEvent, getCurrentCommand } from "./feedback.js";
 
 export interface OutputOptions {
@@ -313,4 +314,15 @@ export function exitWithError(
   }
 
   process.exit(exitCode);
+}
+
+/** Prompt the user for yes/no confirmation. Returns true if they answer y/yes. */
+export function confirm(question: string): Promise<boolean> {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer.toLowerCase() === "y" || answer.toLowerCase() === "yes");
+    });
+  });
 }

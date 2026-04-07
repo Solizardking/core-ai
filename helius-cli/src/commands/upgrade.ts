@@ -4,8 +4,7 @@ import { signup, listProjects, getProject } from "../lib/api.js";
 import { getCheckoutPreview, executeCheckout, PLAN_CATALOG } from "../lib/checkout.js";
 import { setJwt } from "../lib/config.js";
 import { keypairExists, getDefaultKeypairPath } from "./keygen.js";
-import { outputJson, exitWithError, handleCommandError, isAgent, createSpinner, type OutputOptions } from "../lib/output.js";
-import readline from "readline";
+import { outputJson, exitWithError, handleCommandError, isAgent, createSpinner, confirm, type OutputOptions } from "../lib/output.js";
 import { validateUpgradePlan, validatePeriod, validateEmail } from "../lib/validation.js";
 
 interface UpgradeOptions extends OutputOptions {
@@ -17,16 +16,6 @@ interface UpgradeOptions extends OutputOptions {
   firstName?: string;
   lastName?: string;
   yes?: boolean;
-}
-
-function confirm(question: string): Promise<boolean> {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer.toLowerCase() === "y" || answer.toLowerCase() === "yes");
-    });
-  });
 }
 
 export async function upgradeCommand(options: UpgradeOptions): Promise<void> {
