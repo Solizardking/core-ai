@@ -88,7 +88,8 @@ program
   .description("Generate a new Solana keypair")
   .option("-o, --output <path>", "Output path for keypair", getDefaultKeypairPath())
   .option("-f, --force", "Overwrite existing keypair")
-  .action(keygenCommand);
+  .option("--json", "Output in JSON format")
+  .action(function(this: any) { keygenCommand(opts(this)); });
 
 program
   .command("signup")
