@@ -22,6 +22,28 @@ function ensureDir(): void {
   }
 }
 
+/** Try to extract known config fields from corrupted JSON via regex. */
+function recoverConfig(raw: string): Config {
+  const recovered: Config = {};
+
+  const patterns: { key: keyof Config; regex: RegExp }[] = [
+    { key: "jwt", regex: /"jwt"\s*:\s*"([^"]+)"/ },
+    { key: "apiKey", regex: /"apiKey"\s*:\s*"([^"]+)"/ },
+    { key: "network", regex: /"network"\s*:\s*"(mainnet|devnet)"/ },
+    { key: "projectId", regex: /"projectId"\s*:\s*"([^"]+)"/ },
+    { key: "owsWallet", regex: /"owsWallet"\s*:\s*"([^"]+)"/ },
+  ];
+
+  for (const { key, regex } of patterns) {
+    const match = raw.match(regex);
+    if (match) {
+      (recovered as any)[key] = match[1];
+    }
+  }
+
+  return recovered;
+}
+
 export function load(): Config {
   try {
     if (fs.existsSync(CONFIG_FILE)) {
@@ -29,7 +51,19 @@ export function load(): Config {
       return JSON.parse(data);
     }
   } catch {
-    // Return empty config on error
+    const raw = fs.readFileSync(CONFIG_FILE, "utf-8");
+    const recovered = recoverConfig(raw);
+    const recoveredKeys = Object.keys(recovered);
+
+    if (recoveredKeys.length > 0) {
+      console.error(`Warning: ${CONFIG_FILE} is corrupted. Recovered: ${recoveredKeys.join(", ")}.`);
+      save(recovered);
+      console.error(`Repaired config saved. Other fields may have been lost.`);
+      return recovered;
+    }
+
+    console.error(`Warning: ${CONFIG_FILE} is corrupted and could not be read.`);
+    console.error(`Run "helius config clear" to reset, or fix the file manually.`);
   }
   return {};
 }
