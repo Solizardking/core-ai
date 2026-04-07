@@ -213,7 +213,7 @@ export function classifyError(error: unknown): ErrorClassification {
  *
  *   handleCommandError(error, options, spinner, "AUTH_FAILED");
  */
-const CLI_GUIDANCE: Record<string, string> = {
+export const CLI_GUIDANCE: Record<string, string> = {
   INVALID_API_KEY: 'Run `helius config set-api-key <key>` with a valid key, or `helius usage` to check your current plan and credits.',
   RATE_LIMITED: 'Run `helius usage` to check remaining credits. Back off and retry, or upgrade your plan for higher limits.',
   NO_API_KEY: 'Run `helius config set-api-key <key>` or set HELIUS_API_KEY env var. Get a key at https://dashboard.helius.dev.',
