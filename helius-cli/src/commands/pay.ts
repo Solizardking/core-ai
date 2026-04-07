@@ -5,22 +5,11 @@ import { getPaymentIntent, executeRenewal } from "../lib/checkout.js";
 import { setJwt } from "../lib/config.js";
 import { keypairExists } from "./keygen.js";
 import { formatEnumLabel } from "../lib/formatters.js";
-import { outputJson, exitWithError, handleCommandError, isAgent, createSpinner, type OutputOptions } from "../lib/output.js";
-import readline from "readline";
+import { outputJson, exitWithError, handleCommandError, isAgent, createSpinner, confirm, type OutputOptions } from "../lib/output.js";
 
 interface PayOptions extends OutputOptions {
   keypair: string;
   yes?: boolean;
-}
-
-function confirm(question: string): Promise<boolean> {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer.toLowerCase() === "y" || answer.toLowerCase() === "yes");
-    });
-  });
 }
 
 export async function payCommand(paymentIntentId: string, options: PayOptions): Promise<void> {
