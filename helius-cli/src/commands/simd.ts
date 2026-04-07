@@ -107,7 +107,7 @@ export async function simdGetCommand(number: string, options: SimdGetOptions = {
   const spinner = createSpinner(options);
   try {
     if (!/^\d+$/.test(number)) {
-      exitWithError("INVALID_INPUT", `Invalid SIMD number: "${number}". Must be numeric.`, undefined, options.json);
+      exitWithError("INVALID_INPUT", `Invalid SIMD number: "${number}". Must be numeric.`, undefined, !!options.json);
     }
 
     const paddedNumber = number.replace(/^0+/, "").padStart(4, "0");
@@ -131,7 +131,7 @@ export async function simdGetCommand(number: string, options: SimdGetOptions = {
         .join("\n");
 
       if (options.json) {
-        exitWithError("NOT_FOUND", `SIMD-${paddedNumber} not found`, undefined, options.json);
+        exitWithError("NOT_FOUND", `SIMD-${paddedNumber} not found`, undefined, !!options.json);
       }
 
       console.log(chalk.yellow(`\nSIMD-${paddedNumber} not found.`));

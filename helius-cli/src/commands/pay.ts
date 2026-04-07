@@ -29,7 +29,7 @@ export async function payCommand(paymentIntentId: string, options: PayOptions): 
   try {
     // Check keypair exists
     if (!keypairExists(options.keypair)) {
-      exitWithError("KEYPAIR_NOT_FOUND", `Keypair not found at ${options.keypair}`, undefined, options.json);
+      exitWithError("KEYPAIR_NOT_FOUND", `Keypair not found at ${options.keypair}`, undefined, !!options.json);
     }
 
     // 1. Load keypair and authenticate
@@ -62,7 +62,7 @@ export async function payCommand(paymentIntentId: string, options: PayOptions): 
     }
 
     if (intent.status !== "pending") {
-      exitWithError("PAYMENT_FAILED", `Payment intent is ${intent.status}, cannot pay`, { intentId: intent.id }, options.json);
+      exitWithError("PAYMENT_FAILED", `Payment intent is ${intent.status}, cannot pay`, { intentId: intent.id }, !!options.json);
     }
 
     if (!options.yes) {
