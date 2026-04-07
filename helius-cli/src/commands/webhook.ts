@@ -79,7 +79,7 @@ export async function webhookCreateCommand(options: WebhookOptions & {
 
     // Validate addresses before sending to API
     const addrErr = validateSolanaAddresses(options.accounts);
-    if (addrErr) exitWithError("INVALID_INPUT", addrErr, undefined, options.json);
+    if (addrErr) exitWithError("INVALID_INPUT", addrErr, undefined, !!options.json);
 
     const accountAddresses = options.accounts.split(",").map((s: string) => s.trim()).filter(Boolean);
     const transactionTypes = options.types.split(",").map((s: string) => s.trim()).filter(Boolean);
@@ -118,7 +118,7 @@ export async function webhookUpdateCommand(webhookId: string, options: WebhookOp
     // Validate addresses if provided
     if (options.accounts) {
       const addrErr = validateSolanaAddresses(options.accounts);
-      if (addrErr) exitWithError("INVALID_INPUT", addrErr, undefined, options.json);
+      if (addrErr) exitWithError("INVALID_INPUT", addrErr, undefined, !!options.json);
     }
     if (options.url) params.webhookURL = options.url;
     if (options.accounts) params.accountAddresses = options.accounts.split(",").map((s: string) => s.trim()).filter(Boolean);

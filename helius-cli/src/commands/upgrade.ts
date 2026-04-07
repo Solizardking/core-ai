@@ -36,10 +36,10 @@ export async function upgradeCommand(options: UpgradeOptions): Promise<void> {
     // Validate plan, period, and email upfront
     const planKey = options.plan.toLowerCase();
     const planErr = validateUpgradePlan(options.plan);
-    if (planErr) exitWithError("INVALID_INPUT", planErr, undefined, options.json);
+    if (planErr) exitWithError("INVALID_INPUT", planErr, undefined, !!options.json);
 
     const periodErr = validatePeriod(options.period);
-    if (periodErr) exitWithError("INVALID_INPUT", periodErr, undefined, options.json);
+    if (periodErr) exitWithError("INVALID_INPUT", periodErr, undefined, !!options.json);
 
     // All-or-none customer info validation
     const hasAnyCustomerInfo = options.email || options.firstName || options.lastName;
@@ -49,17 +49,17 @@ export async function upgradeCommand(options: UpgradeOptions): Promise<void> {
         !options.firstName && "firstName",
         !options.lastName && "lastName",
       ].filter(Boolean);
-      exitWithError("INVALID_INPUT", `Partial customer info. If any of --email/--first-name/--last-name is given, all three are required. Missing: ${missing.join(", ")}`, undefined, options.json);
+      exitWithError("INVALID_INPUT", `Partial customer info. If any of --email/--first-name/--last-name is given, all three are required. Missing: ${missing.join(", ")}`, undefined, !!options.json);
     }
 
     if (options.email) {
       const emailErr = validateEmail(options.email);
-      if (emailErr) exitWithError("INVALID_INPUT", emailErr, undefined, options.json);
+      if (emailErr) exitWithError("INVALID_INPUT", emailErr, undefined, !!options.json);
     }
 
     // Check keypair exists
     if (!keypairExists(options.keypair)) {
-      exitWithError("KEYPAIR_NOT_FOUND", `Keypair not found at ${options.keypair}`, undefined, options.json);
+      exitWithError("KEYPAIR_NOT_FOUND", `Keypair not found at ${options.keypair}`, undefined, !!options.json);
     }
 
     // 1. Load keypair and authenticate
@@ -78,7 +78,7 @@ export async function upgradeCommand(options: UpgradeOptions): Promise<void> {
     spinner?.start("Fetching project...");
     const projects = await listProjects(authResult.token);
     if (projects.length === 0) {
-      exitWithError("NO_PROJECTS", "No projects found", undefined, options.json);
+      exitWithError("NO_PROJECTS", "No projects found", undefined, !!options.json);
     }
     const project = projects[0];
     const projectDetails = await getProject(authResult.token, project.id);

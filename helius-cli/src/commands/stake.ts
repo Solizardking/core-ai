@@ -121,7 +121,7 @@ export async function stakeWithdrawInstructionCommand(stakeAccount: string, opti
 export async function stakeCreateCommand(amount: string, options: StakeOptions & { keypair?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   if (!options.keypair) {
-    exitWithError("KEYPAIR_NOT_FOUND", "Missing --keypair flag", undefined, options.json);
+    exitWithError("KEYPAIR_NOT_FOUND", "Missing --keypair flag", undefined, !!options.json);
   }
   try {
     spinner?.start("Resolving API key...");
@@ -147,7 +147,7 @@ export async function stakeCreateCommand(amount: string, options: StakeOptions &
 export async function stakeUnstakeCommand(stakeAccount: string, options: StakeOptions & { keypair?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   if (!options.keypair) {
-    exitWithError("KEYPAIR_NOT_FOUND", "Missing --keypair flag", undefined, options.json);
+    exitWithError("KEYPAIR_NOT_FOUND", "Missing --keypair flag", undefined, !!options.json);
   }
   try {
     spinner?.start("Resolving API key...");
@@ -171,7 +171,7 @@ export async function stakeUnstakeCommand(stakeAccount: string, options: StakeOp
 export async function stakeWithdrawCommand(stakeAccount: string, options: StakeOptions & { keypair?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   if (!options.keypair) {
-    exitWithError("KEYPAIR_NOT_FOUND", "Missing --keypair flag", undefined, options.json);
+    exitWithError("KEYPAIR_NOT_FOUND", "Missing --keypair flag", undefined, !!options.json);
   }
   try {
     spinner?.start("Resolving API key...");
