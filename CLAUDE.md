@@ -39,12 +39,11 @@ The Phantom skill (`helius-skills/helius-phantom/`, `helius-plugin/skills/phanto
 
 ### OKX Skill References
 
-The OKX skill (`helius-skills/helius-okx/`, `helius-plugin/skills/okx/`, and `helius-cursor/skills/okx/`) has its own reference files that **must also be kept in sync**.
+The OKX skill (`helius-skills/helius-okx/`, `helius-plugin/skills/okx/`, and `helius-cursor/skills/okx/`) is an **integration-only layer** that describes how to compose OKX tools with Helius tools. It does not duplicate OKX's own documentation — users install the OKX skill library (`onchainos-skills`) separately.
 
 - **Canonical source**: `helius-skills/helius-okx/references/`
 - **Copies**: `helius-plugin/skills/okx/references/`, `helius-cursor/skills/okx/references/`
-- The OKX skill contains 13 reference files: 7 Helius copies (prefixed with `helius-`), 5 OKX-specific files (swap, token-discovery, market-data, signals-trenches, gateway), and 1 integration-patterns file.
-- The Helius copies have modified cross-references (e.g., `references/helius-laserstream.md` instead of `references/laserstream.md`) to work alongside OKX files in the same directory.
+- The OKX skill contains 1 reference file: `integration-patterns.md` (6 end-to-end Helius + OKX composition patterns).
 - When updating OKX reference files, update in `helius-skills/helius-okx/references/` first, then copy to both `helius-plugin/skills/okx/references/` and `helius-cursor/skills/okx/references/`.
 
 ### SVM Skill References

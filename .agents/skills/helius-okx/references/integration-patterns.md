@@ -4,9 +4,9 @@
 
 End-to-end patterns for combining OKX's DEX aggregation, token intelligence, and market data with Helius's Solana infrastructure. These patterns show how the two systems connect at the transaction, data, and monitoring layers.
 
-**OKX** handles DEX aggregation (500+ liquidity sources), token discovery, market data, smart money signals, and meme token analysis via the `onchainos` CLI.
+**OKX** handles DEX aggregation (500+ liquidity sources), token discovery, market data, smart money signals, and meme token analysis via the `onchainos` CLI. For detailed OKX command reference and parameters, see the OKX skill library (`onchainos-skills`).
 
-**Helius** handles Solana infrastructure — transaction submission (Sender), fee optimization (Priority Fees), asset queries (DAS), real-time on-chain monitoring (WebSockets), shred-level streaming (LaserStream), and wallet intelligence (Wallet API).
+**Helius** handles Solana infrastructure — transaction submission (Sender), fee optimization (Priority Fees), asset queries (DAS), real-time on-chain monitoring (WebSockets), shred-level streaming (LaserStream), and wallet intelligence (Wallet API). For detailed Helius tool reference, use the Helius MCP server tools.
 
 ---
 
