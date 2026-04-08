@@ -54,7 +54,7 @@ export async function assetGetCommand(id: string, options: AssetOptions = {}): P
   const spinner = createSpinner(options);
   try {
     const helius = await setup(spinner, options, "Fetching asset...");
-    const result: any = await withRetry(() => helius.getAsset({ id }), options, spinner);
+    const result = await withRetry(() => helius.getAsset({ id }), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     console.log(chalk.bold("\nAsset Details:\n"));
@@ -68,7 +68,7 @@ export async function assetBatchCommand(ids: string[], options: AssetOptions = {
   const spinner = createSpinner(options);
   try {
     const helius = await setup(spinner, options, `Fetching ${ids.length} asset(s)...`);
-    const result: any = await withRetry(() => helius.getAssetBatch({ ids }), options, spinner);
+    const result = await withRetry(() => helius.getAssetBatch({ ids }), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     const items = Array.isArray(result) ? result : [];
@@ -83,11 +83,11 @@ export async function assetOwnerCommand(address: string, options: AssetOptions &
   const spinner = createSpinner(options);
   try {
     const helius = await setup(spinner, options, "Fetching assets by owner...");
-    const result: any = await withRetry(() => helius.getAssetsByOwner({
+    const result = await withRetry(() => helius.getAssetsByOwner({
       ownerAddress: address,
       page: options.page ? parseInt(options.page, 10) : 1,
       limit: options.limit ? parseInt(options.limit, 10) : 20,
-    }), options, spinner);
+    }), options, spinner) as any;
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     console.log(chalk.bold(`\nAssets owned by ${chalk.cyan(address)}:\n`));
@@ -101,12 +101,12 @@ export async function assetCreatorCommand(address: string, options: AssetOptions
   const spinner = createSpinner(options);
   try {
     const helius = await setup(spinner, options, "Fetching assets by creator...");
-    const result: any = await withRetry(() => helius.getAssetsByCreator({
+    const result = await withRetry(() => helius.getAssetsByCreator({
       creatorAddress: address,
       onlyVerified: options.verified ?? false,
       page: options.page ? parseInt(options.page, 10) : 1,
       limit: options.limit ? parseInt(options.limit, 10) : 20,
-    }), options, spinner);
+    }), options, spinner) as any;
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     console.log(chalk.bold(`\nAssets by creator ${chalk.cyan(address)}:\n`));
@@ -120,11 +120,11 @@ export async function assetAuthorityCommand(address: string, options: AssetOptio
   const spinner = createSpinner(options);
   try {
     const helius = await setup(spinner, options, "Fetching assets by authority...");
-    const result: any = await withRetry(() => helius.getAssetsByAuthority({
+    const result = await withRetry(() => helius.getAssetsByAuthority({
       authorityAddress: address,
       page: options.page ? parseInt(options.page, 10) : 1,
       limit: options.limit ? parseInt(options.limit, 10) : 20,
-    }), options, spinner);
+    }), options, spinner) as any;
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     console.log(chalk.bold(`\nAssets by authority ${chalk.cyan(address)}:\n`));
@@ -138,12 +138,12 @@ export async function assetCollectionCommand(address: string, options: AssetOpti
   const spinner = createSpinner(options);
   try {
     const helius = await setup(spinner, options, "Fetching collection assets...");
-    const result: any = await withRetry(() => helius.getAssetsByGroup({
+    const result = await withRetry(() => helius.getAssetsByGroup({
       groupKey: "collection",
       groupValue: address,
       page: options.page ? parseInt(options.page, 10) : 1,
       limit: options.limit ? parseInt(options.limit, 10) : 20,
-    }), options, spinner);
+    }), options, spinner) as any;
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     console.log(chalk.bold(`\nAssets in collection ${chalk.cyan(address)}:\n`));
@@ -171,7 +171,7 @@ export async function assetSearchCommand(options: AssetOptions & {
     if (options.compressed != null) params.compressed = options.compressed;
     if (options.burnt != null) params.burnt = options.burnt;
     if (options.frozen != null) params.frozen = options.frozen;
-    const result: any = await withRetry(() => helius.searchAssets(params), options, spinner);
+    const result = await withRetry(() => helius.searchAssets(params), options, spinner) as any;
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     console.log(chalk.bold("\nSearch Results:\n"));
@@ -185,7 +185,7 @@ export async function assetProofCommand(id: string, options: AssetOptions = {}):
   const spinner = createSpinner(options);
   try {
     const helius = await setup(spinner, options, "Fetching asset proof...");
-    const result: any = await withRetry(() => helius.getAssetProof({ id }), options, spinner);
+    const result = await withRetry(() => helius.getAssetProof({ id }), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     console.log(chalk.bold(`\nAsset Proof for ${chalk.cyan(id)}:\n`));
@@ -206,7 +206,7 @@ export async function assetProofBatchCommand(ids: string[], options: AssetOption
   const spinner = createSpinner(options);
   try {
     const helius = await setup(spinner, options, `Fetching proofs for ${ids.length} asset(s)...`);
-    const result: any = await withRetry(() => helius.getAssetProofBatch({ ids }), options, spinner);
+    const result = await withRetry(() => helius.getAssetProofBatch({ ids }), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     console.log(chalk.bold(`\nAsset Proofs (${ids.length}):\n`));
@@ -223,7 +223,7 @@ export async function assetEditionsCommand(mint: string, options: AssetOptions &
   const spinner = createSpinner(options);
   try {
     const helius = await setup(spinner, options, "Fetching NFT editions...");
-    const result: any = await withRetry(() => helius.getNftEditions({
+    const result = await withRetry(() => helius.getNftEditions({
       mint,
       page: options.page ? parseInt(options.page, 10) : 1,
       limit: options.limit ? parseInt(options.limit, 10) : 20,
@@ -248,7 +248,7 @@ export async function assetSignaturesCommand(id: string, options: AssetOptions &
   const spinner = createSpinner(options);
   try {
     const helius = await setup(spinner, options, "Fetching signatures for asset...");
-    const result: any = await withRetry(() => helius.getSignaturesForAsset({
+    const result = await withRetry(() => helius.getSignaturesForAsset({
       id,
       page: options.page ? parseInt(options.page, 10) : 1,
       limit: options.limit ? parseInt(options.limit, 10) : 20,
@@ -280,7 +280,7 @@ export async function assetTokenAccountsCommand(options: AssetOptions & { owner?
     };
     if (options.owner) params.owner = options.owner;
     if (options.mint) params.mint = options.mint;
-    const result: any = await withRetry(() => helius.getTokenAccounts(params), options, spinner);
+    const result = await withRetry(() => helius.getTokenAccounts(params), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     const accounts = (result as any)?.token_accounts || [];

@@ -17,7 +17,7 @@ export async function programAccountsCommand(programId: string, options: Program
     const config: any = {};
     if (options.dataSize) config.filters = [{ dataSize: parseInt(options.dataSize, 10) }];
     if (options.limit) config.limit = parseInt(options.limit, 10);
-    const result: any = await withRetry(() => helius.getProgramAccountsV2([programId, config]), options, spinner);
+    const result = await withRetry(() => helius.getProgramAccountsV2([programId, config]), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -57,7 +57,7 @@ export async function programAccountsAllCommand(programId: string, options: Prog
     spinner?.start("Fetching all program accounts (auto-paginating)...");
     const config: any = {};
     if (options.dataSize) config.filters = [{ dataSize: parseInt(options.dataSize, 10) }];
-    const result: any = await withRetry(() => helius.getAllProgramAccounts([programId, config]), options, spinner);
+    const result = await withRetry(() => helius.getAllProgramAccounts([programId, config]), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -82,7 +82,7 @@ export async function programTokenAccountsCommand(owner: string, options: Progra
     const config: any = { encoding: "base64" };
     if (options.limit) config.limit = parseInt(options.limit, 10);
     const filter = { programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" };
-    const result: any = await withRetry(() => helius.getTokenAccountsByOwnerV2([owner, filter, config]), options, spinner);
+    const result = await withRetry(() => helius.getTokenAccountsByOwnerV2([owner, filter, config]), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }

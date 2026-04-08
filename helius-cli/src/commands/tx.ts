@@ -14,7 +14,7 @@ export async function txParseCommand(signatures: string[], options: TxOptions = 
     const helius = getClient(apiKey, network);
 
     spinner?.start(`Parsing ${signatures.length} transaction(s)...`);
-    const result: any = await withRetry(() => helius.enhanced.getTransactions({ transactions: signatures }), options, spinner);
+    const result = await withRetry(() => helius.enhanced.getTransactions({ transactions: signatures }), options, spinner);
     spinner?.stop();
 
     if (options.json) {
@@ -70,7 +70,7 @@ export async function txHistoryCommand(address: string, options: TxOptions & { l
     if (options.limit) params.limit = parseInt(options.limit, 10);
     if (options.before) params.before = options.before;
     if (options.type) params.type = options.type;
-    const result: any = await withRetry(() => helius.enhanced.getTransactionsByAddress(params), options, spinner);
+    const result = await withRetry(() => helius.enhanced.getTransactionsByAddress(params), options, spinner);
     spinner?.stop();
 
     if (options.json) {
@@ -114,7 +114,7 @@ export async function txFeesCommand(options: TxOptions & { accounts?: string } =
     if (options.accounts) {
       params.accountKeys = options.accounts.split(",").map((s: string) => s.trim());
     }
-    const result: any = await withRetry(() => helius.getPriorityFeeEstimate(params), options, spinner);
+    const result = await withRetry(() => helius.getPriorityFeeEstimate(params), options, spinner);
     spinner?.stop();
 
     if (options.json) {

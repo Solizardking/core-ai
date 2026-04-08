@@ -14,7 +14,7 @@ export async function webhookListCommand(options: WebhookOptions = {}): Promise<
     const helius = getClient(apiKey, resolveNetwork(options));
 
     spinner?.start("Fetching webhooks...");
-    const result: any = await withRetry(() => helius.webhooks.getAll(), options, spinner);
+    const result = await withRetry(() => helius.webhooks.getAll(), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -47,7 +47,7 @@ export async function webhookGetCommand(webhookId: string, options: WebhookOptio
     const helius = getClient(apiKey, resolveNetwork(options));
 
     spinner?.start("Fetching webhook...");
-    const result: any = await withRetry(() => helius.webhooks.get(webhookId), options, spinner);
+    const result = await withRetry(() => helius.webhooks.get(webhookId), options, spinner) as any;
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -86,12 +86,12 @@ export async function webhookCreateCommand(options: WebhookOptions & {
     const webhookType = (options.webhookType || "enhanced") as any;
 
     spinner?.start("Creating webhook...");
-    const result: any = await withRetry(() => helius.webhooks.create({
+    const result = await withRetry(() => helius.webhooks.create({
       webhookURL: options.url,
       accountAddresses,
       transactionTypes: transactionTypes as any,
       webhookType,
-    }), options, spinner);
+    }), options, spinner) as any;
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -125,7 +125,7 @@ export async function webhookUpdateCommand(webhookId: string, options: WebhookOp
     if (options.types) params.transactionTypes = options.types.split(",").map((s: string) => s.trim()).filter(Boolean);
 
     spinner?.start("Updating webhook...");
-    const result: any = await withRetry(() => helius.webhooks.update(webhookId, params), options, spinner);
+    const result = await withRetry(() => helius.webhooks.update(webhookId, params), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }

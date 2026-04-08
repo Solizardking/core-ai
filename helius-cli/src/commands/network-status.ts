@@ -13,7 +13,7 @@ export async function networkStatusCommand(options: NetworkOptions = {}): Promis
     const helius = getClient(apiKey, network);
 
     spinner?.start("Fetching network status...");
-    const [epochInfo, version, blockHeight]: any[] = await withRetry(() => Promise.all([
+    const [epochInfo, version, blockHeight] = await withRetry(() => Promise.all([
       helius.raw.getEpochInfo(),
       helius.raw.getVersion(),
       helius.raw.getBlockHeight(),

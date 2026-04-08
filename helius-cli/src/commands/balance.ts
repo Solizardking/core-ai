@@ -14,7 +14,7 @@ export async function balanceCommand(address: string, options: BalanceOptions = 
     const helius = getClient(apiKey, network);
 
     spinner?.start("Fetching balance...");
-    const result: any = await withRetry(() => helius.raw.getBalance(address), options, spinner);
+    const result = await withRetry(() => helius.raw.getBalance(address), options, spinner) as any;
     spinner?.stop();
 
     const lamports = Number(result.value);
@@ -42,7 +42,7 @@ export async function tokensCommand(address: string, options: BalanceOptions & {
 
     spinner?.start("Fetching token balances...");
     const limit = options.limit ? parseInt(options.limit, 10) : 100;
-    const result: any = await withRetry(() => helius.getAssetsByOwner({ ownerAddress: address, page: 1, limit, displayOptions: { showFungible: true } }), options, spinner);
+    const result = await withRetry(() => helius.getAssetsByOwner({ ownerAddress: address, page: 1, limit, displayOptions: { showFungible: true } }), options, spinner) as any;
     spinner?.stop();
 
     // Filter to fungible tokens
@@ -96,7 +96,7 @@ export async function tokenHoldersCommand(mint: string, options: BalanceOptions 
 
     spinner?.start("Fetching token holders...");
     const limit = options.limit ? parseInt(options.limit, 10) : 20;
-    const result: any = await withRetry(() => helius.getTokenAccounts({ mint, page: 1, limit }), options, spinner);
+    const result = await withRetry(() => helius.getTokenAccounts({ mint, page: 1, limit }), options, spinner) as any;
     spinner?.stop();
 
     const accounts = result.token_accounts || [];

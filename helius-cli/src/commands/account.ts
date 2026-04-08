@@ -14,7 +14,7 @@ export async function accountCommand(address: string, options: AccountOptions = 
     const helius = getClient(apiKey, network);
 
     spinner?.start("Fetching account info...");
-    const result: any = await withRetry(() => helius.raw.getAccountInfo(address, { encoding: "jsonParsed" }), options, spinner);
+    const result = await withRetry(() => helius.raw.getAccountInfo(address, { encoding: "jsonParsed" }), options, spinner) as any;
     spinner?.stop();
 
     if (options.json) {

@@ -13,7 +13,7 @@ export async function sendBroadcastCommand(base64Tx: string, options: SendOption
     const helius = getClient(apiKey, network);
 
     spinner?.start("Broadcasting transaction...");
-    const signature: any = await withRetry(() => helius.tx.broadcastTransaction(base64Tx), options, spinner);
+    const signature = await withRetry(() => helius.tx.broadcastTransaction(base64Tx), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson({ signature }); return; }
@@ -33,7 +33,7 @@ export async function sendRawCommand(base64Tx: string, options: SendOptions = {}
     const helius = getClient(apiKey, network);
 
     spinner?.start("Sending transaction...");
-    const signature: any = await withRetry(() => helius.tx.sendTransaction({ base64: base64Tx }), options, spinner);
+    const signature = await withRetry(() => helius.tx.sendTransaction({ base64: base64Tx }), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson({ signature: String(signature) }); return; }
@@ -54,7 +54,7 @@ export async function sendSenderCommand(base64Tx: string, options: SendOptions &
 
     const region = (options.region || "Default") as any;
     spinner?.start(`Sending via Helius Sender (${region})...`);
-    const signature: any = await withRetry(() => helius.tx.sendTransaction({
+    const signature = await withRetry(() => helius.tx.sendTransaction({
       base64: base64Tx,
       sendOptions: { region },
     } as any), options, spinner);
@@ -77,7 +77,7 @@ export async function sendPollCommand(signature: string, options: SendOptions = 
     const helius = getClient(apiKey, network);
 
     spinner?.start("Polling for confirmation...");
-    const result: any = await withRetry(() => helius.tx.pollTransactionConfirmation(signature as any), options, spinner);
+    const result = await withRetry(() => helius.tx.pollTransactionConfirmation(signature as any), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson({ signature: String(result), confirmed: true }); return; }
@@ -97,7 +97,7 @@ export async function sendComputeUnitsCommand(base64Tx: string, options: SendOpt
     const helius = getClient(apiKey, network);
 
     spinner?.start("Simulating for compute units...");
-    const result: any = await withRetry(() => helius.tx.getComputeUnits(base64Tx as any), options, spinner);
+    const result = await withRetry(() => helius.tx.getComputeUnits(base64Tx as any), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson({ computeUnits: result }); return; }
