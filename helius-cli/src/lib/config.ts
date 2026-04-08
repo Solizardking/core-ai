@@ -53,6 +53,7 @@ export function load(): Config {
   try {
     raw = fs.readFileSync(CONFIG_FILE, "utf-8");
   } catch {
+    console.error(`Warning: ${CONFIG_FILE} exists but could not be read.`);
     return {};
   }
 
