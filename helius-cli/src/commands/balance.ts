@@ -1,9 +1,9 @@
 import chalk from "chalk";
 import { resolveApiKey, resolveNetwork, getClient, type ResolveOptions } from "../lib/helius.js";
 import { formatSol, formatAddress, formatTokenAmount, formatTable, type TableColumn } from "../lib/formatters.js";
-import { outputJson, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
+import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 
-interface BalanceOptions extends OutputOptions, ResolveOptions {}
+interface BalanceOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function balanceCommand(address: string, options: BalanceOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
@@ -14,7 +14,7 @@ export async function balanceCommand(address: string, options: BalanceOptions = 
     const helius = getClient(apiKey, network);
 
     spinner?.start("Fetching balance...");
-    const result = await helius.raw.getBalance(address);
+    const result: any = await withRetry(() => helius.raw.getBalance(address), options, spinner);
     spinner?.stop();
 
     const lamports = Number(result.value);
@@ -42,7 +42,7 @@ export async function tokensCommand(address: string, options: BalanceOptions & {
 
     spinner?.start("Fetching token balances...");
     const limit = options.limit ? parseInt(options.limit, 10) : 100;
-    const result = await helius.getAssetsByOwner({ ownerAddress: address, page: 1, limit, displayOptions: { showFungible: true } });
+    const result: any = await withRetry(() => helius.getAssetsByOwner({ ownerAddress: address, page: 1, limit, displayOptions: { showFungible: true } }), options, spinner);
     spinner?.stop();
 
     // Filter to fungible tokens
@@ -96,7 +96,7 @@ export async function tokenHoldersCommand(mint: string, options: BalanceOptions 
 
     spinner?.start("Fetching token holders...");
     const limit = options.limit ? parseInt(options.limit, 10) : 20;
-    const result = await helius.getTokenAccounts({ mint, page: 1, limit });
+    const result: any = await withRetry(() => helius.getTokenAccounts({ mint, page: 1, limit }), options, spinner);
     spinner?.stop();
 
     const accounts = result.token_accounts || [];
