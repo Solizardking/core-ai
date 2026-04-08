@@ -45,13 +45,20 @@ function recoverConfig(raw: string): Config {
 }
 
 export function load(): Config {
+  if (!fs.existsSync(CONFIG_FILE)) {
+    return {};
+  }
+
+  let raw: string;
   try {
-    if (fs.existsSync(CONFIG_FILE)) {
-      const data = fs.readFileSync(CONFIG_FILE, "utf-8");
-      return JSON.parse(data);
-    }
+    raw = fs.readFileSync(CONFIG_FILE, "utf-8");
   } catch {
-    const raw = fs.readFileSync(CONFIG_FILE, "utf-8");
+    return {};
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch {
     const recovered = recoverConfig(raw);
     const recoveredKeys = Object.keys(recovered);
 
@@ -64,8 +71,8 @@ export function load(): Config {
 
     console.error(`Warning: ${CONFIG_FILE} is corrupted and could not be read.`);
     console.error(`Run "helius config clear" to reset, or fix the file manually.`);
+    return {};
   }
-  return {};
 }
 
 export function save(data: Config): void {
