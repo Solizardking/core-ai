@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { resolveApiKey, resolveNetwork, getClient, type ResolveOptions } from "../lib/helius.js";
+import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { formatEnumLabel } from "../lib/formatters.js";
 import { outputJson, exitWithError, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 import { validateSolanaAddresses } from "../lib/validation.js";
@@ -9,11 +9,7 @@ interface WebhookOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 export async function webhookListCommand(options: WebhookOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const helius = getClient(apiKey, resolveNetwork(options));
-
-    spinner?.start("Fetching webhooks...");
+    const helius = await setupClient(spinner, options, "Fetching webhooks...");
     const result = await withRetry(() => helius.webhooks.getAll(), options, spinner);
     spinner?.stop();
 
@@ -42,11 +38,7 @@ export async function webhookListCommand(options: WebhookOptions = {}): Promise<
 export async function webhookGetCommand(webhookId: string, options: WebhookOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const helius = getClient(apiKey, resolveNetwork(options));
-
-    spinner?.start("Fetching webhook...");
+    const helius = await setupClient(spinner, options, "Fetching webhook...");
     const result = await withRetry(() => helius.webhooks.get(webhookId), options, spinner) as any;
     spinner?.stop();
 
@@ -73,9 +65,7 @@ export async function webhookCreateCommand(options: WebhookOptions & {
 }): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const helius = getClient(apiKey, resolveNetwork(options));
+    const helius = await setupClient(spinner, options, "Resolving API key...");
 
     // Validate addresses before sending to API
     const addrErr = validateSolanaAddresses(options.accounts);
@@ -110,9 +100,7 @@ export async function webhookUpdateCommand(webhookId: string, options: WebhookOp
 }): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const helius = getClient(apiKey, resolveNetwork(options));
+    const helius = await setupClient(spinner, options, "Resolving API key...");
 
     const params: any = {};
     // Validate addresses if provided
@@ -139,11 +127,7 @@ export async function webhookUpdateCommand(webhookId: string, options: WebhookOp
 export async function webhookDeleteCommand(webhookId: string, options: WebhookOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const helius = getClient(apiKey, resolveNetwork(options));
-
-    spinner?.start("Deleting webhook...");
+    const helius = await setupClient(spinner, options, "Deleting webhook...");
     await withRetry(() => helius.webhooks.delete(webhookId), options, spinner);
     spinner?.stop();
 

@@ -1,18 +1,10 @@
 import chalk from "chalk";
-import { resolveApiKey, resolveNetwork, getClient, type ResolveOptions } from "../lib/helius.js";
+import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { formatAddress, formatTable, type TableColumn } from "../lib/formatters.js";
 import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 
 interface AssetOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
-async function setup(spinner: any, options: AssetOptions, message: string) {
-  spinner?.start("Resolving API key...");
-  const apiKey = await resolveApiKey(options);
-  const network = resolveNetwork(options);
-  const helius = getClient(apiKey, network);
-  spinner?.start(message);
-  return helius;
-}
 
 function printAssetSummary(asset: any): void {
   console.log(`  ${chalk.gray("ID:")}           ${chalk.cyan(asset.id)}`);
@@ -53,7 +45,7 @@ function printAssetList(items: any[], label: string): void {
 export async function assetGetCommand(id: string, options: AssetOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching asset...");
+    const helius = await setupClient(spinner, options, "Fetching asset...");
     const result = await withRetry(() => helius.getAsset({ id }), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
@@ -67,7 +59,7 @@ export async function assetGetCommand(id: string, options: AssetOptions = {}): P
 export async function assetBatchCommand(ids: string[], options: AssetOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, `Fetching ${ids.length} asset(s)...`);
+    const helius = await setupClient(spinner, options, `Fetching ${ids.length} asset(s)...`);
     const result = await withRetry(() => helius.getAssetBatch({ ids }), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
@@ -82,7 +74,7 @@ export async function assetBatchCommand(ids: string[], options: AssetOptions = {
 export async function assetOwnerCommand(address: string, options: AssetOptions & { page?: string; limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching assets by owner...");
+    const helius = await setupClient(spinner, options, "Fetching assets by owner...");
     const result = await withRetry(() => helius.getAssetsByOwner({
       ownerAddress: address,
       page: options.page ? parseInt(options.page, 10) : 1,
@@ -100,7 +92,7 @@ export async function assetOwnerCommand(address: string, options: AssetOptions &
 export async function assetCreatorCommand(address: string, options: AssetOptions & { page?: string; limit?: string; verified?: boolean } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching assets by creator...");
+    const helius = await setupClient(spinner, options, "Fetching assets by creator...");
     const result = await withRetry(() => helius.getAssetsByCreator({
       creatorAddress: address,
       onlyVerified: options.verified ?? false,
@@ -119,7 +111,7 @@ export async function assetCreatorCommand(address: string, options: AssetOptions
 export async function assetAuthorityCommand(address: string, options: AssetOptions & { page?: string; limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching assets by authority...");
+    const helius = await setupClient(spinner, options, "Fetching assets by authority...");
     const result = await withRetry(() => helius.getAssetsByAuthority({
       authorityAddress: address,
       page: options.page ? parseInt(options.page, 10) : 1,
@@ -137,7 +129,7 @@ export async function assetAuthorityCommand(address: string, options: AssetOptio
 export async function assetCollectionCommand(address: string, options: AssetOptions & { page?: string; limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching collection assets...");
+    const helius = await setupClient(spinner, options, "Fetching collection assets...");
     const result = await withRetry(() => helius.getAssetsByGroup({
       groupKey: "collection",
       groupValue: address,
@@ -160,7 +152,7 @@ export async function assetSearchCommand(options: AssetOptions & {
 } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Searching assets...");
+    const helius = await setupClient(spinner, options, "Searching assets...");
     const params: any = {
       page: options.page ? parseInt(options.page, 10) : 1,
       limit: options.limit ? parseInt(options.limit, 10) : 20,
@@ -184,7 +176,7 @@ export async function assetSearchCommand(options: AssetOptions & {
 export async function assetProofCommand(id: string, options: AssetOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching asset proof...");
+    const helius = await setupClient(spinner, options, "Fetching asset proof...");
     const result = await withRetry(() => helius.getAssetProof({ id }), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
@@ -205,7 +197,7 @@ export async function assetProofCommand(id: string, options: AssetOptions = {}):
 export async function assetProofBatchCommand(ids: string[], options: AssetOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, `Fetching proofs for ${ids.length} asset(s)...`);
+    const helius = await setupClient(spinner, options, `Fetching proofs for ${ids.length} asset(s)...`);
     const result = await withRetry(() => helius.getAssetProofBatch({ ids }), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
@@ -222,7 +214,7 @@ export async function assetProofBatchCommand(ids: string[], options: AssetOption
 export async function assetEditionsCommand(mint: string, options: AssetOptions & { page?: string; limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching NFT editions...");
+    const helius = await setupClient(spinner, options, "Fetching NFT editions...");
     const result = await withRetry(() => helius.getNftEditions({
       mint,
       page: options.page ? parseInt(options.page, 10) : 1,
@@ -247,7 +239,7 @@ export async function assetEditionsCommand(mint: string, options: AssetOptions &
 export async function assetSignaturesCommand(id: string, options: AssetOptions & { page?: string; limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching signatures for asset...");
+    const helius = await setupClient(spinner, options, "Fetching signatures for asset...");
     const result = await withRetry(() => helius.getSignaturesForAsset({
       id,
       page: options.page ? parseInt(options.page, 10) : 1,
@@ -273,7 +265,7 @@ export async function assetSignaturesCommand(id: string, options: AssetOptions &
 export async function assetTokenAccountsCommand(options: AssetOptions & { owner?: string; mint?: string; page?: string; limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching token accounts...");
+    const helius = await setupClient(spinner, options, "Fetching token accounts...");
     const params: any = {
       page: options.page ? parseInt(options.page, 10) : 1,
       limit: options.limit ? parseInt(options.limit, 10) : 20,

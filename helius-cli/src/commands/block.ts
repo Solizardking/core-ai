@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { resolveApiKey, resolveNetwork, getClient, type ResolveOptions } from "../lib/helius.js";
+import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { formatTimestamp } from "../lib/formatters.js";
 import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 
@@ -8,12 +8,7 @@ interface BlockOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 export async function blockCommand(slot: string, options: BlockOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const network = resolveNetwork(options);
-    const helius = getClient(apiKey, network);
-
-    spinner?.start(`Fetching block at slot ${slot}...`);
+    const helius = await setupClient(spinner, options, `Fetching block at slot ${slot}...`);
     const slotNum = BigInt(slot);
     const result = await withRetry(() => helius.raw.getBlock(slotNum, {
       maxSupportedTransactionVersion: 0,

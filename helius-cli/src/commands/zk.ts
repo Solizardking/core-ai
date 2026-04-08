@@ -1,17 +1,8 @@
 import chalk from "chalk";
-import { resolveApiKey, resolveNetwork, getClient, type ResolveOptions } from "../lib/helius.js";
+import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 
 interface ZkOptions extends OutputOptions, ResolveOptions, RetryOptions {}
-
-async function setup(spinner: any, options: ZkOptions, message: string) {
-  spinner?.start("Resolving API key...");
-  const apiKey = await resolveApiKey(options);
-  const network = resolveNetwork(options);
-  const helius = getClient(apiKey, network);
-  spinner?.start(message);
-  return helius;
-}
 
 function handleResult(spinner: any, result: any, options: ZkOptions, label: string): void {
   spinner?.stop();
@@ -23,7 +14,7 @@ function handleResult(spinner: any, result: any, options: ZkOptions, label: stri
 export async function zkAccountCommand(addressOrHash: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compressed account...");
+    const helius = await setupClient(spinner, options, "Fetching compressed account...");
     const result = await withRetry(() => helius.zk.getCompressedAccount({ address: addressOrHash }), options, spinner);
     handleResult(spinner, result, options, "Compressed Account");
   } catch (error) {
@@ -34,7 +25,7 @@ export async function zkAccountCommand(addressOrHash: string, options: ZkOptions
 export async function zkAccountsByOwnerCommand(owner: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compressed accounts by owner...");
+    const helius = await setupClient(spinner, options, "Fetching compressed accounts by owner...");
     const result = await withRetry(() => helius.zk.getCompressedAccountsByOwner({ owner }), options, spinner);
     handleResult(spinner, result, options, "Compressed Accounts by Owner");
   } catch (error) {
@@ -45,7 +36,7 @@ export async function zkAccountsByOwnerCommand(owner: string, options: ZkOptions
 export async function zkBalanceCommand(addressOrHash: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compressed balance...");
+    const helius = await setupClient(spinner, options, "Fetching compressed balance...");
     const result = await withRetry(() => helius.zk.getCompressedBalance({ address: addressOrHash }), options, spinner);
     handleResult(spinner, result, options, "Compressed Balance");
   } catch (error) {
@@ -56,7 +47,7 @@ export async function zkBalanceCommand(addressOrHash: string, options: ZkOptions
 export async function zkBalanceByOwnerCommand(owner: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compressed balance by owner...");
+    const helius = await setupClient(spinner, options, "Fetching compressed balance by owner...");
     const result = await withRetry(() => helius.zk.getCompressedBalanceByOwner({ owner }), options, spinner);
     handleResult(spinner, result, options, "Compressed Balance by Owner");
   } catch (error) {
@@ -67,7 +58,7 @@ export async function zkBalanceByOwnerCommand(owner: string, options: ZkOptions 
 export async function zkTokenHoldersCommand(mint: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compressed token holders...");
+    const helius = await setupClient(spinner, options, "Fetching compressed token holders...");
     const result = await withRetry(() => helius.zk.getCompressedMintTokenHolders({ mint }), options, spinner);
     handleResult(spinner, result, options, "Compressed Token Holders");
   } catch (error) {
@@ -78,7 +69,7 @@ export async function zkTokenHoldersCommand(mint: string, options: ZkOptions = {
 export async function zkTokenBalanceCommand(account: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compressed token account balance...");
+    const helius = await setupClient(spinner, options, "Fetching compressed token account balance...");
     const result = await withRetry(() => helius.zk.getCompressedTokenAccountBalance({ address: account }), options, spinner);
     handleResult(spinner, result, options, "Compressed Token Account Balance");
   } catch (error) {
@@ -89,7 +80,7 @@ export async function zkTokenBalanceCommand(account: string, options: ZkOptions 
 export async function zkTokenAccountsByOwnerCommand(owner: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compressed token accounts by owner...");
+    const helius = await setupClient(spinner, options, "Fetching compressed token accounts by owner...");
     const result = await withRetry(() => helius.zk.getCompressedTokenAccountsByOwner({ owner }), options, spinner);
     handleResult(spinner, result, options, "Compressed Token Accounts by Owner");
   } catch (error) {
@@ -100,7 +91,7 @@ export async function zkTokenAccountsByOwnerCommand(owner: string, options: ZkOp
 export async function zkTokenAccountsByDelegateCommand(delegate: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compressed token accounts by delegate...");
+    const helius = await setupClient(spinner, options, "Fetching compressed token accounts by delegate...");
     const result = await withRetry(() => helius.zk.getCompressedTokenAccountsByDelegate({ delegate }), options, spinner);
     handleResult(spinner, result, options, "Compressed Token Accounts by Delegate");
   } catch (error) {
@@ -111,7 +102,7 @@ export async function zkTokenAccountsByDelegateCommand(delegate: string, options
 export async function zkTokenBalancesByOwnerCommand(owner: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compressed token balances by owner (V2)...");
+    const helius = await setupClient(spinner, options, "Fetching compressed token balances by owner (V2)...");
     const result = await withRetry(() => helius.zk.getCompressedTokenBalancesByOwnerV2({ owner }), options, spinner);
     handleResult(spinner, result, options, "Compressed Token Balances by Owner (V2)");
   } catch (error) {
@@ -122,7 +113,7 @@ export async function zkTokenBalancesByOwnerCommand(owner: string, options: ZkOp
 export async function zkProofCommand(addressOrHash: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compressed account proof...");
+    const helius = await setupClient(spinner, options, "Fetching compressed account proof...");
     const result = await withRetry(() => helius.zk.getCompressedAccountProof({ hash: addressOrHash }), options, spinner);
     handleResult(spinner, result, options, "Compressed Account Proof");
   } catch (error) {
@@ -133,7 +124,7 @@ export async function zkProofCommand(addressOrHash: string, options: ZkOptions =
 export async function zkProofsCommand(addresses: string[], options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, `Fetching proofs for ${addresses.length} account(s)...`);
+    const helius = await setupClient(spinner, options, `Fetching proofs for ${addresses.length} account(s)...`);
     const result = await withRetry(() => helius.zk.getMultipleCompressedAccountProofs({ hashes: addresses }), options, spinner);
     handleResult(spinner, result, options, "Multiple Compressed Account Proofs");
   } catch (error) {
@@ -144,7 +135,7 @@ export async function zkProofsCommand(addresses: string[], options: ZkOptions = 
 export async function zkMultipleAccountsCommand(addresses: string[], options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, `Fetching ${addresses.length} compressed account(s)...`);
+    const helius = await setupClient(spinner, options, `Fetching ${addresses.length} compressed account(s)...`);
     const result = await withRetry(() => helius.zk.getMultipleCompressedAccounts({ addresses }), options, spinner);
     handleResult(spinner, result, options, "Multiple Compressed Accounts");
   } catch (error) {
@@ -155,7 +146,7 @@ export async function zkMultipleAccountsCommand(addresses: string[], options: Zk
 export async function zkAddressProofsCommand(addresses: string[], options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, `Fetching address proofs (V2)...`);
+    const helius = await setupClient(spinner, options, `Fetching address proofs (V2)...`);
     const result = await withRetry(() => helius.zk.getMultipleNewAddressProofsV2(addresses), options, spinner);
     handleResult(spinner, result, options, "Multiple New Address Proofs (V2)");
   } catch (error) {
@@ -166,7 +157,7 @@ export async function zkAddressProofsCommand(addresses: string[], options: ZkOpt
 export async function zkSignaturesAccountCommand(account: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compression signatures for account...");
+    const helius = await setupClient(spinner, options, "Fetching compression signatures for account...");
     const result = await withRetry(() => helius.zk.getCompressionSignaturesForAccount({ hash: account }), options, spinner);
     handleResult(spinner, result, options, "Compression Signatures for Account");
   } catch (error) {
@@ -177,7 +168,7 @@ export async function zkSignaturesAccountCommand(account: string, options: ZkOpt
 export async function zkSignaturesAddressCommand(address: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compression signatures for address...");
+    const helius = await setupClient(spinner, options, "Fetching compression signatures for address...");
     const result = await withRetry(() => helius.zk.getCompressionSignaturesForAddress({ address }), options, spinner);
     handleResult(spinner, result, options, "Compression Signatures for Address");
   } catch (error) {
@@ -188,7 +179,7 @@ export async function zkSignaturesAddressCommand(address: string, options: ZkOpt
 export async function zkSignaturesOwnerCommand(owner: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compression signatures for owner...");
+    const helius = await setupClient(spinner, options, "Fetching compression signatures for owner...");
     const result = await withRetry(() => helius.zk.getCompressionSignaturesForOwner({ owner }), options, spinner);
     handleResult(spinner, result, options, "Compression Signatures for Owner");
   } catch (error) {
@@ -199,7 +190,7 @@ export async function zkSignaturesOwnerCommand(owner: string, options: ZkOptions
 export async function zkSignaturesTokenOwnerCommand(owner: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching compression signatures for token owner...");
+    const helius = await setupClient(spinner, options, "Fetching compression signatures for token owner...");
     const result = await withRetry(() => helius.zk.getCompressionSignaturesForTokenOwner({ owner }), options, spinner);
     handleResult(spinner, result, options, "Compression Signatures for Token Owner");
   } catch (error) {
@@ -210,7 +201,7 @@ export async function zkSignaturesTokenOwnerCommand(owner: string, options: ZkOp
 export async function zkLatestSignaturesCommand(options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching latest compression signatures...");
+    const helius = await setupClient(spinner, options, "Fetching latest compression signatures...");
     const result = await withRetry(() => helius.zk.getLatestCompressionSignatures({}), options, spinner);
     handleResult(spinner, result, options, "Latest Compression Signatures");
   } catch (error) {
@@ -221,7 +212,7 @@ export async function zkLatestSignaturesCommand(options: ZkOptions = {}): Promis
 export async function zkLatestNonVotingCommand(options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching latest non-voting signatures...");
+    const helius = await setupClient(spinner, options, "Fetching latest non-voting signatures...");
     const result = await withRetry(() => helius.zk.getLatestNonVotingSignatures({}), options, spinner);
     handleResult(spinner, result, options, "Latest Non-Voting Signatures");
   } catch (error) {
@@ -232,7 +223,7 @@ export async function zkLatestNonVotingCommand(options: ZkOptions = {}): Promise
 export async function zkTxCommand(signature: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching transaction with compression info...");
+    const helius = await setupClient(spinner, options, "Fetching transaction with compression info...");
     const result = await withRetry(() => helius.zk.getTransactionWithCompressionInfo({ signature }), options, spinner);
     handleResult(spinner, result, options, "Transaction with Compression Info");
   } catch (error) {
@@ -243,7 +234,7 @@ export async function zkTxCommand(signature: string, options: ZkOptions = {}): P
 export async function zkValidityProofCommand(options: ZkOptions & { hashes?: string; addresses?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching validity proof...");
+    const helius = await setupClient(spinner, options, "Fetching validity proof...");
     const params: any = {};
     if (options.hashes) params.hashes = options.hashes.split(",").map((s: string) => s.trim());
     if (options.addresses) params.newAddressesWithTrees = options.addresses.split(",").map((s: string) => ({ address: s.trim(), tree: "" }));
@@ -257,7 +248,7 @@ export async function zkValidityProofCommand(options: ZkOptions & { hashes?: str
 export async function zkIndexerHealthCommand(options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Checking indexer health...");
+    const helius = await setupClient(spinner, options, "Checking indexer health...");
     const result = await withRetry(() => helius.zk.getIndexerHealth(), options, spinner);
     handleResult(spinner, result, options, "Indexer Health");
   } catch (error) {
@@ -268,7 +259,7 @@ export async function zkIndexerHealthCommand(options: ZkOptions = {}): Promise<v
 export async function zkIndexerSlotCommand(options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching indexer slot...");
+    const helius = await setupClient(spinner, options, "Fetching indexer slot...");
     const result = await withRetry(() => helius.zk.getIndexerSlot(), options, spinner);
     handleResult(spinner, result, options, "Indexer Slot");
   } catch (error) {
@@ -279,7 +270,7 @@ export async function zkIndexerSlotCommand(options: ZkOptions = {}): Promise<voi
 export async function zkSignaturesForAssetCommand(id: string, options: ZkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setup(spinner, options, "Fetching signatures for asset...");
+    const helius = await setupClient(spinner, options, "Fetching signatures for asset...");
     const result = await withRetry(() => helius.zk.getSignaturesForAsset({ id, page: 1 }), options, spinner);
     handleResult(spinner, result, options, "Signatures for Asset");
   } catch (error) {

@@ -95,6 +95,23 @@ export function getClient(apiKey: string, network?: string): HeliusClient {
 }
 
 /**
+ * Resolve API key, get SDK client, and update the spinner.
+ * Shared setup for commands that follow the standard resolve → client → fetch pattern.
+ */
+export async function setupClient(
+  spinner: { start(text: string): void } | null | undefined,
+  options: ResolveOptions,
+  message: string,
+): Promise<HeliusClient> {
+  spinner?.start("Resolving API key...");
+  const apiKey = await resolveApiKey(options);
+  const network = resolveNetwork(options);
+  const helius = getClient(apiKey, network);
+  spinner?.start(message);
+  return helius;
+}
+
+/**
  * REST request helper for Wallet API endpoints (not in SDK).
  * Throws HeliusHttpError on non-2xx so classifyError() gets an exact status code.
  */
