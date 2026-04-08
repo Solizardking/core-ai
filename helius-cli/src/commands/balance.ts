@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { setupClient, type ResolveOptions } from "../lib/helius.js";
+import { setupClient, resolveNetwork, type ResolveOptions } from "../lib/helius.js";
 import { formatSol, formatAddress, formatTokenAmount, formatTable, type TableColumn } from "../lib/formatters.js";
 import { outputJson, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
 
@@ -14,14 +14,14 @@ export async function balanceCommand(address: string, options: BalanceOptions = 
 
     const lamports = Number(result.value);
     if (options.json) {
-      outputJson({ address, lamports, sol: lamports / 1e9, network: options.network || "mainnet" });
+      outputJson({ address, lamports, sol: lamports / 1e9, network: resolveNetwork(options) });
       return;
     }
 
     console.log(chalk.bold(`\nBalance for ${chalk.cyan(address)}:\n`));
     console.log(`  ${chalk.green(formatSol(lamports))}`);
     console.log(`  ${chalk.gray(`(${lamports.toLocaleString()} lamports)`)}`);
-    console.log(`  ${chalk.gray(`Network: ${options.network || "mainnet"}`)}`);
+    console.log(`  ${chalk.gray(`Network: ${resolveNetwork(options)}`)}`);
   } catch (error) {
     handleCommandError(error, options, spinner);
   }

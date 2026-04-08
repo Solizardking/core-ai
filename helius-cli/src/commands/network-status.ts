@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { setupClient, type ResolveOptions } from "../lib/helius.js";
+import { setupClient, resolveNetwork, type ResolveOptions } from "../lib/helius.js";
 import { outputJson, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
 
 interface NetworkOptions extends OutputOptions, ResolveOptions {}
@@ -16,11 +16,11 @@ export async function networkStatusCommand(options: NetworkOptions = {}): Promis
     spinner?.stop();
 
     if (options.json) {
-      outputJson({ network: options.network || "mainnet", epochInfo, version, blockHeight });
+      outputJson({ network: resolveNetwork(options), epochInfo, version, blockHeight });
       return;
     }
 
-    console.log(chalk.bold(`\nSolana Network Status (${chalk.cyan(options.network || "mainnet")}):\n`));
+    console.log(chalk.bold(`\nSolana Network Status (${chalk.cyan(resolveNetwork(options))}):\n`));
     console.log(`  ${chalk.gray("Cluster version:")} ${(version as any)["solana-core"] || JSON.stringify(version)}`);
     console.log(`  ${chalk.gray("Block height:")}    ${Number(blockHeight).toLocaleString()}`);
     console.log(`  ${chalk.gray("Current epoch:")}   ${epochInfo.epoch}`);
