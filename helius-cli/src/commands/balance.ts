@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { resolveApiKey, resolveNetwork, getClient, type ResolveOptions } from "../lib/helius.js";
+import { setupClient, resolveNetwork, type ResolveOptions } from "../lib/helius.js";
 import { formatSol, formatAddress, formatTokenAmount, formatTable, type TableColumn } from "../lib/formatters.js";
 import { outputJson, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
 
@@ -8,25 +8,20 @@ interface BalanceOptions extends OutputOptions, ResolveOptions {}
 export async function balanceCommand(address: string, options: BalanceOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const network = resolveNetwork(options);
-    const helius = getClient(apiKey, network);
-
-    spinner?.start("Fetching balance...");
+    const helius = await setupClient(spinner, options, "Fetching balance...");
     const result = await helius.raw.getBalance(address);
     spinner?.stop();
 
     const lamports = Number(result.value);
     if (options.json) {
-      outputJson({ address, lamports, sol: lamports / 1e9, network });
+      outputJson({ address, lamports, sol: lamports / 1e9, network: resolveNetwork(options) });
       return;
     }
 
     console.log(chalk.bold(`\nBalance for ${chalk.cyan(address)}:\n`));
     console.log(`  ${chalk.green(formatSol(lamports))}`);
     console.log(`  ${chalk.gray(`(${lamports.toLocaleString()} lamports)`)}`);
-    console.log(`  ${chalk.gray(`Network: ${network}`)}`);
+    console.log(`  ${chalk.gray(`Network: ${resolveNetwork(options)}`)}`);
   } catch (error) {
     handleCommandError(error, options, spinner);
   }
@@ -35,12 +30,7 @@ export async function balanceCommand(address: string, options: BalanceOptions = 
 export async function tokensCommand(address: string, options: BalanceOptions & { limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const network = resolveNetwork(options);
-    const helius = getClient(apiKey, network);
-
-    spinner?.start("Fetching token balances...");
+    const helius = await setupClient(spinner, options, "Fetching token balances...");
     const limit = options.limit ? parseInt(options.limit, 10) : 100;
     const result = await helius.getAssetsByOwner({ ownerAddress: address, page: 1, limit, displayOptions: { showFungible: true } });
     spinner?.stop();
@@ -89,12 +79,7 @@ export async function tokensCommand(address: string, options: BalanceOptions & {
 export async function tokenHoldersCommand(mint: string, options: BalanceOptions & { limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const network = resolveNetwork(options);
-    const helius = getClient(apiKey, network);
-
-    spinner?.start("Fetching token holders...");
+    const helius = await setupClient(spinner, options, "Fetching token holders...");
     const limit = options.limit ? parseInt(options.limit, 10) : 20;
     const result = await helius.getTokenAccounts({ mint, page: 1, limit });
     spinner?.stop();

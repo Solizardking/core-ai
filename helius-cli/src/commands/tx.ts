@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { resolveApiKey, resolveNetwork, getClient, type ResolveOptions } from "../lib/helius.js";
+import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { formatSol, formatTimestamp, formatAddress, formatEnumLabel } from "../lib/formatters.js";
 import { outputJson, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
 
@@ -8,12 +8,7 @@ interface TxOptions extends OutputOptions, ResolveOptions {}
 export async function txParseCommand(signatures: string[], options: TxOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const network = resolveNetwork(options);
-    const helius = getClient(apiKey, network);
-
-    spinner?.start(`Parsing ${signatures.length} transaction(s)...`);
+    const helius = await setupClient(spinner, options, `Parsing ${signatures.length} transaction(s)...`);
     const result = await helius.enhanced.getTransactions({ transactions: signatures });
     spinner?.stop();
 
@@ -60,12 +55,7 @@ export async function txParseCommand(signatures: string[], options: TxOptions = 
 export async function txHistoryCommand(address: string, options: TxOptions & { limit?: string; before?: string; type?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const network = resolveNetwork(options);
-    const helius = getClient(apiKey, network);
-
-    spinner?.start("Fetching transaction history...");
+    const helius = await setupClient(spinner, options, "Fetching transaction history...");
     const params: any = { address };
     if (options.limit) params.limit = parseInt(options.limit, 10);
     if (options.before) params.before = options.before;
@@ -104,12 +94,7 @@ export async function txHistoryCommand(address: string, options: TxOptions & { l
 export async function txFeesCommand(options: TxOptions & { accounts?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const network = resolveNetwork(options);
-    const helius = getClient(apiKey, network);
-
-    spinner?.start("Fetching priority fee estimate...");
+    const helius = await setupClient(spinner, options, "Fetching priority fee estimate...");
     const params: any = { options: { includeAllPriorityFeeLevels: true } };
     if (options.accounts) {
       params.accountKeys = options.accounts.split(",").map((s: string) => s.trim());

@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { resolveApiKey, resolveNetwork, getClient, type ResolveOptions } from "../lib/helius.js";
+import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { formatAddress, formatTable, type TableColumn } from "../lib/formatters.js";
 import { outputJson, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
 
@@ -8,12 +8,7 @@ interface ProgramOptions extends OutputOptions, ResolveOptions {}
 export async function programAccountsCommand(programId: string, options: ProgramOptions & { dataSize?: string; limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const network = resolveNetwork(options);
-    const helius = getClient(apiKey, network);
-
-    spinner?.start("Fetching program accounts...");
+    const helius = await setupClient(spinner, options, "Fetching program accounts...");
     const config: any = {};
     if (options.dataSize) config.filters = [{ dataSize: parseInt(options.dataSize, 10) }];
     if (options.limit) config.limit = parseInt(options.limit, 10);
@@ -49,12 +44,7 @@ export async function programAccountsCommand(programId: string, options: Program
 export async function programAccountsAllCommand(programId: string, options: ProgramOptions & { dataSize?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const network = resolveNetwork(options);
-    const helius = getClient(apiKey, network);
-
-    spinner?.start("Fetching all program accounts (auto-paginating)...");
+    const helius = await setupClient(spinner, options, "Fetching all program accounts (auto-paginating)...");
     const config: any = {};
     if (options.dataSize) config.filters = [{ dataSize: parseInt(options.dataSize, 10) }];
     const result = await helius.getAllProgramAccounts([programId, config]);
@@ -73,12 +63,7 @@ export async function programAccountsAllCommand(programId: string, options: Prog
 export async function programTokenAccountsCommand(owner: string, options: ProgramOptions & { limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    spinner?.start("Resolving API key...");
-    const apiKey = await resolveApiKey(options);
-    const network = resolveNetwork(options);
-    const helius = getClient(apiKey, network);
-
-    spinner?.start("Fetching token accounts by owner...");
+    const helius = await setupClient(spinner, options, "Fetching token accounts by owner...");
     const config: any = { encoding: "base64" };
     if (options.limit) config.limit = parseInt(options.limit, 10);
     const filter = { programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" };
