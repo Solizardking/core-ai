@@ -66,6 +66,7 @@ program
   .version(VERSION)
   .option("--api-key <key>", "Helius API key")
   .option("--network <net>", "Network: mainnet or devnet", "mainnet")
+  .option("--retry <n>", "Retry transient errors (429, 5xx, network) up to n times with exponential backoff", "0")
   .hook('preAction', (_thisCommand, actionCommand) => {
     setCurrentCommand(actionCommand.name());
     sendCommandEvent(actionCommand.name());
