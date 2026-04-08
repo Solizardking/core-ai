@@ -1,9 +1,9 @@
 import chalk from "chalk";
 import { resolveApiKey, resolveNetwork, getClient, type ResolveOptions } from "../lib/helius.js";
 import { formatSol } from "../lib/formatters.js";
-import { outputJson, exitWithError, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
+import { outputJson, exitWithError, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 
-interface StakeOptions extends OutputOptions, ResolveOptions {}
+interface StakeOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function stakeAccountsCommand(wallet: string, options: StakeOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
@@ -14,7 +14,7 @@ export async function stakeAccountsCommand(wallet: string, options: StakeOptions
     const helius = getClient(apiKey, network);
 
     spinner?.start("Fetching Helius stake accounts...");
-    const result = await helius.stake.getHeliusStakeAccounts(wallet as any);
+    const result: any = await withRetry(() => helius.stake.getHeliusStakeAccounts(wallet as any), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -42,7 +42,7 @@ export async function stakeWithdrawableCommand(stakeAccount: string, options: St
     const helius = getClient(apiKey, network);
 
     spinner?.start("Checking withdrawable amount...");
-    const result = await helius.stake.getWithdrawableAmount(stakeAccount as any);
+    const result: any = await withRetry(() => helius.stake.getWithdrawableAmount(stakeAccount as any), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson({ stakeAccount, withdrawable: result }); return; }
@@ -64,7 +64,7 @@ export async function stakeInstructionsCommand(amount: string, options: StakeOpt
 
     spinner?.start("Getting stake instructions...");
     const lamports = BigInt(Math.round(parseFloat(amount) * 1e9));
-    const result = await helius.stake.getStakeInstructions(lamports);
+    const result: any = await withRetry(() => helius.stake.getStakeInstructions(lamports), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -85,7 +85,7 @@ export async function stakeUnstakeInstructionCommand(stakeAccount: string, optio
     const helius = getClient(apiKey, network);
 
     spinner?.start("Getting unstake instruction...");
-    const result = await helius.stake.getUnstakeInstruction(stakeAccount as any);
+    const result: any = await withRetry(() => helius.stake.getUnstakeInstruction(stakeAccount as any), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -106,7 +106,7 @@ export async function stakeWithdrawInstructionCommand(stakeAccount: string, opti
     const helius = getClient(apiKey, network);
 
     spinner?.start("Getting withdraw instruction...");
-    const result = await helius.stake.getWithdrawInstruction(stakeAccount as any);
+    const result: any = await withRetry(() => helius.stake.getWithdrawInstruction(stakeAccount as any), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -131,7 +131,7 @@ export async function stakeCreateCommand(amount: string, options: StakeOptions &
 
     spinner?.start("Creating stake transaction...");
     const lamports = BigInt(Math.round(parseFloat(amount) * 1e9));
-    const result = await helius.stake.createStakeTransaction(lamports);
+    const result: any = await withRetry(() => helius.stake.createStakeTransaction(lamports), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -156,7 +156,7 @@ export async function stakeUnstakeCommand(stakeAccount: string, options: StakeOp
     const helius = getClient(apiKey, network);
 
     spinner?.start("Creating unstake transaction...");
-    const result = await helius.stake.createUnstakeTransaction(stakeAccount as any);
+    const result: any = await withRetry(() => helius.stake.createUnstakeTransaction(stakeAccount as any), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -180,7 +180,7 @@ export async function stakeWithdrawCommand(stakeAccount: string, options: StakeO
     const helius = getClient(apiKey, network);
 
     spinner?.start("Creating withdraw transaction...");
-    const result = await helius.stake.createWithdrawTransaction(stakeAccount as any);
+    const result: any = await withRetry(() => helius.stake.createWithdrawTransaction(stakeAccount as any), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }

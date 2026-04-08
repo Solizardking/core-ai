@@ -1,9 +1,9 @@
 import chalk from "chalk";
 import { resolveApiKey, resolveNetwork, getClient, type ResolveOptions } from "../lib/helius.js";
 import { formatTimestamp } from "../lib/formatters.js";
-import { outputJson, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
+import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 
-interface BlockOptions extends OutputOptions, ResolveOptions {}
+interface BlockOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function blockCommand(slot: string, options: BlockOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
@@ -15,10 +15,10 @@ export async function blockCommand(slot: string, options: BlockOptions = {}): Pr
 
     spinner?.start(`Fetching block at slot ${slot}...`);
     const slotNum = BigInt(slot);
-    const result = await helius.raw.getBlock(slotNum, {
+    const result: any = await withRetry(() => helius.raw.getBlock(slotNum, {
       maxSupportedTransactionVersion: 0,
       transactionDetails: "signatures",
-    });
+    }), options, spinner);
     spinner?.stop();
 
     if (options.json) {

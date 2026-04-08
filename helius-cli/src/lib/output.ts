@@ -318,7 +318,6 @@ export function exitWithError(
 
 export interface RetryOptions {
   retry?: string | number;
-  json?: boolean;
 }
 
 /**
