@@ -26,7 +26,7 @@ LaserStream has two MCP tools that work together with the SDK:
 2. Use `laserstreamSubscribe` with the user's requirements to generate the correct subscription config and SDK code
 3. The generated code uses the `helius-laserstream` SDK — place it in the user's application code where the actual gRPC stream will run
 
-ALWAYS use the MCP tools first to generate correct configs, then embed the SDK code they produce into the user's project.
+If MCP tools are available, use them first to generate correct configs, then embed the SDK code they produce into the user's project. Otherwise, follow the patterns in this file to build configs directly.
 
 ## Endpoints
 
@@ -284,7 +284,7 @@ Use the `getLatencyComparison` MCP tool to show the user detailed tradeoffs.
 
 ## Best Practices
 
-- ALWAYS use the `laserstreamSubscribe` MCP tool to generate subscription configs — it validates parameters and produces correct SDK code
+- If MCP is available, use the `laserstreamSubscribe` tool to generate subscription configs — it validates parameters and produces correct SDK code
 - Choose the closest regional endpoint to minimize latency
 - Use the LaserStream SDK (`helius-laserstream`) — it handles reconnection and replay automatically
 - Filter aggressively — only subscribe to accounts/transactions you need to minimize data transfer and credit usage

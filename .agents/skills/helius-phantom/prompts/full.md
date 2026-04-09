@@ -1340,31 +1340,32 @@ Two endpoints:
 - **Parse transactions**: `POST /v0/transactions/?api-key=KEY` — parse known signatures
 - **Transaction history**: `GET /v0/addresses/{address}/transactions?api-key=KEY` — fetch + parse history for an address
 
-## MCP Tools
+## Tools & Endpoints
 
-ALWAYS use these MCP tools for transaction analysis. Only generate raw API code when the user is building an application.
+Use these endpoints for transaction analysis — available via MCP tools, SDK methods, or REST API.
 
-| MCP Tool | What It Does | Credits |
-|---|---|---|
-| `parseTransactions` | Parse signatures into human-readable format. Returns type, source program, transfers, fees, description. Use `showRaw: true` for instruction-level data. | 100/call |
-| `getTransactionHistory` | Get transaction history for a wallet. Three modes: `parsed` (default, human-readable), `signatures` (lightweight list), `raw` (full data with advanced filters). | ~110 (parsed), ~10 (signatures/raw) |
+| Endpoint | What It Does | Credits | Interfaces |
+|---|---|---|---|
+| `parseTransactions` | Parse signatures into human-readable format. Returns type, source program, transfers, fees, description. Use `showRaw: true` for instruction-level data. | 100/call | REST: `POST /v0/transactions/`, SDK: `helius.enhanced.getTransactions()`, MCP: `parseTransactions` |
+| `getTransactionsByAddress` | Get parsed transaction history for a wallet via the Enhanced Transactions API. | ~110 | REST: `GET /v0/addresses/{addr}/transactions`, SDK: `helius.enhanced.getTransactionsByAddress()`, MCP: `getTransactionHistory` (mode: `parsed`) |
+| `getTransactionsForAddress` | Get transaction history via RPC with advanced filters. Handles `getSignaturesForAddress` + enrichment internally. | ~10-110 | [REST RPC](https://www.helius.dev/docs/api-reference/rpc/http/gettransactionsforaddress), SDK: `helius.getTransactionsForAddress()`, MCP: `getTransactionHistory` (mode: `raw`) |
 
-Related tool (Wallet API, covered in `helius-wallet-api.md`):
+Related endpoint (Wallet API, covered in `helius-wallet-api.md`):
 
-| MCP Tool | What It Does | Credits |
-|---|---|---|
-| `getWalletHistory` | Transaction history with balance changes per tx. Simpler pagination, different response format. | 100/call |
+| Endpoint | What It Does | Credits | Interfaces |
+|---|---|---|---|
+| `getWalletHistory` | Transaction history with balance changes per tx. Simpler pagination, different response format. | 100/call | REST: Wallet API, MCP: `getWalletHistory` |
 
 ### When to Use Which
 
-| You want to... | Use this |
-|---|---|
-| Parse specific transaction signatures | `parseTransactions` |
-| Get a wallet's recent activity (human-readable) | `getTransactionHistory` (mode: `parsed`) |
-| Get a lightweight list of signatures for a wallet | `getTransactionHistory` (mode: `signatures`) |
-| Filter by time range, slot range, or status | `getTransactionHistory` (mode: `raw`) |
-| See balance changes per transaction | `getWalletHistory` (Wallet API) |
-| Debug raw instruction data | `parseTransactions` with `showRaw: true` |
+| You want to... | Use this | Interface options |
+|---|---|---|
+| Parse specific transaction signatures | `parseTransactions` | REST / SDK / MCP |
+| Get a wallet's recent activity (human-readable) | `getTransactionsByAddress` | REST: `GET /v0/addresses/{addr}/transactions`, SDK: `helius.enhanced.getTransactionsByAddress()`, MCP: `getTransactionHistory` (mode: `parsed`) |
+| Get a lightweight list of signatures for a wallet | `getTransactionsForAddress` (signatures mode) | [REST RPC](https://www.helius.dev/docs/api-reference/rpc/http/gettransactionsforaddress), SDK: `helius.getTransactionsForAddress()`, MCP: `getTransactionHistory` (mode: `signatures`) |
+| Filter by time range, slot range, or status | `getTransactionsForAddress` (with filters) | [REST RPC](https://www.helius.dev/docs/api-reference/rpc/http/gettransactionsforaddress), SDK: `helius.getTransactionsForAddress()`, MCP: `getTransactionHistory` (mode: `raw`) |
+| See balance changes per transaction | `getWalletHistory` (Wallet API) | REST / MCP |
+| Debug raw instruction data | `parseTransactions` with `showRaw: true` | REST / SDK / MCP |
 
 ## parseTransactions
 
@@ -1545,8 +1546,8 @@ The MCP `getTransactionHistory` tool handles this automatically in parsed mode.
 
 ## Common Patterns
 
-- **Parse a specific tx**: use `parseTransactions` MCP tool, or `POST /v0/transactions/?api-key=KEY` with `{ transactions: [sig] }`
-- **Recent wallet history**: use `getTransactionHistory` MCP tool (mode: `parsed`), or `GET /v0/addresses/{addr}/transactions?api-key=KEY`
+- **Parse a specific tx**: `POST /v0/transactions/?api-key=KEY` with `{ transactions: [sig] }` (REST), `helius.enhanced.getTransactions()` (SDK), or `parseTransactions` (MCP)
+- **Recent wallet history**: `GET /v0/addresses/{addr}/transactions?api-key=KEY` (REST), `helius.enhanced.getTransactionsByAddress()` (SDK), or `getTransactionHistory` mode `parsed` (MCP)
 - **Paginate full history**: loop with `before-signature` param set to `batch[batch.length - 1].signature`, break when response is empty
 - **Filter by type**: append `&type=SWAP&token-accounts=balanceChanged` to the history URL
 - **Oldest transactions first**: use `sort-order=asc` — no need to paginate to the end
@@ -1682,6 +1683,7 @@ const parsed = await helius.enhanced.getTransactions({ transactions: ['sig1', 's
 - **Using `before` instead of `beforeSignature`** — The Enhanced SDK method uses `beforeSignature` (camelCase). Using `before` silently does nothing because JavaScript destructuring ignores unknown keys. This causes infinite pagination loops returning page 1 repeatedly. Always import and use the `GetEnhancedTransactionsByAddressRequest` type to catch this at compile time.
 - **Using `any` for SDK params** — Casting params as `any` disables TypeScript's ability to catch name mismatches. Always use the proper request types: `GetEnhancedTransactionsByAddressRequest`, `GetEnhancedTransactionsRequest`, or `GetTransactionsForAddressConfigFull`.
 - **Mixing up the two SDK methods** — `helius.enhanced.getTransactionsByAddress()` uses `beforeSignature`/`afterSignature` for pagination. `helius.getTransactionsForAddress()` uses `paginationToken`. They are NOT interchangeable.
+- **Manually chaining `getSignaturesForAddress` + `getTransaction`** — This two-step pattern is slower, costs more credits, and returns raw unparsed data. Use `helius.enhanced.getTransactionsByAddress()` (Enhanced API, `beforeSignature` pagination) or `helius.getTransactionsForAddress()` ([REST RPC](https://www.helius.dev/docs/api-reference/rpc/http/gettransactionsforaddress), `paginationToken` pagination) in application code, `getTransactionHistory` (MCP) for agent queries, or `GET /v0/addresses/{addr}/transactions` (Enhanced REST) — they all combine fetching and parsing in one call.
 - Using raw RPC `getTransaction` when you could use `parseTransactions` for human-readable data — Enhanced Transactions saves significant parsing work
 - Not handling the runtime type filtering continuation pattern — the API may return an error with a continuation signature instead of results
 - Using `tokenAccounts: "all"` when `"balanceChanged"` would filter spam
@@ -2531,7 +2533,7 @@ All Wallet API endpoints have direct MCP tools. ALWAYS use these instead of gene
 | `getWalletTransfers` | `GET /v1/wallet/{wallet}/transfers` | Token transfers with direction (in/out) and counterparty |
 | `getWalletFundedBy` | `GET /v1/wallet/{wallet}/funded-by` | Original funding source (first incoming SOL transfer) |
 
-When the user asks to investigate a wallet, identify an address, check balances, or trace funds — use these MCP tools directly. Only generate raw API code when the user is building an application that needs to call these endpoints programmatically.
+When the user asks to investigate a wallet, identify an address, check balances, or trace funds — use these endpoints via MCP tools (if available), SDK, or REST API. For live queries, MCP tools handle auth and pagination automatically; for application code, use the SDK or REST API directly.
 
 ## Choosing the Right Tool
 
@@ -2730,7 +2732,7 @@ Enhanced WebSocket operations have MCP tools. Like LaserStream, these are config
 | `accountSubscribe` | Generates Enhanced WS subscription config + code for account monitoring |
 | `getEnhancedWebSocketInfo` | Returns endpoint, capabilities, plan requirements |
 
-ALWAYS use these MCP tools first when the user needs Enhanced WebSocket subscriptions — they validate parameters, warn about config issues, and produce correct code.
+If MCP tools are available, use them first when the user needs Enhanced WebSocket subscriptions — they validate parameters, warn about config issues, and produce correct code. Otherwise, follow the patterns in this file to build subscription configs directly.
 
 Standard WebSocket subscriptions do not have MCP tools — generate the code directly using the patterns in this file.
 

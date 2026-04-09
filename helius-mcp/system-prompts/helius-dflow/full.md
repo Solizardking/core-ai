@@ -1388,7 +1388,7 @@ LaserStream has two MCP tools that work together with the SDK:
 2. Use `laserstreamSubscribe` with the user's requirements to generate the correct subscription config and SDK code
 3. The generated code uses the `helius-laserstream` SDK — place it in the user's application code where the actual gRPC stream will run
 
-ALWAYS use the MCP tools first to generate correct configs, then embed the SDK code they produce into the user's project.
+If MCP tools are available, use them first to generate correct configs, then embed the SDK code they produce into the user's project. Otherwise, follow the patterns in this file to build configs directly.
 
 ## Endpoints
 
@@ -1646,7 +1646,7 @@ Use the `getLatencyComparison` MCP tool to show the user detailed tradeoffs.
 
 ## Best Practices
 
-- ALWAYS use the `laserstreamSubscribe` MCP tool to generate subscription configs — it validates parameters and produces correct SDK code
+- If MCP is available, use the `laserstreamSubscribe` tool to generate subscription configs — it validates parameters and produces correct SDK code
 - Choose the closest regional endpoint to minimize latency
 - Use the LaserStream SDK (`helius-laserstream`) — it handles reconnection and replay automatically
 - Filter aggressively — only subscribe to accounts/transactions you need to minimize data transfer and credit usage
@@ -2616,7 +2616,7 @@ All Wallet API endpoints have direct MCP tools. ALWAYS use these instead of gene
 | `getWalletTransfers` | `GET /v1/wallet/{wallet}/transfers` | Token transfers with direction (in/out) and counterparty |
 | `getWalletFundedBy` | `GET /v1/wallet/{wallet}/funded-by` | Original funding source (first incoming SOL transfer) |
 
-When the user asks to investigate a wallet, identify an address, check balances, or trace funds — use these MCP tools directly. Only generate raw API code when the user is building an application that needs to call these endpoints programmatically.
+When the user asks to investigate a wallet, identify an address, check balances, or trace funds — use these endpoints via MCP tools (if available), SDK, or REST API. For live queries, MCP tools handle auth and pagination automatically; for application code, use the SDK or REST API directly.
 
 ## Choosing the Right Tool
 
@@ -2815,7 +2815,7 @@ Enhanced WebSocket operations have MCP tools. Like LaserStream, these are config
 | `accountSubscribe` | Generates Enhanced WS subscription config + code for account monitoring |
 | `getEnhancedWebSocketInfo` | Returns endpoint, capabilities, plan requirements |
 
-ALWAYS use these MCP tools first when the user needs Enhanced WebSocket subscriptions — they validate parameters, warn about config issues, and produce correct code.
+If MCP tools are available, use them first when the user needs Enhanced WebSocket subscriptions — they validate parameters, warn about config issues, and produce correct code. Otherwise, follow the patterns in this file to build subscription configs directly.
 
 Standard WebSocket subscriptions do not have MCP tools — generate the code directly using the patterns in this file.
 
