@@ -30,7 +30,7 @@ Enhanced WebSocket operations have MCP tools. Like LaserStream, these are config
 | `accountSubscribe` | Generates Enhanced WS subscription config + code for account monitoring |
 | `getEnhancedWebSocketInfo` | Returns endpoint, capabilities, plan requirements |
 
-ALWAYS use these MCP tools first when the user needs Enhanced WebSocket subscriptions — they validate parameters, warn about config issues, and produce correct code.
+If MCP tools are available, use them first when the user needs Enhanced WebSocket subscriptions — they validate parameters, warn about config issues, and produce correct code. Otherwise, follow the patterns in this file to build subscription configs directly.
 
 Standard WebSocket subscriptions do not have MCP tools — generate the code directly using the patterns in this file.
 
