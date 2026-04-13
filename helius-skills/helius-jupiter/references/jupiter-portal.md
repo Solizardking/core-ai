@@ -10,7 +10,7 @@ Jupiter API key setup, authentication requirements, and rate limiting behavior f
 
 All Jupiter REST endpoints require authentication via the `x-api-key` header.
 
-1. Go to [portal.jup.ag](https://portal.jup.ag/)
+1. Go to [developers.jup.ag/portal](https://developers.jup.ag/portal)
 2. Sign in with your email
 3. Generate an API key
 4. Store it securely — never commit to git
@@ -95,7 +95,7 @@ async function fetchWithRetry(
 
 ## Authentication Invariant
 
-**Hard rule**: Never call a Jupiter REST endpoint without the `x-api-key` header. If the user hasn't configured a key, stop and ask them to set one up at [portal.jup.ag](https://portal.jup.ag/) before proceeding.
+**Hard rule**: Never call a Jupiter REST endpoint without the `x-api-key` header. If the user hasn't configured a key, stop and ask them to set one up at [developers.jup.ag/portal](https://developers.jup.ag/portal) before proceeding.
 
 ---
 
@@ -129,6 +129,6 @@ Portfolio, Prediction Markets, Send, and Studio are currently in beta. Their int
 
 ## Resources
 
-- Jupiter Portal: [portal.jup.ag](https://portal.jup.ag/)
+- Jupiter Portal: [developers.jup.ag/portal](https://developers.jup.ag/portal)
 - Jupiter Docs: [dev.jup.ag](https://dev.jup.ag/)
 - LLM-Optimized Docs: [dev.jup.ag/docs/llms.txt](https://dev.jup.ag/docs/llms.txt)

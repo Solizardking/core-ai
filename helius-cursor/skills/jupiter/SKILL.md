@@ -27,7 +27,7 @@ with command: npx helius-mcp@latest
 
 ### 2. Jupiter API Key
 
-Jupiter REST endpoints require an API key via the `x-api-key` header. Get one at [portal.jup.ag](https://portal.jup.ag/). If the user doesn't have one, read `references/jupiter-portal.md` for setup instructions.
+Jupiter REST endpoints require an API key via the `x-api-key` header. Get one at [developers.jup.ag/portal](https://developers.jup.ag/portal). If the user doesn't have one, read `references/jupiter-portal.md` for setup instructions.
 
 ### 3. Helius API Key
 
@@ -184,7 +184,7 @@ These are straightforward data lookups. No reference file needed — just use th
 
 Use this when the user wants to:
 - Create a Helius account or set up API keys
-- Get a Jupiter API key (direct them to [portal.jup.ag](https://portal.jup.ag/))
+- Get a Jupiter API key (direct them to [developers.jup.ag/portal](https://developers.jup.ag/portal))
 - Understand rate limits and authentication requirements
 
 ### Documentation & Troubleshooting
@@ -315,7 +315,7 @@ Follow these rules in ALL implementations:
 ### Jupiter
 - Jupiter Docs: `https://dev.jup.ag`
 - LLM-Optimized Docs: `https://dev.jup.ag/docs/llms.txt`
-- Jupiter Portal (API keys): `https://portal.jup.ag`
+- Jupiter Portal (API keys): `https://developers.jup.ag/portal`
 - Jupiter Lend Docs: `https://dev.jup.ag/docs/lend`
 - Jupiter Lend SDKs: `@jup-ag/lend-read` (read) and `@jup-ag/lend` (write)
 - Jupiter Agent Skills: `github.com/jup-ag/agent-skills`

@@ -37,7 +37,7 @@ Jupiter V2 offers two integration paths:
 
 ### GET /order — Get Quote + Transaction
 
-Returns a swap quote with a pre-built transaction. Omit `taker` to get a quote-only response (no `transaction` field).
+Returns a swap quote with a pre-built transaction. Omit `taker` to get a quote-only response — `transaction` will be null but `requestId` and the rest of the quote data are still returned.
 
 ```typescript
 const params = new URLSearchParams({
@@ -53,7 +53,7 @@ const response = await fetch(`https://api.jup.ag/swap/v2/order?${params}`, {
 
 const order = await response.json();
 // Returns: { transaction, requestId, inputMint, outputMint, inAmount, outAmount, router, mode, feeBps, feeMint }
-// If taker is omitted: no transaction or requestId, just quote data
+// If taker is omitted (quote-only): `transaction` is null, but `requestId` and the rest of the quote data are still returned
 ```
 
 **Required parameters**:
@@ -71,8 +71,8 @@ const order = await response.json();
 - `excludeDexes` — Comma-separated DEXes to exclude from routing
 
 **Response fields**:
-- `transaction` — Base64-encoded transaction (null without `taker`)
-- `requestId` — Required for `/execute` (idempotent retries)
+- `transaction` — Base64-encoded transaction (null when `taker` is omitted)
+- `requestId` — Returned on every response (including quote-only); required for `/execute` and idempotent retries
 - `outAmount` — Expected output before slippage
 - `router` — Winning router (`iris`, `jupiterz`, `dflow`, `okx`)
 - `mode` — `ultra` (default params, all routers) or `manual` (optional params detected, routing restricted)
@@ -312,4 +312,4 @@ Negative codes = Jupiter-internal (routing, slippage, etc.) — typically transi
 ## Resources
 
 - Swap API V2 Docs: [dev.jup.ag/docs/swap](https://dev.jup.ag/docs/swap)
-- Jupiter Portal (API keys): [portal.jup.ag](https://portal.jup.ag/)
+- Jupiter Portal (API keys): [developers.jup.ag/portal](https://developers.jup.ag/portal)

@@ -119,7 +119,8 @@ for (const chunk of chunks) {
     { headers: { 'x-api-key': process.env.JUPITER_API_KEY! } }
   );
   const data = await res.json();
-  for (const [mint, info] of Object.entries(data.data)) {
+  // Price API v3 keys mints at the top level — no `data` wrapper
+  for (const [mint, info] of Object.entries(data)) {
     allPrices[mint] = (info as any).usdPrice;
   }
 }

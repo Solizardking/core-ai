@@ -22,7 +22,7 @@ Then restart your AI assistant so the tools become available.
 
 ### 2. Jupiter API Key
 
-Jupiter REST endpoints require an API key via the `x-api-key` header. Get one at [portal.jup.ag](https://portal.jup.ag/). If the user doesn't have one, read `references/jupiter-portal.md` for setup instructions.
+Jupiter REST endpoints require an API key via the `x-api-key` header. Get one at [developers.jup.ag/portal](https://developers.jup.ag/portal). If the user doesn't have one, read `references/jupiter-portal.md` for setup instructions.
 
 ### 3. Helius API Key
 
@@ -179,7 +179,7 @@ These are straightforward data lookups. No reference file needed — just use th
 
 Use this when the user wants to:
 - Create a Helius account or set up API keys
-- Get a Jupiter API key (direct them to [portal.jup.ag](https://portal.jup.ag/))
+- Get a Jupiter API key (direct them to [developers.jup.ag/portal](https://developers.jup.ag/portal))
 - Understand rate limits and authentication requirements
 
 ### Documentation & Troubleshooting
@@ -310,7 +310,7 @@ Follow these rules in ALL implementations:
 ### Jupiter
 - Jupiter Docs: `https://dev.jup.ag`
 - LLM-Optimized Docs: `https://dev.jup.ag/docs/llms.txt`
-- Jupiter Portal (API keys): `https://portal.jup.ag`
+- Jupiter Portal (API keys): `https://developers.jup.ag/portal`
 - Jupiter Lend Docs: `https://dev.jup.ag/docs/lend`
 - Jupiter Lend SDKs: `@jup-ag/lend-read` (read) and `@jup-ag/lend` (write)
 - Jupiter Agent Skills: `github.com/jup-ag/agent-skills`
@@ -2556,7 +2556,8 @@ for (const chunk of chunks) {
     { headers: { 'x-api-key': process.env.JUPITER_API_KEY! } }
   );
   const data = await res.json();
-  for (const [mint, info] of Object.entries(data.data)) {
+  // Price API v3 keys mints at the top level — no `data` wrapper
+  for (const [mint, info] of Object.entries(data)) {
     allPrices[mint] = (info as any).usdPrice;
   }
 }
@@ -3708,7 +3709,7 @@ Jupiter API key setup, authentication requirements, and rate limiting behavior f
 
 All Jupiter REST endpoints require authentication via the `x-api-key` header.
 
-1. Go to [portal.jup.ag](https://portal.jup.ag/)
+1. Go to [developers.jup.ag/portal](https://developers.jup.ag/portal)
 2. Sign in with your email
 3. Generate an API key
 4. Store it securely — never commit to git
@@ -3793,7 +3794,7 @@ async function fetchWithRetry(
 
 ## Authentication Invariant
 
-**Hard rule**: Never call a Jupiter REST endpoint without the `x-api-key` header. If the user hasn't configured a key, stop and ask them to set one up at [portal.jup.ag](https://portal.jup.ag/) before proceeding.
+**Hard rule**: Never call a Jupiter REST endpoint without the `x-api-key` header. If the user hasn't configured a key, stop and ask them to set one up at [developers.jup.ag/portal](https://developers.jup.ag/portal) before proceeding.
 
 ---
 
@@ -3827,7 +3828,7 @@ Portfolio, Prediction Markets, Send, and Studio are currently in beta. Their int
 
 ## Resources
 
-- Jupiter Portal: [portal.jup.ag](https://portal.jup.ag/)
+- Jupiter Portal: [developers.jup.ag/portal](https://developers.jup.ag/portal)
 - Jupiter Docs: [dev.jup.ag](https://dev.jup.ag/)
 - LLM-Optimized Docs: [dev.jup.ag/docs/llms.txt](https://dev.jup.ag/docs/llms.txt)
 
@@ -4058,7 +4059,7 @@ Jupiter V2 offers two integration paths:
 
 ### GET /order — Get Quote + Transaction
 
-Returns a swap quote with a pre-built transaction. Omit `taker` to get a quote-only response (no `transaction` field).
+Returns a swap quote with a pre-built transaction. Omit `taker` to get a quote-only response — `transaction` will be null but `requestId` and the rest of the quote data are still returned.
 
 ```typescript
 const params = new URLSearchParams({
@@ -4074,7 +4075,7 @@ const response = await fetch(`https://api.jup.ag/swap/v2/order?${params}`, {
 
 const order = await response.json();
 // Returns: { transaction, requestId, inputMint, outputMint, inAmount, outAmount, router, mode, feeBps, feeMint }
-// If taker is omitted: no transaction or requestId, just quote data
+// If taker is omitted (quote-only): `transaction` is null, but `requestId` and the rest of the quote data are still returned
 ```
 
 **Required parameters**:
@@ -4092,8 +4093,8 @@ const order = await response.json();
 - `excludeDexes` — Comma-separated DEXes to exclude from routing
 
 **Response fields**:
-- `transaction` — Base64-encoded transaction (null without `taker`)
-- `requestId` — Required for `/execute` (idempotent retries)
+- `transaction` — Base64-encoded transaction (null when `taker` is omitted)
+- `requestId` — Returned on every response (including quote-only); required for `/execute` and idempotent retries
 - `outAmount` — Expected output before slippage
 - `router` — Winning router (`iris`, `jupiterz`, `dflow`, `okx`)
 - `mode` — `ultra` (default params, all routers) or `manual` (optional params detected, routing restricted)
@@ -4333,7 +4334,7 @@ Negative codes = Jupiter-internal (routing, slippage, etc.) — typically transi
 ## Resources
 
 - Swap API V2 Docs: [dev.jup.ag/docs/swap](https://dev.jup.ag/docs/swap)
-- Jupiter Portal (API keys): [portal.jup.ag](https://portal.jup.ag/)
+- Jupiter Portal (API keys): [developers.jup.ag/portal](https://developers.jup.ag/portal)
 
 
 ---
@@ -4431,7 +4432,16 @@ const response = await fetch(
 );
 
 const prices = await response.json();
-// Returns: { data: { [mintAddress]: { id, usdPrice, blockId, decimals, priceChange24h, ... } } }
+// Returns mint addresses at the TOP LEVEL (no `data` wrapper):
+// {
+//   "So11111111111111111111111111111111111111112": {
+//     "usdPrice": 82.04,
+//     "blockId": 412733640,
+//     "decimals": 9,
+//     "priceChange24h": -2.61
+//   },
+//   ...
+// }
 ```
 
 **Constraints**:
@@ -4440,8 +4450,10 @@ const prices = await response.json();
 
 ### Response Fields
 
+Mints are keyed at the top level — there is NO `data` wrapper and NO `id` field on each entry.
+
 ```typescript
-const solPrice = prices.data['So11111111111111111111111111111111111111112'];
+const solPrice = prices['So11111111111111111111111111111111111111112'];
 console.log(`SOL: $${solPrice.usdPrice}`);
 console.log(`24h change: ${solPrice.priceChange24h}%`);
 console.log(`Block: ${solPrice.blockId}`);
@@ -4514,6 +4526,7 @@ See `references/integration-patterns.md` Pattern 2 for the complete implementati
 2. **Max 100 mints per Token Shield / token lookup** — Use comma-separated values
 3. **Verify tokens before displaying** — Check `isVerified` and `organicScore` to filter scam tokens
 4. **Prices are in USD** — The field is `usdPrice`, not `price`
+5. **Price API v3 has no `data` wrapper** — Access prices as `response[mint]`, NOT `response.data[mint]`. There is also no `id` field per entry. Using `response.data[mint]` will silently return `undefined`.
 5. **Use Helius DAS for ownership data** — Jupiter Tokens API provides metadata, not wallet-specific data
 6. **Tokens API is v2, Price API is v3** — Don't use the old v1/v2 endpoints
 

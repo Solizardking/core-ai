@@ -89,7 +89,16 @@ const response = await fetch(
 );
 
 const prices = await response.json();
-// Returns: { data: { [mintAddress]: { id, usdPrice, blockId, decimals, priceChange24h, ... } } }
+// Returns mint addresses at the TOP LEVEL (no `data` wrapper):
+// {
+//   "So11111111111111111111111111111111111111112": {
+//     "usdPrice": 82.04,
+//     "blockId": 412733640,
+//     "decimals": 9,
+//     "priceChange24h": -2.61
+//   },
+//   ...
+// }
 ```
 
 **Constraints**:
@@ -98,8 +107,10 @@ const prices = await response.json();
 
 ### Response Fields
 
+Mints are keyed at the top level — there is NO `data` wrapper and NO `id` field on each entry.
+
 ```typescript
-const solPrice = prices.data['So11111111111111111111111111111111111111112'];
+const solPrice = prices['So11111111111111111111111111111111111111112'];
 console.log(`SOL: $${solPrice.usdPrice}`);
 console.log(`24h change: ${solPrice.priceChange24h}%`);
 console.log(`Block: ${solPrice.blockId}`);
@@ -172,6 +183,7 @@ See `references/integration-patterns.md` Pattern 2 for the complete implementati
 2. **Max 100 mints per Token Shield / token lookup** — Use comma-separated values
 3. **Verify tokens before displaying** — Check `isVerified` and `organicScore` to filter scam tokens
 4. **Prices are in USD** — The field is `usdPrice`, not `price`
+5. **Price API v3 has no `data` wrapper** — Access prices as `response[mint]`, NOT `response.data[mint]`. There is also no `id` field per entry. Using `response.data[mint]` will silently return `undefined`.
 5. **Use Helius DAS for ownership data** — Jupiter Tokens API provides metadata, not wallet-specific data
 6. **Tokens API is v2, Price API is v3** — Don't use the old v1/v2 endpoints
 
