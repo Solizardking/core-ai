@@ -1,16 +1,16 @@
 import chalk from "chalk";
 import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { formatEnumLabel } from "../lib/formatters.js";
-import { outputJson, exitWithError, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
+import { outputJson, exitWithError, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 import { validateSolanaAddresses } from "../lib/validation.js";
 
-interface WebhookOptions extends OutputOptions, ResolveOptions {}
+interface WebhookOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function webhookListCommand(options: WebhookOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
     const helius = await setupClient(spinner, options, "Fetching webhooks...");
-    const result = await helius.webhooks.getAll();
+    const result = await withRetry(() => helius.webhooks.getAll(), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -39,7 +39,7 @@ export async function webhookGetCommand(webhookId: string, options: WebhookOptio
   const spinner = createSpinner(options);
   try {
     const helius = await setupClient(spinner, options, "Fetching webhook...");
-    const result = await helius.webhooks.get(webhookId);
+    const result = await withRetry(() => helius.webhooks.get(webhookId), options, spinner) as any;
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -76,12 +76,12 @@ export async function webhookCreateCommand(options: WebhookOptions & {
     const webhookType = (options.webhookType || "enhanced") as any;
 
     spinner?.start("Creating webhook...");
-    const result = await helius.webhooks.create({
+    const result = await withRetry(() => helius.webhooks.create({
       webhookURL: options.url,
       accountAddresses,
       transactionTypes: transactionTypes as any,
       webhookType,
-    });
+    }), options, spinner) as any;
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -113,7 +113,7 @@ export async function webhookUpdateCommand(webhookId: string, options: WebhookOp
     if (options.types) params.transactionTypes = options.types.split(",").map((s: string) => s.trim()).filter(Boolean);
 
     spinner?.start("Updating webhook...");
-    const result = await helius.webhooks.update(webhookId, params);
+    const result = await withRetry(() => helius.webhooks.update(webhookId, params), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson(result); return; }
@@ -128,7 +128,7 @@ export async function webhookDeleteCommand(webhookId: string, options: WebhookOp
   const spinner = createSpinner(options);
   try {
     const helius = await setupClient(spinner, options, "Deleting webhook...");
-    await helius.webhooks.delete(webhookId);
+    await withRetry(() => helius.webhooks.delete(webhookId), options, spinner);
     spinner?.stop();
 
     if (options.json) { outputJson({ success: true, webhookID: webhookId }); return; }

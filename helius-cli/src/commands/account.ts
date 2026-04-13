@@ -1,15 +1,15 @@
 import chalk from "chalk";
 import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { formatSol } from "../lib/formatters.js";
-import { outputJson, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
+import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 
-interface AccountOptions extends OutputOptions, ResolveOptions {}
+interface AccountOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function accountCommand(address: string, options: AccountOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
     const helius = await setupClient(spinner, options, "Fetching account info...");
-    const result = await helius.raw.getAccountInfo(address, { encoding: "jsonParsed" });
+    const result = await withRetry(() => helius.raw.getAccountInfo(address, { encoding: "jsonParsed" }), options, spinner) as any;
     spinner?.stop();
 
     if (options.json) {

@@ -1,9 +1,9 @@
 import chalk from "chalk";
 import { resolveApiKey, restRequest, type ResolveOptions } from "../lib/helius.js";
 import { formatAddress, formatTable, formatEnumLabel, type TableColumn } from "../lib/formatters.js";
-import { outputJson, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
+import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 
-interface WalletOptions extends OutputOptions, ResolveOptions {}
+interface WalletOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function walletIdentityCommand(address: string, options: WalletOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
@@ -11,7 +11,7 @@ export async function walletIdentityCommand(address: string, options: WalletOpti
     spinner?.start("Resolving API key...");
     const apiKey = await resolveApiKey(options);
     spinner?.start("Looking up wallet identity...");
-    const result = await restRequest(`/v1/wallet/${address}/identity`, apiKey);
+    const result = await withRetry(() => restRequest(`/v1/wallet/${address}/identity`, apiKey), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     if (!result || (!result.name && !result.type)) {
@@ -34,10 +34,10 @@ export async function walletIdentityBatchCommand(addresses: string[], options: W
     spinner?.start("Resolving API key...");
     const apiKey = await resolveApiKey(options);
     spinner?.start(`Looking up ${addresses.length} wallet(s)...`);
-    const result = await restRequest("/v1/wallet/batch-identity", apiKey, {
+    const result = await withRetry(() => restRequest("/v1/wallet/batch-identity", apiKey, {
       method: "POST",
       body: JSON.stringify({ addresses }),
-    });
+    }), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     const identities = Array.isArray(result) ? result : [];
@@ -65,7 +65,7 @@ export async function walletBalancesCommand(address: string, options: WalletOpti
     if (options.showNfts) params.set("showNfts", "true");
     const qs = params.toString();
     spinner?.start("Fetching wallet balances...");
-    const result = await restRequest(`/v1/wallet/${address}/balances${qs ? "?" + qs : ""}`, apiKey);
+    const result = await withRetry(() => restRequest(`/v1/wallet/${address}/balances${qs ? "?" + qs : ""}`, apiKey), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     console.log(chalk.bold(`\nBalances for ${chalk.cyan(address)}:\n`));
@@ -110,7 +110,7 @@ export async function walletHistoryCommand(address: string, options: WalletOptio
     if (options.before) params.set("before", options.before);
     const qs = params.toString();
     spinner?.start("Fetching wallet history...");
-    const result = await restRequest(`/v1/wallet/${address}/history${qs ? "?" + qs : ""}`, apiKey);
+    const result = await withRetry(() => restRequest(`/v1/wallet/${address}/history${qs ? "?" + qs : ""}`, apiKey), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     const txs = result?.data || result?.transactions || result || [];
@@ -144,7 +144,7 @@ export async function walletTransfersCommand(address: string, options: WalletOpt
     if (options.cursor) params.set("cursor", options.cursor);
     const qs = params.toString();
     spinner?.start("Fetching wallet transfers...");
-    const result = await restRequest(`/v1/wallet/${address}/transfers${qs ? "?" + qs : ""}`, apiKey);
+    const result = await withRetry(() => restRequest(`/v1/wallet/${address}/transfers${qs ? "?" + qs : ""}`, apiKey), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     const transfers = result?.data || result?.transfers || result || [];
@@ -173,7 +173,7 @@ export async function walletFundedByCommand(address: string, options: WalletOpti
     spinner?.start("Resolving API key...");
     const apiKey = await resolveApiKey(options);
     spinner?.start("Finding funding source...");
-    const result = await restRequest(`/v1/wallet/${address}/funded-by`, apiKey);
+    const result = await withRetry(() => restRequest(`/v1/wallet/${address}/funded-by`, apiKey), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
     console.log(chalk.bold(`\nFunding Source for ${chalk.cyan(address)}:\n`));

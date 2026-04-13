@@ -1,18 +1,18 @@
 import chalk from "chalk";
 import { setupClient, resolveNetwork, type ResolveOptions } from "../lib/helius.js";
-import { outputJson, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
+import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 
-interface NetworkOptions extends OutputOptions, ResolveOptions {}
+interface NetworkOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function networkStatusCommand(options: NetworkOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
     const helius = await setupClient(spinner, options, "Fetching network status...");
-    const [epochInfo, version, blockHeight] = await Promise.all([
+    const [epochInfo, version, blockHeight] = await withRetry(() => Promise.all([
       helius.raw.getEpochInfo(),
       helius.raw.getVersion(),
       helius.raw.getBlockHeight(),
-    ]);
+    ]), options, spinner);
     spinner?.stop();
 
     if (options.json) {

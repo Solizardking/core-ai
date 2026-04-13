@@ -316,6 +316,41 @@ export function exitWithError(
   process.exit(exitCode);
 }
 
+export interface RetryOptions {
+  retry?: string | number;
+}
+
+/**
+ * Wrap an async function with exponential backoff retry on transient errors.
+ * Only retries errors classified as retryable (429, 5xx, network).
+ * Non-retryable errors are re-thrown immediately.
+ */
+export async function withRetry<T>(
+  fn: () => Promise<T>,
+  options: RetryOptions,
+  spinner?: { start(text: string): void } | null,
+): Promise<T> {
+  const maxRetries = Math.max(0, parseInt(String(options.retry ?? 0), 10) || 0);
+  let attempt = 0;
+
+  while (true) {
+    try {
+      return await fn();
+    } catch (error) {
+      const { retryable } = classifyError(error);
+      if (!retryable || attempt >= maxRetries) {
+        throw error;
+      }
+
+      attempt++;
+      const delay = Math.min(1000 * 2 ** (attempt - 1), 30_000);
+      const message = error instanceof Error ? error.message : String(error);
+      spinner?.start(`${message} — retrying in ${delay / 1000}s (${attempt}/${maxRetries})...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+}
+
 /** Prompt the user for yes/no confirmation. Returns true if they answer y/yes. */
 export function confirm(question: string): Promise<boolean> {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });

@@ -1,15 +1,15 @@
 import chalk from "chalk";
 import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { formatSol, formatTimestamp, formatAddress, formatEnumLabel } from "../lib/formatters.js";
-import { outputJson, handleCommandError, createSpinner, type OutputOptions } from "../lib/output.js";
+import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 
-interface TxOptions extends OutputOptions, ResolveOptions {}
+interface TxOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function txParseCommand(signatures: string[], options: TxOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
     const helius = await setupClient(spinner, options, `Parsing ${signatures.length} transaction(s)...`);
-    const result = await helius.enhanced.getTransactions({ transactions: signatures });
+    const result = await withRetry(() => helius.enhanced.getTransactions({ transactions: signatures }), options, spinner);
     spinner?.stop();
 
     if (options.json) {
@@ -60,7 +60,7 @@ export async function txHistoryCommand(address: string, options: TxOptions & { l
     if (options.limit) params.limit = parseInt(options.limit, 10);
     if (options.before) params.before = options.before;
     if (options.type) params.type = options.type;
-    const result = await helius.enhanced.getTransactionsByAddress(params);
+    const result = await withRetry(() => helius.enhanced.getTransactionsByAddress(params), options, spinner);
     spinner?.stop();
 
     if (options.json) {
@@ -99,7 +99,7 @@ export async function txFeesCommand(options: TxOptions & { accounts?: string } =
     if (options.accounts) {
       params.accountKeys = options.accounts.split(",").map((s: string) => s.trim());
     }
-    const result = await helius.getPriorityFeeEstimate(params);
+    const result = await withRetry(() => helius.getPriorityFeeEstimate(params), options, spinner);
     spinner?.stop();
 
     if (options.json) {
