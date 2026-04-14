@@ -44,8 +44,10 @@ Exit code ranges:
 - `--retry <n>` — retry transient errors up to `n` times with exponential backoff (default `0`)
 - `-k, --keypair <path>` — keypair file path (for `signup`, `login`, `upgrade`, `pay`, `stake`)
 
-## Optional
+## Resources
 
-- [Full README](README.md): complete command reference, configuration, and development setup
-- [Helius docs](https://www.helius.dev/docs): platform API documentation (RPC, DAS, Sender, webhooks, Laserstream)
-- [Helius dashboard](https://dashboard.helius.dev): manage API keys, billing, and webhooks in the browser
+- [Full README](README.md): Complete command reference, configuration, and development setup for the Helius CLI
+- [Helius Agents Documentation](https://www.helius.dev/docs/agents/llms.txt): Machine-readable index of all agent-focused documentation for the Helius Solana platform
+- [Helius for Agents](https://www.helius.dev/docs/agents/overview.md): Everything AI agents need to build on Solana with Helius
+- [Helius Docs](https://www.helius.dev/docs): Platform API documentation (RPC, DAS, Sender, webhooks, Laserstream)
+- [Helius Dashboard](https://dashboard.helius.dev): Manage API keys, billing, and webhooks in the browser
