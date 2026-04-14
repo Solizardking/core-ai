@@ -82,6 +82,8 @@ helius config clear               # Reset config
 | `helius apikeys [project-id]` | List API keys |
 | `helius apikeys create [project-id]` | Create a new API key |
 | `helius usage [project-id]` | Show credits usage |
+| `helius status` | Show account status: plan, credits, billing cycle |
+| `helius plans` | List available Helius plans and pricing |
 | `helius rpc [project-id]` | Show RPC endpoints |
 
 ### Balances & Tokens
