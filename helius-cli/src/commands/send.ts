@@ -2,11 +2,20 @@ import chalk from "chalk";
 import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 
-interface SendOptions extends OutputOptions, ResolveOptions, RetryOptions {}
+interface SendOptions extends OutputOptions, ResolveOptions, RetryOptions {
+  dryRun?: boolean;
+}
 
 export async function sendBroadcastCommand(base64Tx: string, options: SendOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    if (options.dryRun) {
+      spinner?.succeed("Dry run — transaction not submitted");
+      if (options.json) { outputJson({ dryRun: true, transaction: base64Tx }); return; }
+      console.log(chalk.yellow("\n  Dry run — transaction would be broadcast but was not submitted."));
+      return;
+    }
+
     const helius = await setupClient(spinner, options, "Broadcasting transaction...");
     const signature = await withRetry(() => helius.tx.broadcastTransaction(base64Tx), options, spinner);
     spinner?.stop();
@@ -22,6 +31,13 @@ export async function sendBroadcastCommand(base64Tx: string, options: SendOption
 export async function sendRawCommand(base64Tx: string, options: SendOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    if (options.dryRun) {
+      spinner?.succeed("Dry run — transaction not submitted");
+      if (options.json) { outputJson({ dryRun: true, transaction: base64Tx }); return; }
+      console.log(chalk.yellow("\n  Dry run — transaction would be sent but was not submitted."));
+      return;
+    }
+
     const helius = await setupClient(spinner, options, "Sending transaction...");
     const signature = await withRetry(() => helius.tx.sendTransaction({ base64: base64Tx }), options, spinner);
     spinner?.stop();
@@ -37,6 +53,14 @@ export async function sendRawCommand(base64Tx: string, options: SendOptions = {}
 export async function sendSenderCommand(base64Tx: string, options: SendOptions & { region?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    if (options.dryRun) {
+      const region = options.region || "Default";
+      spinner?.succeed("Dry run — transaction not submitted");
+      if (options.json) { outputJson({ dryRun: true, transaction: base64Tx, region }); return; }
+      console.log(chalk.yellow(`\n  Dry run — transaction would be sent via Helius Sender (${region}) but was not submitted.`));
+      return;
+    }
+
     const helius = await setupClient(spinner, options, "Resolving API key...");
 
     const region = (options.region || "Default") as any;

@@ -676,6 +676,7 @@ webhookCmd
   .requiredOption("--accounts <addrs>", "Comma-separated addresses to monitor")
   .requiredOption("--types <types>", "Comma-separated transaction types (or ANY)")
   .option("--webhook-type <type>", "Webhook type: enhanced, raw, or discord", "enhanced")
+  .option("--dry-run", "Preview webhook config without creating")
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
@@ -689,6 +690,7 @@ webhookCmd
   .option("--url <url>", "New webhook URL")
   .option("--accounts <addrs>", "New comma-separated addresses")
   .option("--types <types>", "New comma-separated transaction types")
+  .option("--dry-run", "Preview changes without updating")
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
@@ -699,6 +701,7 @@ Examples:
 webhookCmd
   .command("delete <id>")
   .description("Delete a webhook")
+  .option("--dry-run", "Preview which webhook would be deleted")
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
@@ -1058,6 +1061,7 @@ const sendCmd = program
 sendCmd
   .command("broadcast <base64-tx>")
   .description("Broadcast a signed transaction and poll for confirmation")
+  .option("--dry-run", "Validate without submitting the transaction")
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
@@ -1067,6 +1071,7 @@ Examples:
 sendCmd
   .command("raw <base64-tx>")
   .description("Send a raw transaction")
+  .option("--dry-run", "Validate without submitting the transaction")
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
@@ -1077,6 +1082,7 @@ sendCmd
   .command("sender <base64-tx>")
   .description("Send via Helius Sender for ultra-low latency")
   .option("--region <region>", "Sender region (Default, US_SLC, US_EAST, etc.)")
+  .option("--dry-run", "Validate without submitting the transaction")
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
