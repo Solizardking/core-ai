@@ -53,8 +53,8 @@ export function validateAddresses(addrs: string[]): string | null {
   return null;
 }
 
-// Transaction signatures are base58, 87-88 characters
-const SIGNATURE_RE = /^[1-9A-HJ-NP-Za-km-z]{87,88}$/;
+// Transaction signatures are 64 bytes base58-encoded, producing 86-88 characters
+const SIGNATURE_RE = /^[1-9A-HJ-NP-Za-km-z]{86,88}$/;
 
 export function validateSignature(sig: string): string | null {
   if (!SIGNATURE_RE.test(sig)) {
