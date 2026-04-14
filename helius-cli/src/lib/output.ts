@@ -11,6 +11,25 @@ export interface OutputOptions {
 /** True when the caller is a non-human agent (NO_DNA convention). */
 export const isAgent = !!process.env.NO_DNA;
 
+/** Global debug flag — set by --debug CLI option. */
+let _debugEnabled = false;
+
+export function setDebugEnabled(enabled: boolean): void {
+  _debugEnabled = enabled;
+}
+
+/** Log a debug message to stderr (never pollutes --json stdout). */
+export function debug(msg: string): void {
+  if (_debugEnabled) {
+    console.error(chalk.gray(`[DEBUG] ${msg}`));
+  }
+}
+
+/** Mask an API key for debug output: show first 4 chars + dots. */
+export function maskKey(key: string): string {
+  return key.length > 4 ? key.slice(0, 4) + "••••" : "••••";
+}
+
 /** Create a spinner, suppressed when --json is set or NO_DNA is detected. */
 export function createSpinner(options: OutputOptions = {}): ReturnType<typeof ora> | null {
   return options.json || isAgent ? null : ora();
@@ -334,10 +353,15 @@ export async function withRetry<T>(
   let attempt = 0;
 
   while (true) {
+    const start = Date.now();
     try {
-      return await fn();
+      const result = await fn();
+      debug(`SDK call → OK (${Date.now() - start}ms)`);
+      return result;
     } catch (error) {
-      const { retryable } = classifyError(error);
+      const elapsed = Date.now() - start;
+      const { retryable, errorCode } = classifyError(error);
+      debug(`SDK call → ${errorCode} (${elapsed}ms)${retryable ? " [retryable]" : ""}`);
       if (!retryable || attempt >= maxRetries) {
         throw error;
       }
@@ -345,6 +369,7 @@ export async function withRetry<T>(
       attempt++;
       const delay = Math.min(1000 * 2 ** (attempt - 1), 30_000);
       const message = error instanceof Error ? error.message : String(error);
+      debug(`Retry ${attempt}/${maxRetries} in ${delay / 1000}s...`);
       spinner?.start(`${message} — retrying in ${delay / 1000}s (${attempt}/${maxRetries})...`);
       await new Promise((resolve) => setTimeout(resolve, delay));
     }

@@ -56,6 +56,7 @@ import { owsLinkCommand, owsUnlinkCommand, owsStatusCommand } from "../src/comma
 import { updateCommand } from "../src/commands/update.js";
 import { completionsCommand } from "../src/commands/completions.js";
 import { VERSION } from "../src/constants.js";
+import { setDebugEnabled } from "../src/lib/output.js";
 import { sendCommandEvent, sendCliFeedback, setCurrentCommand } from "../src/lib/feedback.js";
 
 const program = new Command();
@@ -67,7 +68,9 @@ program
   .option("--api-key <key>", "Helius API key")
   .option("--network <net>", "Network: mainnet or devnet", "mainnet")
   .option("--retry <n>", "Retry transient errors (429, 5xx, network) up to n times with exponential backoff", "0")
+  .option("--debug", "Log HTTP request/response details to stderr for troubleshooting")
   .hook('preAction', (_thisCommand, actionCommand) => {
+    if (program.opts().debug) setDebugEnabled(true);
     setCurrentCommand(actionCommand.name());
     sendCommandEvent(actionCommand.name());
   })
