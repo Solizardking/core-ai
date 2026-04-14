@@ -1,7 +1,8 @@
 import chalk from "chalk";
 import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { formatAddress, formatTable, type TableColumn } from "../lib/formatters.js";
-import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
+import { outputJson, exitWithError, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
+import { validateAddress, validateAddresses } from "../lib/validation.js";
 
 interface AssetOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
@@ -45,6 +46,8 @@ function printAssetList(items: any[], label: string): void {
 export async function assetGetCommand(id: string, options: AssetOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(id);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching asset...");
     const result = await withRetry(() => helius.getAsset({ id }), options, spinner);
     spinner?.stop();
@@ -59,6 +62,8 @@ export async function assetGetCommand(id: string, options: AssetOptions = {}): P
 export async function assetBatchCommand(ids: string[], options: AssetOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddresses(ids);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, `Fetching ${ids.length} asset(s)...`);
     const result = await withRetry(() => helius.getAssetBatch({ ids }), options, spinner);
     spinner?.stop();
@@ -74,6 +79,8 @@ export async function assetBatchCommand(ids: string[], options: AssetOptions = {
 export async function assetOwnerCommand(address: string, options: AssetOptions & { page?: string; limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching assets by owner...");
     const result = await withRetry(() => helius.getAssetsByOwner({
       ownerAddress: address,
@@ -92,6 +99,8 @@ export async function assetOwnerCommand(address: string, options: AssetOptions &
 export async function assetCreatorCommand(address: string, options: AssetOptions & { page?: string; limit?: string; verified?: boolean } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching assets by creator...");
     const result = await withRetry(() => helius.getAssetsByCreator({
       creatorAddress: address,
@@ -111,6 +120,8 @@ export async function assetCreatorCommand(address: string, options: AssetOptions
 export async function assetAuthorityCommand(address: string, options: AssetOptions & { page?: string; limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching assets by authority...");
     const result = await withRetry(() => helius.getAssetsByAuthority({
       authorityAddress: address,
@@ -129,6 +140,8 @@ export async function assetAuthorityCommand(address: string, options: AssetOptio
 export async function assetCollectionCommand(address: string, options: AssetOptions & { page?: string; limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching collection assets...");
     const result = await withRetry(() => helius.getAssetsByGroup({
       groupKey: "collection",
@@ -176,6 +189,8 @@ export async function assetSearchCommand(options: AssetOptions & {
 export async function assetProofCommand(id: string, options: AssetOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(id);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching asset proof...");
     const result = await withRetry(() => helius.getAssetProof({ id }), options, spinner);
     spinner?.stop();
@@ -197,6 +212,8 @@ export async function assetProofCommand(id: string, options: AssetOptions = {}):
 export async function assetProofBatchCommand(ids: string[], options: AssetOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddresses(ids);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, `Fetching proofs for ${ids.length} asset(s)...`);
     const result = await withRetry(() => helius.getAssetProofBatch({ ids }), options, spinner);
     spinner?.stop();
@@ -214,6 +231,8 @@ export async function assetProofBatchCommand(ids: string[], options: AssetOption
 export async function assetEditionsCommand(mint: string, options: AssetOptions & { page?: string; limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(mint);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching NFT editions...");
     const result = await withRetry(() => helius.getNftEditions({
       mint,
@@ -239,6 +258,8 @@ export async function assetEditionsCommand(mint: string, options: AssetOptions &
 export async function assetSignaturesCommand(id: string, options: AssetOptions & { page?: string; limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(id);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching signatures for asset...");
     const result = await withRetry(() => helius.getSignaturesForAsset({
       id,

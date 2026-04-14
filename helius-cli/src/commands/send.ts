@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import { setupClient, type ResolveOptions } from "../lib/helius.js";
-import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
+import { outputJson, exitWithError, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
+import { validateSignature } from "../lib/validation.js";
 
 interface SendOptions extends OutputOptions, ResolveOptions, RetryOptions {
   dryRun?: boolean;
@@ -82,6 +83,8 @@ export async function sendSenderCommand(base64Tx: string, options: SendOptions &
 export async function sendPollCommand(signature: string, options: SendOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const sigErr = validateSignature(signature);
+    if (sigErr) exitWithError("INVALID_INPUT", sigErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Polling for confirmation...");
     const result = await withRetry(() => helius.tx.pollTransactionConfirmation(signature as any), options, spinner);
     spinner?.stop();
