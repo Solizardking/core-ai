@@ -163,12 +163,20 @@ program
   .command("projects")
   .description("List all projects")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius projects
+  $ helius projects --json`)
   .action(projectsCommand);
 
 program
   .command("project [id]")
   .description("Get project details")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius project
+  $ helius project proj_abc123 --json`)
   .action(projectCommand);
 
 const apikeysCmd = program
@@ -180,6 +188,10 @@ apikeysCmd
   .command("create [project-id]")
   .description("Create new API key for project")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius apikeys create
+  $ helius apikeys create proj_abc123 --json`)
   .action(function(this: any, projectId: string) {
     createApiKeyCommand(projectId, { json: this.opts().json || process.argv.includes("--json") });
   });
@@ -190,24 +202,40 @@ program
   .command("usage [project-id]")
   .description("Show credits usage for project")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius usage
+  $ helius usage proj_abc123 --json`)
   .action(usageCommand);
 
 program
   .command("status")
   .description("Show account status: plan, credits, billing cycle")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius status
+  $ helius status --json`)
   .action(statusCommand);
 
 program
   .command("plans")
   .description("List available Helius plans and pricing")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius plans
+  $ helius plans --json`)
   .action(plansCommand);
 
 program
   .command("rpc [project-id]")
   .description("Show RPC endpoints for project")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius rpc
+  $ helius rpc proj_abc123 --json`)
   .action(rpcCommand);
 
 // ── Config ──
@@ -221,30 +249,47 @@ configCmd
   .description("Show current configuration")
   .option("--reveal", "Show full API key (not truncated)")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius config show
+  $ helius config show --reveal --json`)
   .action(function(this: any) { configShowCommand(opts(this)); });
 
 configCmd
   .command("set-api-key <key>")
   .description("Set Helius API key")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius config set-api-key your-api-key-here`)
   .action(function(this: any, key: string) { configSetApiKeyCommand(key, opts(this)); });
 
 configCmd
   .command("set-network <network>")
   .description("Set network (mainnet or devnet)")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius config set-network devnet
+  $ helius config set-network mainnet`)
   .action(function(this: any, network: string) { configSetNetworkCommand(network, opts(this)); });
 
 configCmd
   .command("set-project <id>")
   .description("Set default project ID")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius config set-project proj_abc123`)
   .action(function(this: any, id: string) { configSetProjectCommand(id, opts(this)); });
 
 configCmd
   .command("clear")
   .description("Clear all configuration")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius config clear`)
   .action(function(this: any) { configClearCommand(opts(this)); });
 
 // ── Balance & tokens ──
@@ -342,6 +387,9 @@ assetCmd
   .command("batch <ids...>")
   .description("Get multiple assets by mint addresses")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius asset batch EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v So11111111111111111111111111111111111111112 --json`)
   .action(function(this: any, ids: string[]) { assetBatchCommand(ids, opts(this)); });
 
 assetCmd
@@ -363,6 +411,9 @@ assetCmd
   .option("--limit <n>", "Results per page")
   .option("--verified", "Only verified creators")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius asset creator J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w --verified --json`)
   .action(function(this: any, address: string) { assetCreatorCommand(address, opts(this)); });
 
 assetCmd
@@ -371,6 +422,9 @@ assetCmd
   .option("--page <n>", "Page number")
   .option("--limit <n>", "Results per page")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius asset authority 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, address: string) { assetAuthorityCommand(address, opts(this)); });
 
 assetCmd
@@ -379,6 +433,9 @@ assetCmd
   .option("--page <n>", "Page number")
   .option("--limit <n>", "Results per page")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius asset collection J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w --limit 20 --json`)
   .action(function(this: any, address: string) { assetCollectionCommand(address, opts(this)); });
 
 assetCmd
@@ -403,12 +460,18 @@ assetCmd
   .command("proof <id>")
   .description("Get Merkle proof for compressed NFT")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius asset proof <compressed-nft-mint> --json`)
   .action(function(this: any, id: string) { assetProofCommand(id, opts(this)); });
 
 assetCmd
   .command("proof-batch <ids...>")
   .description("Get Merkle proofs for multiple compressed NFTs")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius asset proof-batch <mint1> <mint2> --json`)
   .action(function(this: any, ids: string[]) { assetProofBatchCommand(ids, opts(this)); });
 
 assetCmd
@@ -417,6 +480,9 @@ assetCmd
   .option("--page <n>", "Page number")
   .option("--limit <n>", "Results per page")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius asset editions <master-nft-mint> --limit 10 --json`)
   .action(function(this: any, mint: string) { assetEditionsCommand(mint, opts(this)); });
 
 assetCmd
@@ -425,6 +491,9 @@ assetCmd
   .option("--page <n>", "Page number")
   .option("--limit <n>", "Results per page")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius asset signatures EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v --json`)
   .action(function(this: any, id: string) { assetSignaturesCommand(id, opts(this)); });
 
 assetCmd
@@ -496,6 +565,9 @@ walletCmd
   .command("identity-batch <addresses...>")
   .description("Look up identities for multiple wallets")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius wallet identity-batch 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA --json`)
   .action(function(this: any, addresses: string[]) { walletIdentityBatchCommand(addresses, opts(this)); });
 
 walletCmd
@@ -516,6 +588,10 @@ walletCmd
   .option("--type <type>", "Filter by transaction type")
   .option("--before <cursor>", "Pagination cursor")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius wallet history 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --limit 10
+  $ helius wallet history 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --type SWAP --json`)
   .action(function(this: any, address: string) { walletHistoryCommand(address, opts(this)); });
 
 walletCmd
@@ -524,6 +600,9 @@ walletCmd
   .option("--limit <n>", "Number of results")
   .option("--cursor <cursor>", "Pagination cursor")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius wallet transfers 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --limit 20 --json`)
   .action(function(this: any, address: string) { walletTransfersCommand(address, opts(this)); });
 
 walletCmd
@@ -539,18 +618,27 @@ walletCmd
   .command("ows-link <wallet-name>")
   .description("Link an OWS wallet for policy-gated signing (requires ows CLI)")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius wallet ows-link my-wallet`)
   .action(function(this: any, name: string) { owsLinkCommand(name, opts(this)); });
 
 walletCmd
   .command("ows-unlink")
   .description("Remove the linked OWS wallet")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius wallet ows-unlink`)
   .action(function(this: any) { owsUnlinkCommand(opts(this)); });
 
 walletCmd
   .command("ows-status")
   .description("Show OWS installation status and linked wallet")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius wallet ows-status`)
   .action(function(this: any) { owsStatusCommand(opts(this)); });
 
 // ── Webhooks ──
@@ -563,12 +651,19 @@ webhookCmd
   .command("list")
   .description("List all webhooks")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius webhook list
+  $ helius webhook list --json`)
   .action(function(this: any) { webhookListCommand(opts(this)); });
 
 webhookCmd
   .command("get <id>")
   .description("Get webhook details")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius webhook get wh_abc123 --json`)
   .action(function(this: any, id: string) { webhookGetCommand(id, opts(this)); });
 
 webhookCmd
@@ -592,12 +687,19 @@ webhookCmd
   .option("--accounts <addrs>", "New comma-separated addresses")
   .option("--types <types>", "New comma-separated transaction types")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius webhook update wh_abc123 --url https://example.com/new-hook
+  $ helius webhook update wh_abc123 --accounts addr1,addr2 --json`)
   .action(function(this: any, id: string) { webhookUpdateCommand(id, opts(this)); });
 
 webhookCmd
   .command("delete <id>")
   .description("Delete a webhook")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius webhook delete wh_abc123`)
   .action(function(this: any, id: string) { webhookDeleteCommand(id, opts(this)); });
 
 // ── Program accounts ──
@@ -623,6 +725,9 @@ programCmd
   .description("Get all accounts owned by a program (auto-paginate)")
   .option("--data-size <n>", "Filter by account data size")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius program accounts-all TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA --json`)
   .action(function(this: any, programId: string) { programAccountsAllCommand(programId, opts(this)); });
 
 programCmd
@@ -630,6 +735,9 @@ programCmd
   .description("Get token accounts by owner")
   .option("--limit <n>", "Max accounts to return")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius program token-accounts 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, owner: string) { programTokenAccountsCommand(owner, opts(this)); });
 
 // ── Staking ──
@@ -654,6 +762,9 @@ stakeCmd
   .description("Create an unstake transaction")
   .option("-k, --keypair <path>", "Path to Solana keypair file")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius stake unstake <stake-account> -k ~/.helius/keypair.json --json`)
   .action(function(this: any, stakeAccount: string) { stakeUnstakeCommand(stakeAccount, opts(this)); });
 
 stakeCmd
@@ -661,6 +772,9 @@ stakeCmd
   .description("Create a withdraw transaction")
   .option("-k, --keypair <path>", "Path to Solana keypair file")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius stake withdraw <stake-account> -k ~/.helius/keypair.json --json`)
   .action(function(this: any, stakeAccount: string) { stakeWithdrawCommand(stakeAccount, opts(this)); });
 
 stakeCmd
@@ -676,24 +790,36 @@ stakeCmd
   .command("withdrawable <stake-account>")
   .description("Get withdrawable amount for a stake account")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius stake withdrawable <stake-account> --json`)
   .action(function(this: any, stakeAccount: string) { stakeWithdrawableCommand(stakeAccount, opts(this)); });
 
 stakeCmd
   .command("instructions <amount>")
   .description("Get stake instructions (amount in SOL)")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius stake instructions 5 --json`)
   .action(function(this: any, amount: string) { stakeInstructionsCommand(amount, opts(this)); });
 
 stakeCmd
   .command("unstake-instruction <stake-account>")
   .description("Get unstake instruction")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius stake unstake-instruction <stake-account> --json`)
   .action(function(this: any, stakeAccount: string) { stakeUnstakeInstructionCommand(stakeAccount, opts(this)); });
 
 stakeCmd
   .command("withdraw-instruction <stake-account>")
   .description("Get withdraw instruction")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius stake withdraw-instruction <stake-account> --json`)
   .action(function(this: any, stakeAccount: string) { stakeWithdrawInstructionCommand(stakeAccount, opts(this)); });
 
 // ── ZK Compression ──
@@ -715,114 +841,171 @@ zkCmd
   .command("accounts-by-owner <owner>")
   .description("Get compressed accounts by owner")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk accounts-by-owner 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, owner: string) { zkAccountsByOwnerCommand(owner, opts(this)); });
 
 zkCmd
   .command("balance <address-or-hash>")
   .description("Get compressed balance")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk balance 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, addr: string) { zkBalanceCommand(addr, opts(this)); });
 
 zkCmd
   .command("balance-by-owner <owner>")
   .description("Get compressed balance by owner")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk balance-by-owner 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, owner: string) { zkBalanceByOwnerCommand(owner, opts(this)); });
 
 zkCmd
   .command("token-holders <mint>")
   .description("Get compressed token holders")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk token-holders EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v --json`)
   .action(function(this: any, mint: string) { zkTokenHoldersCommand(mint, opts(this)); });
 
 zkCmd
   .command("token-balance <account>")
   .description("Get compressed token account balance")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk token-balance 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, account: string) { zkTokenBalanceCommand(account, opts(this)); });
 
 zkCmd
   .command("token-accounts-by-owner <owner>")
   .description("Get compressed token accounts by owner")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk token-accounts-by-owner 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, owner: string) { zkTokenAccountsByOwnerCommand(owner, opts(this)); });
 
 zkCmd
   .command("token-accounts-by-delegate <delegate>")
   .description("Get compressed token accounts by delegate")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk token-accounts-by-delegate 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, delegate: string) { zkTokenAccountsByDelegateCommand(delegate, opts(this)); });
 
 zkCmd
   .command("token-balances-by-owner <owner>")
   .description("Get compressed token balances by owner (V2)")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk token-balances-by-owner 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, owner: string) { zkTokenBalancesByOwnerCommand(owner, opts(this)); });
 
 zkCmd
   .command("proof <address-or-hash>")
   .description("Get compressed account proof")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk proof 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, addr: string) { zkProofCommand(addr, opts(this)); });
 
 zkCmd
   .command("proofs <addresses...>")
   .description("Get multiple compressed account proofs")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk proofs 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v --json`)
   .action(function(this: any, addrs: string[]) { zkProofsCommand(addrs, opts(this)); });
 
 zkCmd
   .command("multiple-accounts <addresses...>")
   .description("Get multiple compressed accounts")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk multiple-accounts 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v --json`)
   .action(function(this: any, addrs: string[]) { zkMultipleAccountsCommand(addrs, opts(this)); });
 
 zkCmd
   .command("address-proofs <addresses...>")
   .description("Get multiple new address proofs (V2)")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk address-proofs 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v --json`)
   .action(function(this: any, addrs: string[]) { zkAddressProofsCommand(addrs, opts(this)); });
 
 zkCmd
   .command("signatures-account <account>")
   .description("Get compression signatures for account")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk signatures-account 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, account: string) { zkSignaturesAccountCommand(account, opts(this)); });
 
 zkCmd
   .command("signatures-address <address>")
   .description("Get compression signatures for address")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk signatures-address 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, addr: string) { zkSignaturesAddressCommand(addr, opts(this)); });
 
 zkCmd
   .command("signatures-owner <owner>")
   .description("Get compression signatures for owner")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk signatures-owner 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, owner: string) { zkSignaturesOwnerCommand(owner, opts(this)); });
 
 zkCmd
   .command("signatures-token-owner <owner>")
   .description("Get compression signatures for token owner")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk signatures-token-owner 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, owner: string) { zkSignaturesTokenOwnerCommand(owner, opts(this)); });
 
 zkCmd
   .command("latest-signatures")
   .description("Get latest compression signatures")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk latest-signatures --json`)
   .action(function(this: any) { zkLatestSignaturesCommand(opts(this)); });
 
 zkCmd
   .command("latest-non-voting")
   .description("Get latest non-voting signatures")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk latest-non-voting --json`)
   .action(function(this: any) { zkLatestNonVotingCommand(opts(this)); });
 
 zkCmd
   .command("tx <signature>")
   .description("Get transaction with compression info")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk tx 5UfDuX7hXbDjdMRbQMCbNvPZQEr4mEAMq3fNM7oKnUFqpEygPoAEsm2MFVwfCaG1CjprB2og8LmNVBLMrACG7L4 --json`)
   .action(function(this: any, sig: string) { zkTxCommand(sig, opts(this)); });
 
 zkCmd
@@ -831,6 +1014,9 @@ zkCmd
   .option("--hashes <hashes>", "Comma-separated hashes")
   .option("--addresses <addrs>", "Comma-separated addresses")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk validity-proof --addresses 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any) { zkValidityProofCommand(opts(this)); });
 
 zkCmd
@@ -846,12 +1032,18 @@ zkCmd
   .command("indexer-slot")
   .description("Get ZK indexer slot")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk indexer-slot --json`)
   .action(function(this: any) { zkIndexerSlotCommand(opts(this)); });
 
 zkCmd
   .command("signatures-for-asset <id>")
   .description("Get compression signatures for asset")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk signatures-for-asset EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v --json`)
   .action(function(this: any, id: string) { zkSignaturesForAssetCommand(id, opts(this)); });
 
 // ── Transaction helpers ──
@@ -864,12 +1056,18 @@ sendCmd
   .command("broadcast <base64-tx>")
   .description("Broadcast a signed transaction and poll for confirmation")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius send broadcast <base64-tx> --json`)
   .action(function(this: any, tx: string) { sendBroadcastCommand(tx, opts(this)); });
 
 sendCmd
   .command("raw <base64-tx>")
   .description("Send a raw transaction")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius send raw <base64-tx> --json`)
   .action(function(this: any, tx: string) { sendRawCommand(tx, opts(this)); });
 
 sendCmd
@@ -886,12 +1084,18 @@ sendCmd
   .command("poll <signature>")
   .description("Poll transaction status until confirmed")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius send poll 5UfDuX7hXbDjdMRbQMCbNvPZQEr4mEAMq3fNM7oKnUFqpEygPoAEsm2MFVwfCaG1CjprB2og8LmNVBLMrACG7L4 --json`)
   .action(function(this: any, sig: string) { sendPollCommand(sig, opts(this)); });
 
 sendCmd
   .command("compute-units <base64-tx>")
   .description("Simulate and return compute unit estimate")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius send compute-units <base64-tx> --json`)
   .action(function(this: any, tx: string) { sendComputeUnitsCommand(tx, opts(this)); });
 
 // ── WebSocket subscriptions ──
@@ -915,24 +1119,37 @@ wsCmd
   .description("Stream log notifications")
   .option("--mentions <addr>", "Filter by mentioned address")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius ws logs
+  $ helius ws logs --mentions 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any) { wsLogsCommand(opts(this)); });
 
 wsCmd
   .command("slot")
   .description("Stream slot notifications")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius ws slot --json`)
   .action(function(this: any) { wsSlotCommand(opts(this)); });
 
 wsCmd
   .command("signature <sig>")
   .description("Stream signature confirmation")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius ws signature 5UfDuX7hXbDjdMRbQMCbNvPZQEr4mEAMq3fNM7oKnUFqpEygPoAEsm2MFVwfCaG1CjprB2og8LmNVBLMrACG7L4 --json`)
   .action(function(this: any, sig: string) { wsSignatureCommand(sig, opts(this)); });
 
 wsCmd
   .command("program <program-id>")
   .description("Stream program account change notifications")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius ws program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA --json`)
   .action(function(this: any, programId: string) { wsProgramCommand(programId, opts(this)); });
 
 // ── SIMD (Solana Improvement Documents) ──
@@ -994,6 +1211,9 @@ program
   .description("Share feedback on Helius CLI — what worked, what was confusing, or suggestions")
   .option("--feedback-tool <name>", "Which command the feedback is about (e.g. balance, tx-parse)")
   .option("--model <name>", "Your LLM model (e.g. claude-sonnet-4-20250514, gpt-4o)")
+  .addHelpText('after', `
+Examples:
+  $ helius feedback "The balance command is great but I wish it showed USD values" --feedback-tool balance --model claude-sonnet-4-20250514`)
   .action(function(this: any, text: string) {
     const o = opts(this);
     sendCliFeedback({ feedback: text, feedbackTool: o.feedbackTool, model: o.model });
