@@ -4,7 +4,9 @@ import { formatEnumLabel } from "../lib/formatters.js";
 import { outputJson, exitWithError, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
 import { validateSolanaAddresses } from "../lib/validation.js";
 
-interface WebhookOptions extends OutputOptions, ResolveOptions, RetryOptions {}
+interface WebhookOptions extends OutputOptions, ResolveOptions, RetryOptions {
+  dryRun?: boolean;
+}
 
 export async function webhookListCommand(options: WebhookOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
@@ -65,8 +67,6 @@ export async function webhookCreateCommand(options: WebhookOptions & {
 }): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setupClient(spinner, options, "Resolving API key...");
-
     // Validate addresses before sending to API
     const addrErr = validateSolanaAddresses(options.accounts);
     if (addrErr) exitWithError("INVALID_INPUT", addrErr, undefined, !!options.json);
@@ -75,7 +75,19 @@ export async function webhookCreateCommand(options: WebhookOptions & {
     const transactionTypes = options.types.split(",").map((s: string) => s.trim()).filter(Boolean);
     const webhookType = (options.webhookType || "enhanced") as any;
 
-    spinner?.start("Creating webhook...");
+    if (options.dryRun) {
+      spinner?.succeed("Dry run — webhook not created");
+      const preview = { webhookURL: options.url, accountAddresses, transactionTypes, webhookType: options.webhookType || "enhanced" };
+      if (options.json) { outputJson({ dryRun: true, ...preview }); return; }
+      console.log(chalk.yellow("\n  Dry run — webhook would be created with:"));
+      console.log(`    ${chalk.gray("URL:")}      ${preview.webhookURL}`);
+      console.log(`    ${chalk.gray("Accounts:")} ${accountAddresses.length} address(es)`);
+      console.log(`    ${chalk.gray("Types:")}    ${transactionTypes.join(", ")}`);
+      console.log(`    ${chalk.gray("Type:")}     ${formatEnumLabel(preview.webhookType)}`);
+      return;
+    }
+
+    const helius = await setupClient(spinner, options, "Creating webhook...");
     const result = await withRetry(() => helius.webhooks.create({
       webhookURL: options.url,
       accountAddresses,
@@ -100,8 +112,6 @@ export async function webhookUpdateCommand(webhookId: string, options: WebhookOp
 }): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setupClient(spinner, options, "Resolving API key...");
-
     const params: any = {};
     // Validate addresses if provided
     if (options.accounts) {
@@ -112,7 +122,17 @@ export async function webhookUpdateCommand(webhookId: string, options: WebhookOp
     if (options.accounts) params.accountAddresses = options.accounts.split(",").map((s: string) => s.trim()).filter(Boolean);
     if (options.types) params.transactionTypes = options.types.split(",").map((s: string) => s.trim()).filter(Boolean);
 
-    spinner?.start("Updating webhook...");
+    if (options.dryRun) {
+      spinner?.succeed("Dry run — webhook not updated");
+      if (options.json) { outputJson({ dryRun: true, webhookID: webhookId, changes: params }); return; }
+      console.log(chalk.yellow(`\n  Dry run — webhook ${webhookId} would be updated with:`));
+      if (params.webhookURL) console.log(`    ${chalk.gray("URL:")}      ${params.webhookURL}`);
+      if (params.accountAddresses) console.log(`    ${chalk.gray("Accounts:")} ${params.accountAddresses.length} address(es)`);
+      if (params.transactionTypes) console.log(`    ${chalk.gray("Types:")}    ${params.transactionTypes.join(", ")}`);
+      return;
+    }
+
+    const helius = await setupClient(spinner, options, "Updating webhook...");
     const result = await withRetry(() => helius.webhooks.update(webhookId, params), options, spinner);
     spinner?.stop();
 
@@ -127,6 +147,13 @@ export async function webhookUpdateCommand(webhookId: string, options: WebhookOp
 export async function webhookDeleteCommand(webhookId: string, options: WebhookOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    if (options.dryRun) {
+      spinner?.succeed("Dry run — webhook not deleted");
+      if (options.json) { outputJson({ dryRun: true, webhookID: webhookId }); return; }
+      console.log(chalk.yellow(`\n  Dry run — webhook ${webhookId} would be deleted.`));
+      return;
+    }
+
     const helius = await setupClient(spinner, options, "Deleting webhook...");
     await withRetry(() => helius.webhooks.delete(webhookId), options, spinner);
     spinner?.stop();
