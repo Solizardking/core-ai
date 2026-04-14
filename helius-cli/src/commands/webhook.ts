@@ -67,8 +67,6 @@ export async function webhookCreateCommand(options: WebhookOptions & {
 }): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setupClient(spinner, options, "Resolving API key...");
-
     // Validate addresses before sending to API
     const addrErr = validateSolanaAddresses(options.accounts);
     if (addrErr) exitWithError("INVALID_INPUT", addrErr, undefined, !!options.json);
@@ -77,15 +75,9 @@ export async function webhookCreateCommand(options: WebhookOptions & {
     const transactionTypes = options.types.split(",").map((s: string) => s.trim()).filter(Boolean);
     const webhookType = (options.webhookType || "enhanced") as any;
 
-    const preview = {
-      webhookURL: options.url,
-      accountAddresses,
-      transactionTypes,
-      webhookType: options.webhookType || "enhanced",
-    };
-
     if (options.dryRun) {
       spinner?.succeed("Dry run — webhook not created");
+      const preview = { webhookURL: options.url, accountAddresses, transactionTypes, webhookType: options.webhookType || "enhanced" };
       if (options.json) { outputJson({ dryRun: true, ...preview }); return; }
       console.log(chalk.yellow("\n  Dry run — webhook would be created with:"));
       console.log(`    ${chalk.gray("URL:")}      ${preview.webhookURL}`);
@@ -95,7 +87,7 @@ export async function webhookCreateCommand(options: WebhookOptions & {
       return;
     }
 
-    spinner?.start("Creating webhook...");
+    const helius = await setupClient(spinner, options, "Creating webhook...");
     const result = await withRetry(() => helius.webhooks.create({
       webhookURL: options.url,
       accountAddresses,
@@ -120,8 +112,6 @@ export async function webhookUpdateCommand(webhookId: string, options: WebhookOp
 }): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const helius = await setupClient(spinner, options, "Resolving API key...");
-
     const params: any = {};
     // Validate addresses if provided
     if (options.accounts) {
@@ -142,7 +132,7 @@ export async function webhookUpdateCommand(webhookId: string, options: WebhookOp
       return;
     }
 
-    spinner?.start("Updating webhook...");
+    const helius = await setupClient(spinner, options, "Updating webhook...");
     const result = await withRetry(() => helius.webhooks.update(webhookId, params), options, spinner);
     spinner?.stop();
 
