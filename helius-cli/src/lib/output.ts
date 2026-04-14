@@ -8,10 +8,6 @@ export interface OutputOptions {
   json?: boolean;
 }
 
-export interface DebugOptions {
-  debug?: boolean;
-}
-
 /** True when the caller is a non-human agent (NO_DNA convention). */
 export const isAgent = !!process.env.NO_DNA;
 
