@@ -18,7 +18,7 @@ Exit code ranges:
 - `20-29` balance/payment (insufficient SOL/USDC)
 - `30-39` project state
 - `40-49` API errors
-- `50-59` SDK/data errors (52 invalid address, 54 invalid API key, 55 not found, 56 rate limited, 57 server error, 58 network error)
+- `50-59` SDK/data errors (50 no API key, 52 invalid address, 53 invalid input, 54 invalid API key, 55 not found, 56 rate limited, 57 server error, 58 network error)
 
 ## Commands
 
