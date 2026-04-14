@@ -91,6 +91,11 @@ program
   .option("-o, --output <path>", "Output path for keypair", getDefaultKeypairPath())
   .option("-f, --force", "Overwrite existing keypair")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius keygen
+  $ helius keygen --output ~/my-keypair.json
+  $ helius keygen --force --json`)
   .action(function(this: any) { keygenCommand(opts(this)); });
 
 program
@@ -107,6 +112,11 @@ program
   .option("--friction-points <text>", "What friction did you hit finding or setting up Helius?")
   .option("--wait", "Poll for funds if balance is insufficient, then continue signup automatically")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius signup
+  $ helius signup --plan developer --email you@example.com --first-name Jane --last-name Doe
+  $ helius signup --wait`)
   .action(signupCommand);
 
 program
@@ -121,6 +131,10 @@ program
   .option("-k, --keypair <path>", "Path to Solana keypair file", getDefaultKeypairPath())
   .option("-y, --yes", "Skip confirmation prompt")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius upgrade --plan developer
+  $ helius upgrade --plan business --period yearly --yes`)
   .action(function(this: any) { upgradeCommand(opts(this)); });
 
 program
@@ -129,6 +143,9 @@ program
   .option("-k, --keypair <path>", "Path to Solana keypair file", getDefaultKeypairPath())
   .option("-y, --yes", "Skip confirmation prompt")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius pay pi_abc123 --yes`)
   .action(function(this: any, id: string) { payCommand(id, opts(this)); });
 
 program
@@ -136,6 +153,10 @@ program
   .description("Authenticate with wallet")
   .option("-k, --keypair <path>", "Path to Solana keypair file", getDefaultKeypairPath())
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius login
+  $ helius login -k ~/my-keypair.json`)
   .action(loginCommand);
 
 program
@@ -232,6 +253,11 @@ program
   .command("balance <address>")
   .description("Get native SOL balance")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius balance 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+  $ helius balance 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json
+  $ helius balance 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --network devnet`)
   .action(function(this: any, address: string) { balanceCommand(address, opts(this)); });
 
 program
@@ -239,6 +265,10 @@ program
   .description("Get fungible token balances")
   .option("--limit <n>", "Max tokens to return")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius tokens 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+  $ helius tokens 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --limit 50 --json`)
   .action(function(this: any, address: string) { tokensCommand(address, opts(this)); });
 
 program
@@ -246,6 +276,10 @@ program
   .description("Get top holders of a token")
   .option("--limit <n>", "Max holders to return")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius token-holders EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+  $ helius token-holders EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v --limit 10 --json`)
   .action(function(this: any, mint: string) { tokenHoldersCommand(mint, opts(this)); });
 
 // ── Transactions ──
@@ -258,6 +292,10 @@ txCmd
   .command("parse <signatures...>")
   .description("Parse transaction(s) into human-readable format")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius tx parse 5UfDuX7hXbDjdMRbQMCbNvPZQEr4mEAMq3fNM7oKnUFqpEygPoAEsm2MFVwfCaG1CjprB2og8LmNVBLMrACG7L4
+  $ helius tx parse sig1 sig2 sig3 --json`)
   .action(function(this: any, signatures: string[]) { txParseCommand(signatures, opts(this)); });
 
 txCmd
@@ -267,6 +305,10 @@ txCmd
   .option("--before <sig>", "Cursor: start before this signature")
   .option("--type <type>", "Filter by transaction type")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius tx history 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+  $ helius tx history 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --limit 5 --type SWAP --json`)
   .action(function(this: any, address: string) { txHistoryCommand(address, opts(this)); });
 
 txCmd
@@ -274,6 +316,10 @@ txCmd
   .description("Get priority fee estimates")
   .option("--accounts <addrs>", "Comma-separated account addresses")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius tx fees
+  $ helius tx fees --accounts JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 --json`)
   .action(function(this: any) { txFeesCommand(opts(this)); });
 
 // ── Assets (DAS API) ──
@@ -286,6 +332,10 @@ assetCmd
   .command("get <id>")
   .description("Get asset details by mint address")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius asset get EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
+  $ helius asset get EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v --json`)
   .action(function(this: any, id: string) { assetGetCommand(id, opts(this)); });
 
 assetCmd
@@ -300,6 +350,10 @@ assetCmd
   .option("--page <n>", "Page number")
   .option("--limit <n>", "Results per page")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius asset owner 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+  $ helius asset owner 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --limit 50 --json`)
   .action(function(this: any, address: string) { assetOwnerCommand(address, opts(this)); });
 
 assetCmd
@@ -339,6 +393,10 @@ assetCmd
   .option("--page <n>", "Page number")
   .option("--limit <n>", "Results per page")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius asset search --owner 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --compressed
+  $ helius asset search --creator J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w --json`)
   .action(function(this: any) { assetSearchCommand(opts(this)); });
 
 assetCmd
@@ -377,6 +435,10 @@ assetCmd
   .option("--page <n>", "Page number")
   .option("--limit <n>", "Results per page")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius asset token-accounts --owner 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+  $ helius asset token-accounts --mint EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v --json`)
   .action(function(this: any) { assetTokenAccountsCommand(opts(this)); });
 
 // ── Account info ──
@@ -385,6 +447,10 @@ program
   .command("account <address>")
   .description("Get Solana account info")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius account 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+  $ helius account TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA --json`)
   .action(function(this: any, address: string) { accountCommand(address, opts(this)); });
 
 // ── Network status ──
@@ -393,6 +459,10 @@ program
   .command("network-status")
   .description("Get Solana network status")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius network-status
+  $ helius network-status --json`)
   .action(function(this: any) { networkStatusCommand(opts(this)); });
 
 // ── Block ──
@@ -401,6 +471,10 @@ program
   .command("block <slot>")
   .description("Get block details by slot number")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius block 250000000
+  $ helius block 250000000 --json`)
   .action(function(this: any, slot: string) { blockCommand(slot, opts(this)); });
 
 // ── Wallet API (REST) ──
@@ -413,6 +487,9 @@ walletCmd
   .command("identity <address>")
   .description("Look up wallet identity")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius wallet identity 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY`)
   .action(function(this: any, address: string) { walletIdentityCommand(address, opts(this)); });
 
 walletCmd
@@ -426,6 +503,10 @@ walletCmd
   .description("Get all token balances with USD values")
   .option("--show-nfts", "Include NFT balances")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius wallet balances 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+  $ helius wallet balances 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --show-nfts --json`)
   .action(function(this: any, address: string) { walletBalancesCommand(address, opts(this)); });
 
 walletCmd
@@ -449,6 +530,9 @@ walletCmd
   .command("funded-by <address>")
   .description("Find original funding source of a wallet")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius wallet funded-by 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, address: string) { walletFundedByCommand(address, opts(this)); });
 
 walletCmd
@@ -495,6 +579,10 @@ webhookCmd
   .requiredOption("--types <types>", "Comma-separated transaction types (or ANY)")
   .option("--webhook-type <type>", "Webhook type: enhanced, raw, or discord", "enhanced")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius webhook create --url https://example.com/hook --accounts 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --types ANY
+  $ helius webhook create --url https://example.com/hook --accounts addr1,addr2 --types SWAP,TRANSFER --json`)
   .action(function(this: any) { webhookCreateCommand(opts(this)); });
 
 webhookCmd
@@ -524,6 +612,10 @@ programCmd
   .option("--data-size <n>", "Filter by account data size")
   .option("--limit <n>", "Max accounts to return")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius program accounts TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA --limit 10
+  $ helius program accounts TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA --data-size 165 --json`)
   .action(function(this: any, programId: string) { programAccountsCommand(programId, opts(this)); });
 
 programCmd
@@ -551,6 +643,10 @@ stakeCmd
   .description("Create a stake transaction (amount in SOL)")
   .option("-k, --keypair <path>", "Path to Solana keypair file")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius stake create 1.5 -k ~/.helius/keypair.json
+  $ helius stake create 10 -k ~/.helius/keypair.json --json`)
   .action(function(this: any, amount: string) { stakeCreateCommand(amount, opts(this)); });
 
 stakeCmd
@@ -571,6 +667,9 @@ stakeCmd
   .command("accounts <wallet>")
   .description("Get Helius stake accounts for a wallet")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius stake accounts 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, wallet: string) { stakeAccountsCommand(wallet, opts(this)); });
 
 stakeCmd
@@ -607,6 +706,9 @@ zkCmd
   .command("account <address-or-hash>")
   .description("Get compressed account")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk account 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, addr: string) { zkAccountCommand(addr, opts(this)); });
 
 zkCmd
@@ -735,6 +837,9 @@ zkCmd
   .command("indexer-health")
   .description("Check ZK indexer health")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius zk indexer-health --json`)
   .action(function(this: any) { zkIndexerHealthCommand(opts(this)); });
 
 zkCmd
@@ -772,6 +877,9 @@ sendCmd
   .description("Send via Helius Sender for ultra-low latency")
   .option("--region <region>", "Sender region (Default, US_SLC, US_EAST, etc.)")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius send sender <base64-tx> --region US_EAST --json`)
   .action(function(this: any, tx: string) { sendSenderCommand(tx, opts(this)); });
 
 sendCmd
@@ -796,6 +904,10 @@ wsCmd
   .command("account <address>")
   .description("Stream account change notifications")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius ws account 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+  $ helius ws account 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --json`)
   .action(function(this: any, address: string) { wsAccountCommand(address, opts(this)); });
 
 wsCmd
@@ -833,12 +945,20 @@ simdCmd
   .command("list")
   .description("List all SIMD proposals")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius simd list
+  $ helius simd list --json`)
   .action(function(this: any) { simdListCommand(opts(this)); });
 
 simdCmd
   .command("get <number>")
   .description("Read a specific SIMD proposal by number")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius simd get 72
+  $ helius simd get 72 --json`)
   .action(function(this: any, number: string) { simdGetCommand(number, opts(this)); });
 
 // ── Update ──
@@ -848,6 +968,10 @@ program
   .description("Check for and install CLI updates")
   .option("--check", "Check for updates without installing")
   .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius update --check
+  $ helius update`)
   .action(function(this: any) { updateCommand(opts(this)); });
 
 // ── Completions ──
@@ -856,6 +980,11 @@ program
   .command("completions <shell>")
   .description("Output shell completion script (bash, zsh, or fish)")
   .option("--install", "Install completions to your shell config")
+  .addHelpText('after', `
+Examples:
+  $ helius completions bash >> ~/.bashrc
+  $ helius completions zsh --install
+  $ helius completions fish > ~/.config/fish/completions/helius.fish`)
   .action(function(this: any, shell: string) { completionsCommand(shell, program, opts(this)); });
 
 // ── Feedback ──
