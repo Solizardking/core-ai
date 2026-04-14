@@ -1,8 +1,8 @@
 # Helius CLI (`helius`)
 
-> Official command-line interface for the Helius Solana platform. Built for developers and LLM agents.
+> Official command-line interface for the Helius, Solana's leading developer platform. Built for developers and LLM agents.
 
-`helius` covers account management, Solana data queries (balances, transactions, assets, accounts, blocks), Digital Asset Standard (DAS), ZK compression, webhooks, priority fees, transaction sending, staking, and real-time WebSocket streaming.
+`helius` covers account management, Solana data queries (balances, transactions, assets, accounts, blocks), Digital Asset Standard (DAS), ZK compression, webhooks, priority fees, transaction sending, staking, and WebSocket streaming.
 
 Install: `npm install -g helius-cli`
 
@@ -47,5 +47,5 @@ Exit code ranges:
 ## Optional
 
 - [Full README](README.md): complete command reference, configuration, and development setup
-- [Helius platform docs](https://docs.helius.dev): platform API documentation (RPC, DAS, Sender, webhooks, Laserstream)
+- [Helius platform docs](https://www.helius.dev/docs): platform API documentation (RPC, DAS, Sender, webhooks, Laserstream)
 - [Helius dashboard](https://dashboard.helius.dev): manage API keys, billing, and webhooks in the browser
