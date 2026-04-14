@@ -1061,11 +1061,7 @@ const sendCmd = program
 sendCmd
   .command("broadcast <base64-tx>")
   .description("Broadcast a signed transaction and poll for confirmation")
-<<<<<<< Updated upstream
-  .option("--dry-run", "Validate without submitting the transaction")
-=======
   .option("--dry-run", "Preview without submitting the transaction")
->>>>>>> Stashed changes
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
@@ -1075,11 +1071,7 @@ Examples:
 sendCmd
   .command("raw <base64-tx>")
   .description("Send a raw transaction")
-<<<<<<< Updated upstream
-  .option("--dry-run", "Validate without submitting the transaction")
-=======
   .option("--dry-run", "Preview without submitting the transaction")
->>>>>>> Stashed changes
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
@@ -1090,11 +1082,7 @@ sendCmd
   .command("sender <base64-tx>")
   .description("Send via Helius Sender for ultra-low latency")
   .option("--region <region>", "Sender region (Default, US_SLC, US_EAST, etc.)")
-<<<<<<< Updated upstream
-  .option("--dry-run", "Validate without submitting the transaction")
-=======
   .option("--dry-run", "Preview without submitting the transaction")
->>>>>>> Stashed changes
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
