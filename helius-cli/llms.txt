@@ -47,5 +47,5 @@ Exit code ranges:
 ## Optional
 
 - [Full README](README.md): complete command reference, configuration, and development setup
-- [Helius platform docs](https://www.helius.dev/docs): platform API documentation (RPC, DAS, Sender, webhooks, Laserstream)
+- [Helius docs](https://www.helius.dev/docs): platform API documentation (RPC, DAS, Sender, webhooks, Laserstream)
 - [Helius dashboard](https://dashboard.helius.dev): manage API keys, billing, and webhooks in the browser
