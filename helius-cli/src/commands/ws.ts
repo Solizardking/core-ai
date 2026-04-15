@@ -73,9 +73,9 @@ function setupShutdown(helius: { ws: { close(): void } }, abortController: Abort
 }
 
 export async function wsAccountCommand(address: string, options: WsOptions = {}): Promise<void> {
-  const addrErr = validateAddress(address);
-  if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const apiKey = await resolveApiKey(options);
     const network = resolveNetwork(options);
     const helius = getClient(apiKey, network);
@@ -132,9 +132,9 @@ export async function wsSlotCommand(options: WsOptions = {}): Promise<void> {
 }
 
 export async function wsSignatureCommand(signature: string, options: WsOptions = {}): Promise<void> {
-  const sigErr = validateSignature(signature);
-  if (sigErr) exitWithError("INVALID_INPUT", sigErr, undefined, !!options.json);
   try {
+    const sigErr = validateSignature(signature);
+    if (sigErr) exitWithError("INVALID_INPUT", sigErr, undefined, !!options.json);
     const apiKey = await resolveApiKey(options);
     const network = resolveNetwork(options);
     const helius = getClient(apiKey, network);
@@ -149,9 +149,9 @@ export async function wsSignatureCommand(signature: string, options: WsOptions =
 }
 
 export async function wsProgramCommand(programId: string, options: WsOptions = {}): Promise<void> {
-  const addrErr = validateAddress(programId);
-  if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
   try {
+    const addrErr = validateAddress(programId);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const apiKey = await resolveApiKey(options);
     const network = resolveNetwork(options);
     const helius = getClient(apiKey, network);
