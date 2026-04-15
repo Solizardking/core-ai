@@ -38,6 +38,38 @@ export function validateEmail(email: string): string | null {
   return null;
 }
 
+export function validateAddress(addr: string): string | null {
+  if (!BASE58_RE.test(addr)) {
+    return `Invalid Solana address: ${addr}`;
+  }
+  return null;
+}
+
+export function validateAddresses(addrs: string[]): string | null {
+  for (const addr of addrs) {
+    const err = validateAddress(addr);
+    if (err) return err;
+  }
+  return null;
+}
+
+// Transaction signatures are 64 bytes base58-encoded, producing 86-88 characters
+const SIGNATURE_RE = /^[1-9A-HJ-NP-Za-km-z]{86,88}$/;
+
+export function validateSignature(sig: string): string | null {
+  if (!SIGNATURE_RE.test(sig)) {
+    return `Invalid transaction signature: ${sig}`;
+  }
+  return null;
+}
+
+export function validateSlot(slot: string): string | null {
+  if (!/^\d+$/.test(slot)) {
+    return `Invalid slot number: ${slot}. Must be a positive integer.`;
+  }
+  return null;
+}
+
 export function validateSolanaAddresses(raw: string): string | null {
   const addresses = raw.split(",").map(s => s.trim()).filter(Boolean);
   if (addresses.length === 0) {

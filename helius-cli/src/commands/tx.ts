@@ -1,13 +1,18 @@
 import chalk from "chalk";
 import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { formatSol, formatTimestamp, formatAddress, formatEnumLabel } from "../lib/formatters.js";
-import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
+import { outputJson, exitWithError, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
+import { validateAddress, validateSignature } from "../lib/validation.js";
 
 interface TxOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function txParseCommand(signatures: string[], options: TxOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    for (const sig of signatures) {
+      const sigErr = validateSignature(sig);
+      if (sigErr) exitWithError("INVALID_INPUT", sigErr, undefined, !!options.json);
+    }
     const helius = await setupClient(spinner, options, `Parsing ${signatures.length} transaction(s)...`);
     const result = await withRetry(() => helius.enhanced.getTransactions({ transactions: signatures }), options, spinner);
     spinner?.stop();
@@ -55,6 +60,8 @@ export async function txParseCommand(signatures: string[], options: TxOptions = 
 export async function txHistoryCommand(address: string, options: TxOptions & { limit?: string; before?: string; type?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching transaction history...");
     const params: any = { address };
     if (options.limit) params.limit = parseInt(options.limit, 10);

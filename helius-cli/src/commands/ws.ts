@@ -1,7 +1,8 @@
 import chalk from "chalk";
 import { resolveApiKey, resolveNetwork, getClient, type ResolveOptions } from "../lib/helius.js";
-import { jsonReplacer, classifyError, CLI_GUIDANCE, type OutputOptions } from "../lib/output.js";
+import { jsonReplacer, classifyError, exitWithError, CLI_GUIDANCE, type OutputOptions } from "../lib/output.js";
 import { sendCommandEvent, getCurrentCommand } from "../lib/feedback.js";
+import { validateAddress, validateSignature } from "../lib/validation.js";
 
 interface WsOptions extends OutputOptions, ResolveOptions {}
 
@@ -73,6 +74,8 @@ function setupShutdown(helius: { ws: { close(): void } }, abortController: Abort
 
 export async function wsAccountCommand(address: string, options: WsOptions = {}): Promise<void> {
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const apiKey = await resolveApiKey(options);
     const network = resolveNetwork(options);
     const helius = getClient(apiKey, network);
@@ -130,6 +133,8 @@ export async function wsSlotCommand(options: WsOptions = {}): Promise<void> {
 
 export async function wsSignatureCommand(signature: string, options: WsOptions = {}): Promise<void> {
   try {
+    const sigErr = validateSignature(signature);
+    if (sigErr) exitWithError("INVALID_INPUT", sigErr, undefined, !!options.json);
     const apiKey = await resolveApiKey(options);
     const network = resolveNetwork(options);
     const helius = getClient(apiKey, network);
@@ -145,6 +150,8 @@ export async function wsSignatureCommand(signature: string, options: WsOptions =
 
 export async function wsProgramCommand(programId: string, options: WsOptions = {}): Promise<void> {
   try {
+    const addrErr = validateAddress(programId);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const apiKey = await resolveApiKey(options);
     const network = resolveNetwork(options);
     const helius = getClient(apiKey, network);

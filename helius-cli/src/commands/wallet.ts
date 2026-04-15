@@ -1,13 +1,16 @@
 import chalk from "chalk";
 import { resolveApiKey, restRequest, type ResolveOptions } from "../lib/helius.js";
 import { formatAddress, formatTable, formatEnumLabel, type TableColumn } from "../lib/formatters.js";
-import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
+import { outputJson, exitWithError, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
+import { validateAddress, validateAddresses } from "../lib/validation.js";
 
 interface WalletOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function walletIdentityCommand(address: string, options: WalletOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     spinner?.start("Resolving API key...");
     const apiKey = await resolveApiKey(options);
     spinner?.start("Looking up wallet identity...");
@@ -31,6 +34,8 @@ export async function walletIdentityCommand(address: string, options: WalletOpti
 export async function walletIdentityBatchCommand(addresses: string[], options: WalletOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddresses(addresses);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     spinner?.start("Resolving API key...");
     const apiKey = await resolveApiKey(options);
     spinner?.start(`Looking up ${addresses.length} wallet(s)...`);
@@ -59,6 +64,8 @@ export async function walletIdentityBatchCommand(addresses: string[], options: W
 export async function walletBalancesCommand(address: string, options: WalletOptions & { showNfts?: boolean } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     spinner?.start("Resolving API key...");
     const apiKey = await resolveApiKey(options);
     const params = new URLSearchParams();
@@ -102,6 +109,8 @@ export async function walletBalancesCommand(address: string, options: WalletOpti
 export async function walletHistoryCommand(address: string, options: WalletOptions & { limit?: string; type?: string; before?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     spinner?.start("Resolving API key...");
     const apiKey = await resolveApiKey(options);
     const params = new URLSearchParams();
@@ -137,6 +146,8 @@ export async function walletHistoryCommand(address: string, options: WalletOptio
 export async function walletTransfersCommand(address: string, options: WalletOptions & { limit?: string; cursor?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     spinner?.start("Resolving API key...");
     const apiKey = await resolveApiKey(options);
     const params = new URLSearchParams();
@@ -170,6 +181,8 @@ export async function walletTransfersCommand(address: string, options: WalletOpt
 export async function walletFundedByCommand(address: string, options: WalletOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     spinner?.start("Resolving API key...");
     const apiKey = await resolveApiKey(options);
     spinner?.start("Finding funding source...");

@@ -1,13 +1,16 @@
 import chalk from "chalk";
 import { setupClient, resolveNetwork, type ResolveOptions } from "../lib/helius.js";
 import { formatSol, formatAddress, formatTokenAmount, formatTable, type TableColumn } from "../lib/formatters.js";
-import { outputJson, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
+import { outputJson, exitWithError, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
+import { validateAddress } from "../lib/validation.js";
 
 interface BalanceOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function balanceCommand(address: string, options: BalanceOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching balance...");
     const result = await withRetry(() => helius.raw.getBalance(address), options, spinner) as any;
     spinner?.stop();
@@ -30,6 +33,8 @@ export async function balanceCommand(address: string, options: BalanceOptions = 
 export async function tokensCommand(address: string, options: BalanceOptions & { limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(address);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching token balances...");
     const limit = options.limit ? parseInt(options.limit, 10) : 100;
     const result = await withRetry(() => helius.getAssetsByOwner({ ownerAddress: address, page: 1, limit, displayOptions: { showFungible: true } }), options, spinner) as any;
@@ -79,6 +84,8 @@ export async function tokensCommand(address: string, options: BalanceOptions & {
 export async function tokenHoldersCommand(mint: string, options: BalanceOptions & { limit?: string } = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(mint);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching token holders...");
     const limit = options.limit ? parseInt(options.limit, 10) : 20;
     const result = await withRetry(() => helius.getTokenAccounts({ mint, page: 1, limit }), options, spinner) as any;

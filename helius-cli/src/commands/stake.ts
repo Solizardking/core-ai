@@ -2,12 +2,15 @@ import chalk from "chalk";
 import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { formatSol } from "../lib/formatters.js";
 import { outputJson, exitWithError, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
+import { validateAddress } from "../lib/validation.js";
 
 interface StakeOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function stakeAccountsCommand(wallet: string, options: StakeOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(wallet);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching Helius stake accounts...");
     const result = await withRetry(() => helius.stake.getHeliusStakeAccounts(wallet as any), options, spinner);
     spinner?.stop();
@@ -31,6 +34,8 @@ export async function stakeAccountsCommand(wallet: string, options: StakeOptions
 export async function stakeWithdrawableCommand(stakeAccount: string, options: StakeOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(stakeAccount);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Checking withdrawable amount...");
     const result = await withRetry(() => helius.stake.getWithdrawableAmount(stakeAccount as any), options, spinner);
     spinner?.stop();
@@ -64,6 +69,8 @@ export async function stakeInstructionsCommand(amount: string, options: StakeOpt
 export async function stakeUnstakeInstructionCommand(stakeAccount: string, options: StakeOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(stakeAccount);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Getting unstake instruction...");
     const result = await withRetry(() => helius.stake.getUnstakeInstruction(stakeAccount as any), options, spinner);
     spinner?.stop();
@@ -80,6 +87,8 @@ export async function stakeUnstakeInstructionCommand(stakeAccount: string, optio
 export async function stakeWithdrawInstructionCommand(stakeAccount: string, options: StakeOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
+    const addrErr = validateAddress(stakeAccount);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Getting withdraw instruction...");
     const result = await withRetry(() => helius.stake.getWithdrawInstruction(stakeAccount as any), options, spinner);
     spinner?.stop();
@@ -120,6 +129,8 @@ export async function stakeUnstakeCommand(stakeAccount: string, options: StakeOp
     exitWithError("KEYPAIR_NOT_FOUND", "Missing --keypair flag", undefined, !!options.json);
   }
   try {
+    const addrErr = validateAddress(stakeAccount);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Creating unstake transaction...");
     const result = await withRetry(() => helius.stake.createUnstakeTransaction(stakeAccount as any), options, spinner);
     spinner?.stop();
@@ -139,6 +150,8 @@ export async function stakeWithdrawCommand(stakeAccount: string, options: StakeO
     exitWithError("KEYPAIR_NOT_FOUND", "Missing --keypair flag", undefined, !!options.json);
   }
   try {
+    const addrErr = validateAddress(stakeAccount);
+    if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Creating withdraw transaction...");
     const result = await withRetry(() => helius.stake.createWithdrawTransaction(stakeAccount as any), options, spinner);
     spinner?.stop();
