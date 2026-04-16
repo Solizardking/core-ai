@@ -20,6 +20,7 @@ src/
     stake.ts           # staking commands
     zk.ts              # 24 ZK compression subcommands
     send.ts            # tx helpers (broadcast, raw, sender, poll, compute-units)
+    reclaim.ts         # close empty SPL token accounts, reclaim rent (via Sender)
     ws.ts              # WebSocket streaming (account, logs, slot, signature, program)
     config-cmd.ts      # config show/set-api-key/set-network/set-project/clear
     signup.ts          # account signup (existing)
