@@ -15,6 +15,7 @@ import {
   type OutputOptions,
   type RetryOptions,
 } from "../lib/output.js";
+import { validateAddress } from "../lib/validation.js";
 
 const TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
@@ -78,6 +79,8 @@ export async function reclaimCommand(
         !!options.json,
       );
     }
+    const ownerErr = validateAddress(owner);
+    if (ownerErr) exitWithError("INVALID_ADDRESS", ownerErr, undefined, !!options.json);
 
     // Fetch token accounts (legacy SPL Token program only for v1).
     const helius = await setupClient(
@@ -136,10 +139,8 @@ export async function reclaimCommand(
     const totalReclaimable = toClose.reduce((sum, a) => sum + a.lamports, 0);
 
     // Build batches.
-    const batchSize = Math.max(
-      1,
-      options.batchSize ? parseInt(options.batchSize, 10) : DEFAULT_BATCH_SIZE,
-    );
+    const parsedBatch = options.batchSize ? parseInt(options.batchSize, 10) : DEFAULT_BATCH_SIZE;
+    const batchSize = Number.isNaN(parsedBatch) || parsedBatch < 1 ? DEFAULT_BATCH_SIZE : parsedBatch;
     const batches: ClosableAta[][] = [];
     for (let i = 0; i < toClose.length; i += batchSize) {
       batches.push(toClose.slice(i, i + batchSize));
@@ -278,7 +279,10 @@ export async function reclaimCommand(
       }
     }
 
-    const destination = address(options.destination || signerAddress);
+    const destinationAddr = options.destination || signerAddress;
+    const destErr = validateAddress(destinationAddr);
+    if (destErr) exitWithError("INVALID_ADDRESS", destErr, undefined, !!options.json);
+    const destination = address(destinationAddr);
     const region = (options.region || "Default") as any;
     const senderOpts: Record<string, unknown> = { region };
     if (options.swqosOnly) senderOpts.swqosOnly = true;
