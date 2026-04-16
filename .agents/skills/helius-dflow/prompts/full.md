@@ -1,10 +1,10 @@
 <!-- Generated from helius-skills/helius-dflow/SKILL.md — do not edit -->
-<!-- Version: 1.0.0 -->
+<!-- Version: 1.1.0 -->
 
 
 # Helius x DFlow — Build Trading Apps on Solana
 
-You are an expert Solana developer building trading applications with DFlow's trading APIs and Helius's infrastructure. DFlow is a DEX aggregator that sources liquidity across venues for spot swaps and prediction markets. Helius provides superior transaction submission (Sender), priority fee optimization, asset queries (DAS), real-time on-chain streaming (WebSockets, LaserStream), and wallet intelligence (Wallet API).
+You are an expert Solana developer building trading applications with DFlow's trading APIs and Helius's infrastructure. DFlow is a DEX aggregator that sources liquidity across venues for spot swaps and prediction markets, and offers an Agent CLI for autonomous trading execution. Helius provides superior transaction submission (Sender), priority fee optimization, asset queries (DAS), real-time on-chain streaming (WebSockets, LaserStream), and wallet intelligence (Wallet API).
 
 ## MCP Router Surface
 
@@ -67,6 +67,7 @@ Identify what the user is building, then read the relevant reference files befor
 
 These intents overlap across DFlow and Helius. Route them correctly:
 
+- **"agent CLI" / "dflow CLI" / "autonomous trading" / "agent execute trade"** — DFlow Agent CLI for autonomous agent execution: `references/dflow-agent-cli.md` + `references/integration-patterns.md`. For understanding the underlying APIs the CLI wraps, also see `references/dflow-spot-trading.md` and `references/dflow-prediction-markets.md`.
 - **"swap" / "trade" / "exchange tokens"** — DFlow spot trading + Helius Sender: `references/dflow-spot-trading.md` + `references/helius-sender.md` + `references/integration-patterns.md`. For priority fee control, also read `references/helius-priority-fees.md`.
 - **"prediction market" / "bet" / "polymarket"** — DFlow prediction markets: `references/dflow-prediction-markets.md` + `references/dflow-proof-kyc.md` + `references/helius-sender.md` + `references/integration-patterns.md`.
 - **"real-time prices" / "price feed" / "orderbook" / "market data"** — DFlow WebSocket streaming + can supplement with LaserStream: `references/dflow-websockets.md` + `references/helius-laserstream.md`.
@@ -86,6 +87,19 @@ Use this when the user wants to:
 - Build a swap UI or trading terminal
 - Integrate imperative or declarative trades
 - Execute trades with optimal landing rates
+
+### DFlow Agent CLI (Autonomous Trading)
+**Reference**: See dflow-agent-cli.md (inlined below), `references/integration-patterns.md`
+**MCP tools**: Helius (`getAssetsByOwner`, `getWalletBalances`, `parseTransactions`) for data queries alongside CLI execution
+
+Use this when the user wants to:
+- Set up an AI agent that executes trades autonomously
+- Use the DFlow CLI for scripted or automated trading workflows
+- Configure guardrails (safety limits) for agent trading
+- Manage encrypted wallets via the Open Wallet Standard
+- Execute trades from the command line without building custom code
+
+The Agent CLI wraps DFlow's trading infrastructure in a deterministic, structured interface. It handles wallet management, transaction signing, and execution — agents go from prompt to trade in a single command. Configure it with a Helius RPC URL for optimal performance.
 
 ### Prediction Markets
 **Reference**: See dflow-prediction-markets.md (inlined below), `references/dflow-proof-kyc.md`, `references/helius-sender.md`, `references/integration-patterns.md`
@@ -208,6 +222,13 @@ Many real tasks span multiple domains. Here's how to compose them:
 2. Architecture: DFlow WebSockets for price signals, DFlow order API for execution, Helius Sender for submission, LaserStream for fill detection
 3. Use Pattern 6 from integration-patterns
 
+### "Build an autonomous trading agent"
+1. Read `references/dflow-agent-cli.md` + `references/integration-patterns.md`
+2. Architecture: DFlow Agent CLI for trade execution, Helius DAS/Wallet API for portfolio data, guardrails for safety limits
+3. Configure Helius RPC URL in `dflow setup` for optimal transaction performance
+4. Set guardrails before giving the agent trading access (`max_trade_size_usd`, `max_daily_volume_usd`, `allowed_tokens`)
+5. Use `--confirm` flag for non-interactive execution, `dflow guardrails show` so agents can read their own constraints
+
 ### "Build a high-frequency / latency-critical trading system"
 1. Read `references/helius-laserstream.md` + `references/dflow-spot-trading.md` + `references/helius-sender.md` + `references/helius-priority-fees.md` + `references/integration-patterns.md`
 2. Architecture: LaserStream for shred-level on-chain data, DFlow for execution, Helius Sender for submission
@@ -281,6 +302,7 @@ Follow these rules in ALL implementations:
 - LaserStream SDK: `github.com/helius-labs/laserstream-sdk`
 
 ### DFlow
+- DFlow Agent CLI Docs: `pond.dflow.net/build/agent-cli`
 - DFlow Docs: `pond.dflow.net/introduction`
 - DFlow MCP Server: `pond.dflow.net/mcp`
 - DFlow MCP Docs: `pond.dflow.net/build/mcp`
@@ -293,6 +315,254 @@ Follow these rules in ALL implementations:
 ---
 
 # Reference Files
+
+## dflow-agent-cli.md
+
+# DFlow Agent CLI — Autonomous Trading Interface
+
+## What This Covers
+
+The DFlow Agent CLI is a purpose-built command-line interface for AI agents and automated systems to execute spot crypto, tokenized equity, and prediction market trades on Solana. It wraps DFlow's best-execution infrastructure in a deterministic, structured interface designed for machine consumption.
+
+For programmatic API integration (building trading apps, UIs, backends), see `references/dflow-spot-trading.md` and `references/dflow-prediction-markets.md`. The Agent CLI is for autonomous agent execution — prompt to trade in a single command.
+
+## When to Use the Agent CLI vs the API
+
+| Use Case | Agent CLI | DFlow API |
+|----------|-----------|-----------|
+| AI agent executing trades autonomously | Yes | — |
+| CI/CD or scripted trading workflows | Yes | — |
+| Building a trading UI / web app | — | Yes |
+| Custom transaction composition | — | Yes |
+| Programmatic integration in code | — | Yes |
+| Interactive terminal trading | Yes | — |
+
+## Installation
+
+```bash
+curl -fsS https://cli.dflow.net | sh
+```
+
+Zero dependencies. Single command.
+
+## Setup
+
+```bash
+dflow setup
+```
+
+Interactive configuration that sets:
+- **Wallet name** — defaults to `default`, creates an encrypted wallet if new
+- **Vault password** — minimum 12 characters
+- **Solana RPC** — defaults to `https://api.mainnet-beta.solana.com` (override with a Helius RPC URL for better performance)
+- **DFlow API key** — required, obtain from `https://pond.dflow.net/build/api-key`
+
+Configuration saves to `~/.config/dflow/config.json`.
+
+### Using Helius RPC
+
+For optimal performance, configure the Agent CLI to use a Helius RPC endpoint:
+
+```bash
+# During setup, enter your Helius RPC URL when prompted:
+# https://mainnet.helius-rpc.com/?api-key=YOUR_HELIUS_API_KEY
+
+# Or override per-command:
+dflow trade 1000000 USDC SOL --rpc-url https://mainnet.helius-rpc.com/?api-key=YOUR_HELIUS_API_KEY
+```
+
+## Command Reference
+
+### Setup & Identity
+
+| Command | Purpose |
+|---------|---------|
+| `dflow setup` | Interactive configuration |
+| `dflow whoami` | Display active wallet public key (raw string, not JSON envelope) |
+| `dflow positions` | Show token balances with metadata (including outcome token positions) |
+| `dflow agent --model <name>` | Register AI model name (48-hour cache) |
+
+### Wallet Management
+
+| Command | Purpose |
+|---------|---------|
+| `dflow wallet list` | List all named wallets |
+| `dflow wallet import --name <n> --keypair <path>` | Import Solana keypair file |
+| `dflow wallet import --name <n> --mnemonic "..."` | Import BIP-39 mnemonic |
+| `dflow wallet export --name <n>` | Decrypt and print keypair |
+| `dflow wallet delete --name <n> [--yes]` | Delete wallet |
+| `dflow wallet rename --from <n> --to <n>` | Rename wallet |
+| `dflow wallet keychain-sync --name <n>` | Resync OS keychain entry |
+
+### Spot Trading
+
+| Command | Purpose |
+|---------|---------|
+| `dflow quote <amount> <from> [to]` | Get spot quote (default 50 bps slippage) |
+| `dflow trade <amount> <from> [to]` | Execute spot swap |
+| `dflow trade <amount> <from> [to] --confirm` | Execute with auto-confirm (no prompt) |
+| `dflow trade --declarative <amount> <from> [to]` | Declarative execution (DFlow optimizes routing at execution time) |
+| `dflow quote <amount> <from> [to] --slippage 100` | Custom slippage in basis points |
+
+### Prediction Market Trading
+
+| Command | Purpose |
+|---------|---------|
+| `dflow quote <amount> USDC --market <MARKET_MINT> --side yes` | Quote a prediction market buy |
+| `dflow trade <amount> USDC --market <MARKET_MINT> --side yes` | Buy YES outcome tokens |
+| `dflow trade <amount> CASH --market <MARKET_MINT> --side no` | Buy NO outcome tokens with CASH |
+| `dflow trade <amount> <OUTCOME_MINT>` | Sell outcome tokens |
+| `dflow status <signature\|order>` | Check trade execution status |
+
+### Transfers & Funding
+
+| Command | Purpose |
+|---------|---------|
+| `dflow send <amount> <token> <recipient>` | Native or SPL token transfer |
+| `dflow fund <USDC\|SOL>` | Buy crypto via MoonPay (browser-based, human-only) |
+
+### Guardrails (Safety Limits)
+
+| Command | Purpose |
+|---------|---------|
+| `dflow guardrails show` | Display current limits (no password required) |
+| `dflow guardrails set <key> [value]` | Set safety limit (requires password) |
+| `dflow guardrails remove <key>` | Remove a specific guardrail |
+| `dflow guardrails reset` | Clear all guardrails |
+
+### Global Flags
+
+| Flag | Purpose |
+|------|---------|
+| `--rpc-url <url>` | Override Solana RPC endpoint |
+| `--wallet <name>` | Specify vault wallet name |
+
+## Built-in Token Symbols
+
+`SOL`, `USDC`, `USDT`, `CASH`, `BONK`, `JUP`, `WIF`, `PYTH`, `JTO`, `RAY`, `ORCA`, `MNDE`, `MSOL`, `JITOSOL`, `BSOL`, `RENDER`.
+
+All other assets require base58 mint addresses.
+
+## Output Format
+
+Every command returns structured JSON. Agents should parse the `ok` field to determine success or failure.
+
+### Success
+
+```json
+{ "ok": true, "data": { ... } }
+```
+
+### Error
+
+```json
+{
+  "ok": false,
+  "error": "Human-readable message",
+  "error_code": "MACHINE_CODE",
+  "category": "routing",
+  "recoverable": true,
+  "suggestion": "Actionable next step."
+}
+```
+
+Key fields:
+- `error_code` — machine-parseable constant for programmatic handling
+- `category` — error domain classification
+- `recoverable` — whether retrying makes sense
+- `suggestion` — actionable guidance for the agent
+
+**Exception**: `dflow whoami` outputs only the raw pubkey string on success, not the JSON envelope.
+
+## Key Management — Open Wallet Standard (OWS)
+
+The CLI implements the Open Wallet Standard for secure key management. Private keys are encrypted in a local vault and never exposed to the agent.
+
+### Storage Layout (`~/.ows/`)
+
+| Path | Purpose |
+|------|---------|
+| `~/.ows/wallets/<uuid>.json` | Encrypted wallet keypairs |
+| `~/.ows/guardrails.json` | HMAC-signed guardrail configuration |
+| `~/.ows/trade_history.json` | Trade history log |
+| `~/.ows/logs/audit.jsonl` | Append-only audit log (signing + wallet lifecycle) |
+
+### Password Resolution Order
+
+1. OS keychain (macOS Keychain / Linux secret service) if saved during setup
+2. `DFLOW_PASSPHRASE` environment variable (read once, cleared from memory)
+3. Interactive terminal prompt
+
+### Security
+
+- Keys encrypted with KDF-derived decryption key (brute-force resistant)
+- Directories set to `700`, wallet files to `600`
+- Commands fail with `VAULT_INSECURE` if permissions are too open
+- Non-custodial — private keys never leave the local machine
+- Multiple independently encrypted wallets supported
+
+## Guardrails — Agent Safety Limits
+
+Guardrails are client-side safety limits stored in `~/.ows/guardrails.json` and HMAC-signed to prevent agent tampering. Humans define risk boundaries; agents execute within them.
+
+| Key | Function |
+|-----|----------|
+| `max_trade_size_usd` | Cap single trade USD value |
+| `max_daily_volume_usd` | Cap 24-hour rolling volume |
+| `max_wallet_value_usd` | Cap total wallet USD value |
+| `allowed_tokens` | Whitelist of buyable mints (sells unrestricted) |
+| `rate_limit` | Max trades within a time window |
+| `sweep_address` | Public key for excess fund sweeps |
+
+```bash
+# Set guardrails (requires vault password)
+dflow guardrails set max_trade_size_usd 5000000
+dflow guardrails set max_daily_volume_usd 50000000
+dflow guardrails set allowed_tokens SOL,USDC,BONK
+
+# Read guardrails (no password required — agents can check their own limits)
+dflow guardrails show
+```
+
+Design:
+- `show` does NOT require the vault password (read-only)
+- `set` DOES require the vault password (write operation)
+- HMAC signing prevents agents from silently modifying guardrails
+- Guardrails enforced locally before any trade is submitted
+
+## Agent Attribution
+
+The CLI auto-detects the calling environment and sets HTTP headers for observability:
+
+| Header | Values | Purpose |
+|--------|--------|---------|
+| `X-Dflow-Caller` | `human`, `agent`, `unknown` | Identifies caller type |
+| `X-Dflow-Agent` | `cursor`, `claude-code`, `openclaw`, `github-actions`, `ci`, custom | Detected agent tool |
+| `X-Dflow-Model` | e.g. `claude-sonnet-4.6`, `gpt-4o` | Registered via `dflow agent --model` |
+
+Override detection with environment variable: `DFLOW_AGENT=my-bot dflow trade 500000 USDC SOL`
+
+## Error Handling
+
+| Error Code | Meaning | Action |
+|------------|---------|--------|
+| `VAULT_INSECURE` | File permissions too open | `chmod 700 ~/.ows && chmod 600 ~/.ows/wallets/*.json` |
+| `NOT_CONFIGURED` | Setup not complete | Run `dflow setup` |
+| `PROOF_NOT_VERIFIED` | KYC required for prediction markets | Complete verification at provided URL |
+| `GEOBLOCKED` | Region restricted (prediction markets) | Spot trading still works |
+| `route_not_found` | No route for trade | Check amount units (atomic), verify mints, check liquidity |
+| `price_impact_too_high` | Trade too large for liquidity | Reduce amount or split into smaller trades |
+
+## Resources
+
+- Agent CLI Docs: `https://pond.dflow.net/build/agent-cli`
+- DFlow API Key: `https://pond.dflow.net/build/api-key`
+- DFlow Cookbook: `github.com/DFlowProtocol/cookbook`
+- DFlow Skill File: `pond.dflow.net/skill.md`
+- DFlow MCP Server: `pond.dflow.net/mcp`
+
+
+---
 
 ## dflow-prediction-markets.md
 
@@ -3726,6 +3996,74 @@ LaserStream ────────> Fill Confirmation ────────
 - For prediction markets, ensure Proof KYC is completed before first trade
 - Implement circuit breakers (max loss, max trades per period)
 - Handle the Thursday 3-5 AM ET maintenance window for prediction markets
+
+---
+
+## Pattern 7: Autonomous Agent Trading via DFlow Agent CLI
+
+For AI agents that need to execute trades without custom code. The DFlow Agent CLI handles wallet management, transaction signing, and execution. Pair it with Helius MCP tools for data queries.
+
+### Architecture
+
+```
+Helius MCP (DAS/Wallet API) ──> Portfolio Data ──> Agent Decision
+                                                        │
+                                              DFlow Agent CLI
+                                                        │
+                                              dflow trade ──> Execution
+```
+
+### Setup
+
+```bash
+# 1. Install CLI
+curl -fsS https://cli.dflow.net | sh
+
+# 2. Configure with Helius RPC for optimal performance
+dflow setup
+# When prompted for RPC, enter: https://mainnet.helius-rpc.com/?api-key=YOUR_HELIUS_KEY
+
+# 3. Set guardrails BEFORE giving the agent access
+dflow guardrails set max_trade_size_usd 5000000
+dflow guardrails set max_daily_volume_usd 50000000
+dflow guardrails set allowed_tokens SOL,USDC,BONK
+
+# 4. Register the agent model (optional, for attribution)
+dflow agent --model claude-sonnet-4.6
+```
+
+### Agent Workflow
+
+```bash
+# Agent checks its own constraints
+dflow guardrails show
+
+# Agent checks portfolio via Helius MCP tools (getAssetsByOwner, getWalletBalances)
+# then decides on a trade
+
+# Get a quote first
+dflow quote 1000000 USDC SOL
+
+# Execute (--confirm skips interactive prompt)
+dflow trade 1000000 USDC SOL --confirm
+
+# Check status if needed
+dflow status <signature>
+
+# Prediction market trade
+dflow trade 5000000 USDC --market <MARKET_MINT> --side yes --confirm
+```
+
+### Key Points
+
+- Configure Helius RPC URL during `dflow setup` — the CLI uses it for all Solana interactions
+- Set guardrails before agent access — HMAC-signed, agents cannot override them
+- Use `--confirm` flag for non-interactive execution
+- Agent can read guardrails (`dflow guardrails show`) to self-constrain
+- All output is structured JSON with `ok`, `error_code`, `recoverable`, and `suggestion` fields
+- Use Helius MCP tools alongside the CLI for portfolio data, token metadata, and transaction history
+- The CLI handles wallet encryption via Open Wallet Standard — private keys never exposed to the agent
+- For headless environments, set `DFLOW_PASSPHRASE` env var for vault password (read once, cleared from memory)
 
 ---
 
