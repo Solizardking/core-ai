@@ -753,15 +753,18 @@ const stakeCmd = program
   .description("Staking commands");
 
 stakeCmd
-  .command("create <amount>")
-  .description("Create a stake transaction (amount in SOL)")
+  .command("create [amount]")
+  .description("Create a stake transaction. Accepts positional SOL, --amount <sol>, or --raw-amount <lamports>.")
   .option("-k, --keypair <path>", "Path to Solana keypair file")
+  .option("--amount <sol>", "Amount in SOL (e.g. 1.5) — alternative to positional")
+  .option("--raw-amount <lamports>", "Amount in lamports (e.g. 1500000000) — exact, avoids float rounding")
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
   $ helius stake create 1.5 -k ~/.helius/keypair.json
-  $ helius stake create 10 -k ~/.helius/keypair.json --json`)
-  .action(function(this: any, amount: string) { stakeCreateCommand(amount, opts(this)); });
+  $ helius stake create --amount 1.5 -k ~/.helius/keypair.json
+  $ helius stake create --raw-amount 1500000000 -k ~/.helius/keypair.json --json`)
+  .action(function(this: any, amount: string | undefined) { stakeCreateCommand(amount, opts(this)); });
 
 stakeCmd
   .command("unstake <stake-account>")
@@ -802,13 +805,17 @@ Examples:
   .action(function(this: any, stakeAccount: string) { stakeWithdrawableCommand(stakeAccount, opts(this)); });
 
 stakeCmd
-  .command("instructions <amount>")
-  .description("Get stake instructions (amount in SOL)")
+  .command("instructions [amount]")
+  .description("Get stake instructions. Accepts positional SOL, --amount <sol>, or --raw-amount <lamports>.")
+  .option("--amount <sol>", "Amount in SOL (e.g. 1.5) — alternative to positional")
+  .option("--raw-amount <lamports>", "Amount in lamports (e.g. 1500000000) — exact, avoids float rounding")
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
-  $ helius stake instructions 5 --json`)
-  .action(function(this: any, amount: string) { stakeInstructionsCommand(amount, opts(this)); });
+  $ helius stake instructions 5
+  $ helius stake instructions --amount 5
+  $ helius stake instructions --raw-amount 5000000000 --json`)
+  .action(function(this: any, amount: string | undefined) { stakeInstructionsCommand(amount, opts(this)); });
 
 stakeCmd
   .command("unstake-instruction <stake-account>")
