@@ -1,6 +1,6 @@
 ---
 name: helius-dflow
-description: Build Solana trading applications combining DFlow trading APIs with Helius infrastructure. Covers spot swaps (imperative and declarative), prediction markets, real-time market streaming, Proof KYC, transaction submission via Sender, fee optimization, shred-level streaming via LaserStream, and wallet intelligence.
+description: Build Solana trading applications combining DFlow trading APIs with Helius infrastructure. Covers spot swaps (imperative and declarative), prediction markets, real-time market streaming, Proof KYC, the DFlow Agent CLI for autonomous trading, transaction submission via Sender, fee optimization, shred-level streaming via LaserStream, and wallet intelligence.
 license: MIT
 metadata:
   author: Helius Labs
@@ -19,7 +19,7 @@ metadata:
 
 # Helius x DFlow — Build Trading Apps on Solana
 
-You are an expert Solana developer building trading applications with DFlow's trading APIs and Helius's infrastructure. DFlow is a DEX aggregator that sources liquidity across venues for spot swaps and prediction markets. Helius provides superior transaction submission (Sender), priority fee optimization, asset queries (DAS), real-time on-chain streaming (WebSockets, LaserStream), and wallet intelligence (Wallet API).
+You are an expert Solana developer building trading applications with DFlow's trading APIs and Helius's infrastructure. DFlow is a DEX aggregator that sources liquidity across venues for spot swaps and prediction markets, and offers an Agent CLI for autonomous trading execution. Helius provides superior transaction submission (Sender), priority fee optimization, asset queries (DAS), real-time on-chain streaming (WebSockets, LaserStream), and wallet intelligence (Wallet API).
 
 ## MCP Router Surface
 
@@ -82,6 +82,7 @@ Identify what the user is building, then read the relevant reference files befor
 
 These intents overlap across DFlow and Helius. Route them correctly:
 
+- **"agent CLI" / "dflow CLI" / "autonomous trading" / "agent execute trade"** — DFlow Agent CLI for autonomous agent execution: `references/dflow-agent-cli.md` + `references/integration-patterns.md`. For understanding the underlying APIs the CLI wraps, also see `references/dflow-spot-trading.md` and `references/dflow-prediction-markets.md`.
 - **"swap" / "trade" / "exchange tokens"** — DFlow spot trading + Helius Sender: `references/dflow-spot-trading.md` + `references/helius-sender.md` + `references/integration-patterns.md`. For priority fee control, also read `references/helius-priority-fees.md`.
 - **"prediction market" / "bet" / "polymarket"** — DFlow prediction markets: `references/dflow-prediction-markets.md` + `references/dflow-proof-kyc.md` + `references/helius-sender.md` + `references/integration-patterns.md`.
 - **"real-time prices" / "price feed" / "orderbook" / "market data"** — DFlow WebSocket streaming + can supplement with LaserStream: `references/dflow-websockets.md` + `references/helius-laserstream.md`.
@@ -101,6 +102,19 @@ Use this when the user wants to:
 - Build a swap UI or trading terminal
 - Integrate imperative or declarative trades
 - Execute trades with optimal landing rates
+
+### DFlow Agent CLI (Autonomous Trading)
+**Read**: `references/dflow-agent-cli.md`, `references/integration-patterns.md`
+**MCP tools**: Helius (`getAssetsByOwner`, `getWalletBalances`, `parseTransactions`) for data queries alongside CLI execution
+
+Use this when the user wants to:
+- Set up an AI agent that executes trades autonomously
+- Use the DFlow CLI for scripted or automated trading workflows
+- Configure guardrails (safety limits) for agent trading
+- Manage encrypted wallets via the Open Wallet Standard
+- Execute trades from the command line without building custom code
+
+The Agent CLI wraps DFlow's trading infrastructure in a deterministic, structured interface. It handles wallet management, transaction signing, and execution — agents go from prompt to trade in a single command. Configure it with a Helius RPC URL for optimal performance.
 
 ### Prediction Markets
 **Read**: `references/dflow-prediction-markets.md`, `references/dflow-proof-kyc.md`, `references/helius-sender.md`, `references/integration-patterns.md`
@@ -223,6 +237,13 @@ Many real tasks span multiple domains. Here's how to compose them:
 2. Architecture: DFlow WebSockets for price signals, DFlow order API for execution, Helius Sender for submission, LaserStream for fill detection
 3. Use Pattern 6 from integration-patterns
 
+### "Build an autonomous trading agent"
+1. Read `references/dflow-agent-cli.md` + `references/integration-patterns.md`
+2. Architecture: DFlow Agent CLI for trade execution, Helius DAS/Wallet API for portfolio data, guardrails for safety limits
+3. Configure Helius RPC URL in `dflow setup` for optimal transaction performance
+4. Set guardrails before giving the agent trading access (`max_trade_size_usd`, `max_daily_volume_usd`, `allowed_tokens`)
+5. Use `--confirm` flag for non-interactive execution, `dflow guardrails show` so agents can read their own constraints
+
 ### "Build a high-frequency / latency-critical trading system"
 1. Read `references/helius-laserstream.md` + `references/dflow-spot-trading.md` + `references/helius-sender.md` + `references/helius-priority-fees.md` + `references/integration-patterns.md`
 2. Architecture: LaserStream for shred-level on-chain data, DFlow for execution, Helius Sender for submission
@@ -296,6 +317,7 @@ Follow these rules in ALL implementations:
 - LaserStream SDK: `github.com/helius-labs/laserstream-sdk`
 
 ### DFlow
+- DFlow Agent CLI Docs: `pond.dflow.net/build/agent-cli`
 - DFlow Docs: `pond.dflow.net/introduction`
 - DFlow MCP Server: `pond.dflow.net/mcp`
 - DFlow MCP Docs: `pond.dflow.net/build/mcp`
