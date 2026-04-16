@@ -117,11 +117,12 @@ export async function reclaimCommand(
         nonEmptySkipped++;
         continue;
       }
-      // If closeAuthority is set, it must equal the signer to be closable by us.
-      // (We still count the skip in dry-run-without-signer mode, where signerAddress
-      // is null; those are informational-only.)
+      // If closeAuthority is set, only that address can close the ATA. Compare
+      // against owner (the wallet being audited) rather than signerAddress, so
+      // dry-runs of another wallet don't flag their own legitimate close-authority
+      // accounts as mismatched. For real runs we later enforce signerAddress === owner.
       const closeAuth: string | null | undefined = info.closeAuthority;
-      if (closeAuth && signerAddress && closeAuth !== signerAddress) {
+      if (closeAuth && closeAuth !== owner) {
         authoritySkipped++;
         continue;
       }
@@ -132,10 +133,22 @@ export async function reclaimCommand(
       });
     }
 
-    // Apply --limit cap.
-    const limit = options.limit ? parseInt(options.limit, 10) : undefined;
-    const toClose =
-      limit && limit > 0 ? closable.slice(0, limit) : closable;
+    // Apply --limit cap. Reject <= 0 and NaN explicitly — `--limit 0` expecting
+    // "close nothing" would otherwise fall through to closing every account.
+    let limit: number | undefined;
+    if (options.limit !== undefined) {
+      const parsed = parseInt(options.limit, 10);
+      if (Number.isNaN(parsed) || parsed <= 0) {
+        exitWithError(
+          "INVALID_INPUT",
+          `Invalid --limit: ${options.limit}. Must be a positive integer.`,
+          undefined,
+          !!options.json,
+        );
+      }
+      limit = parsed;
+    }
+    const toClose = limit ? closable.slice(0, limit) : closable;
     const totalReclaimable = toClose.reduce((sum, a) => sum + a.lamports, 0);
 
     // Build batches.
@@ -199,7 +212,7 @@ export async function reclaimCommand(
       if (authoritySkipped) {
         console.log(
           chalk.yellow(
-            `  Skipped ${authoritySkipped} account(s) (closeAuthority does not match keypair)`,
+            `  Skipped ${authoritySkipped} account(s) (closeAuthority does not match owner)`,
           ),
         );
       }
@@ -287,7 +300,16 @@ export async function reclaimCommand(
     const senderOpts: Record<string, unknown> = { region };
     if (options.swqosOnly) senderOpts.swqosOnly = true;
     if (options.tipAmount) {
-      senderOpts.tipAmount = parseInt(options.tipAmount, 10);
+      const tip = parseInt(options.tipAmount, 10);
+      if (Number.isNaN(tip) || tip < 0) {
+        exitWithError(
+          "INVALID_INPUT",
+          `Invalid --tip-amount: ${options.tipAmount}. Must be a non-negative integer (lamports).`,
+          undefined,
+          !!options.json,
+        );
+      }
+      senderOpts.tipAmount = tip;
     }
 
     type BatchResult =
