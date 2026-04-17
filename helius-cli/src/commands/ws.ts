@@ -6,7 +6,10 @@ import { validateAddress, validateSignature } from "../lib/validation.js";
 
 interface WsOptions extends OutputOptions, ResolveOptions {}
 
-/** Emit a JSON envelope: { event, timestamp, data } */
+// Streaming events are line-delimited `{ event, timestamp, data }` objects and
+// intentionally bypass outputJson()'s v2 envelope ({ ok, v, data }). Wrapping
+// every notification would break stream parsers. Validation failures in this
+// file still go through exitWithError(), which does use the envelope.
 function emitEvent(event: string, data: unknown): void {
   console.log(JSON.stringify({ event, timestamp: new Date().toISOString(), data }, jsonReplacer));
 }

@@ -2,6 +2,17 @@
 
 Official command-line interface for [Helius](https://helius.dev) — the leading Solana RPC and API provider. Built for developers and LLM agents.
 
+## v2.0 migration notes
+
+Every `--json` response is now wrapped in a uniform envelope. **This is a breaking change** for consumers parsing the pre-2.0 shapes.
+
+Two breakage axes:
+
+1. **Top-level shape changed.** Success output is wrapped in `{ ok: true, v: 1, data }`. Error output is wrapped in `{ ok: false, v: 1, error_code, category, error, recoverable, suggestion?, details? }`. Error field renames: `error → error_code`, `message → error`, `retryable → recoverable`, `guidance → suggestion`.
+2. **Caller-supplied error details are now nested under `details`.** Commands that previously spread extra fields inline on errors (e.g. `{ ..., projects: [...] }` from `apikeys` on `MULTIPLE_PROJECTS`) now put them under `response.details.projects`.
+
+See [Output Format](#output-format) for the full contract. Streaming commands (`helius ws ...`) are unchanged — they emit line-delimited `{ event, timestamp, data }` events, not envelopes.
+
 ## Installation
 
 ```bash
@@ -253,7 +264,62 @@ Helius CLI supports the [NO_DNA](https://no-dna.org) convention. When the `NO_DN
 | 57 | Server error (HTTP 5xx) | **Yes** |
 | 58 | Network error (connection failed) | **Yes** |
 
-All `--json` error output includes a `retryable` field.
+All `--json` error envelopes include a `recoverable` field (same meaning as the pre-2.0 `retryable`).
+
+## Output Format
+
+When `--json` is passed, every single-response command emits a uniform envelope on `stdout` (both success and failure), so `helius <cmd> --json | jq '.ok'` works the same for either outcome. Human-mode errors continue to print to `stderr` via spinners and `console.error`.
+
+### Success
+
+```json
+{
+  "ok": true,
+  "v": 1,
+  "data": { "address": "...", "lamports": 12345, "sol": 0.000012345, "network": "mainnet" }
+}
+```
+
+`data` holds whatever the command previously emitted at the top level.
+
+### Error
+
+```json
+{
+  "ok": false,
+  "v": 1,
+  "error_code": "MULTIPLE_PROJECTS",
+  "category": "project",
+  "error": "Multiple projects found — specify one with --project <id>.",
+  "recoverable": false,
+  "suggestion": "Specify a project ID. Run `helius projects` to list them.",
+  "details": { "projects": [{ "id": "...", "name": "..." }] }
+}
+```
+
+Fields:
+
+- `ok` — `true` on success, `false` on failure. Always present.
+- `v` — envelope schema version. Always `1` in this release. Branch on this for forward compatibility.
+- `data` (success only) — the command's payload.
+- `error_code` (error only) — stable machine identifier (e.g. `INVALID_API_KEY`, `RATE_LIMITED`). Safe to `switch` on.
+- `category` (error only) — coarse bucket; one of: `success`, `general`, `auth`, `payment`, `project`, `api`, `sdk`, `validation`, `not_found`, `rate_limit`, `server`, `network`. Use this when you want to group errors without enumerating every code.
+- `error` (error only) — human-readable message.
+- `recoverable` (error only) — `true` if retrying may succeed (rate limits, transient 5xx, network). `false` for permanent errors like invalid address or invalid API key.
+- `suggestion` (error only, optional) — actionable hint when one is available. Not every error code has one.
+- `details` (error only, optional) — extra structured context (e.g. `projects` list for `MULTIPLE_PROJECTS`, `missing` array for `INSUFFICIENT_FUNDS`). Under `--debug`, also includes a `stack` field for unclassified errors.
+
+Envelope keys are intentionally `snake_case` (`error_code`, not `errorCode`) for ergonomic shell use — `jq '.error_code'` reads naturally. Internal TypeScript names elsewhere in the codebase still use `camelCase`.
+
+TypeScript consumers can import the envelope types from the installed package:
+
+```ts
+import type { Envelope, SuccessEnvelope, ErrorEnvelope, Category } from "helius-cli/dist/lib/output.js";
+```
+
+### Streaming exception
+
+`helius ws <subcommand> --json` emits line-delimited events of the form `{ event, timestamp, data }` and does **not** use the envelope. A consumer that calls `JSON.parse(line).ok` on a streaming line gets `undefined`, which is the tell that it's an event, not a single response. Validation errors from `ws` commands (e.g. bad pubkey) still use the envelope.
 
 ## Development
 

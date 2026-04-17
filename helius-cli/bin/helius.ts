@@ -56,8 +56,31 @@ import { owsLinkCommand, owsUnlinkCommand, owsStatusCommand } from "../src/comma
 import { updateCommand } from "../src/commands/update.js";
 import { completionsCommand } from "../src/commands/completions.js";
 import { VERSION } from "../src/constants.js";
-import { setDebugEnabled } from "../src/lib/output.js";
+import { setDebugEnabled, exitWithError, handleCommandError } from "../src/lib/output.js";
 import { sendCommandEvent, sendCliFeedback, setCurrentCommand } from "../src/lib/feedback.js";
+
+// Detect --json before Commander parses so boundary-path handlers below
+// (Commander errors + uncaught exceptions) know whether to emit an envelope
+// or human-readable text. Per-command --json flags live in argv either way.
+const isJsonMode = process.argv.includes("--json");
+
+// Keep uncaught rejections/exceptions from printing raw stack traces under
+// --json, which would break the envelope contract for consumers.
+process.on("unhandledRejection", (reason) => {
+  if (isJsonMode) {
+    const error = reason instanceof Error ? reason : new Error(String(reason));
+    handleCommandError(error, { json: true });
+  }
+  // Non-JSON mode: let Node's default handler print the stack.
+  throw reason;
+});
+
+process.on("uncaughtException", (error) => {
+  if (isJsonMode) {
+    handleCommandError(error, { json: true });
+  }
+  throw error;
+});
 
 const program = new Command();
 
@@ -1239,4 +1262,26 @@ Examples:
     console.log(chalk.green("Thanks for the feedback!"));
   });
 
-program.parse();
+// Wrap Commander parsing so argument/flag errors (unknown option, missing arg,
+// etc.) emit the v2 envelope under --json instead of Commander's raw stderr text.
+// --help and --version still exit normally with exit code 0.
+program.exitOverride();
+
+try {
+  program.parse();
+} catch (err: any) {
+  const code: string | undefined = err?.code;
+  const exitCode: number = typeof err?.exitCode === "number" ? err.exitCode : 1;
+
+  // Help/version are successful exits; let them pass through silently.
+  if (code === "commander.helpDisplayed" || code === "commander.version" || code === "commander.help") {
+    process.exit(exitCode);
+  }
+
+  if (isJsonMode) {
+    exitWithError("INVALID_INPUT", err?.message ?? "Invalid command-line usage", undefined, true);
+  } else {
+    // Commander already printed its message to stderr; mirror its exit code.
+    process.exit(exitCode || 1);
+  }
+}

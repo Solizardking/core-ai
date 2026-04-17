@@ -56,6 +56,7 @@ export const ExitCode = {
   INSUFFICIENT_SOL: 20,
   INSUFFICIENT_USDC: 21,
   PAYMENT_FAILED: 22,
+  INSUFFICIENT_FUNDS: 23,
 
   // Project errors (30-39)
   NO_PROJECTS: 30,
@@ -96,6 +97,7 @@ const errorToExitCode: Record<string, ExitCodeType> = {
   INSUFFICIENT_SOL: ExitCode.INSUFFICIENT_SOL,
   INSUFFICIENT_USDC: ExitCode.INSUFFICIENT_USDC,
   PAYMENT_FAILED: ExitCode.PAYMENT_FAILED,
+  INSUFFICIENT_FUNDS: ExitCode.INSUFFICIENT_FUNDS,
   NO_PROJECTS: ExitCode.NO_PROJECTS,
   PROJECT_NOT_FOUND: ExitCode.PROJECT_NOT_FOUND,
   MULTIPLE_PROJECTS: ExitCode.MULTIPLE_PROJECTS,
@@ -114,7 +116,101 @@ const errorToExitCode: Record<string, ExitCodeType> = {
 };
 
 export function getExitCode(errorCode: string): ExitCodeType {
-  return errorToExitCode[errorCode] || ExitCode.GENERAL_ERROR;
+  const code = errorToExitCode[errorCode];
+  if (code === undefined) {
+    debug(`Unknown error code "${errorCode}" — falling back to GENERAL_ERROR. Add to errorToExitCode.`);
+    return ExitCode.GENERAL_ERROR;
+  }
+  return code;
+}
+
+// ── Envelope contract (v1) ─────────────────────────────────────────
+// All --json output is wrapped in one of these shapes. See README
+// "Output Format" section for the public contract.
+
+export const ENVELOPE_VERSION = 1 as const;
+
+export type Category =
+  | "success" | "general" | "auth" | "payment" | "project"
+  | "api" | "sdk" | "validation" | "not_found"
+  | "rate_limit" | "server" | "network";
+
+export type SuccessEnvelope<T = unknown> = {
+  ok: true;
+  v: typeof ENVELOPE_VERSION;
+  data: T;
+};
+
+export type ErrorEnvelope = {
+  ok: false;
+  v: typeof ENVELOPE_VERSION;
+  error_code: string;
+  category: Category;
+  error: string;
+  recoverable: boolean;
+  suggestion?: string;
+  details?: Record<string, unknown>;
+};
+
+export type Envelope<T = unknown> = SuccessEnvelope<T> | ErrorEnvelope;
+
+const exitCodeToCategory: Record<ExitCodeType, Category> = {
+  [ExitCode.SUCCESS]: "success",
+  [ExitCode.GENERAL_ERROR]: "general",
+  [ExitCode.NOT_LOGGED_IN]: "auth",
+  [ExitCode.KEYPAIR_NOT_FOUND]: "auth",
+  [ExitCode.AUTH_FAILED]: "auth",
+  [ExitCode.INSUFFICIENT_SOL]: "payment",
+  [ExitCode.INSUFFICIENT_USDC]: "payment",
+  [ExitCode.PAYMENT_FAILED]: "payment",
+  [ExitCode.INSUFFICIENT_FUNDS]: "payment",
+  [ExitCode.NO_API_KEY]: "auth",  // API-key configuration is an auth concern — grouped with INVALID_API_KEY so `category === "auth"` catches all key problems
+  [ExitCode.NO_PROJECTS]: "project",
+  [ExitCode.PROJECT_NOT_FOUND]: "project",
+  [ExitCode.MULTIPLE_PROJECTS]: "project",
+  [ExitCode.PROJECT_EXISTS]: "project",
+  [ExitCode.API_ERROR]: "api",
+  [ExitCode.NO_API_KEYS]: "api",
+  [ExitCode.SDK_ERROR]: "sdk",
+  [ExitCode.INVALID_ADDRESS]: "validation",
+  [ExitCode.INVALID_INPUT]: "validation",
+  [ExitCode.INVALID_API_KEY]: "auth",
+  [ExitCode.NOT_FOUND]: "not_found",
+  [ExitCode.RATE_LIMITED]: "rate_limit",
+  [ExitCode.SERVER_ERROR]: "server",
+  [ExitCode.NETWORK_ERROR]: "network",
+};
+
+function getCategory(exitCode: ExitCodeType): Category {
+  return exitCodeToCategory[exitCode] ?? "general";
+}
+
+function writeEnvelope(obj: Envelope): void {
+  console.log(JSON.stringify(obj, jsonReplacer, 2));
+}
+
+function buildErrorEnvelope(
+  errorCode: string,
+  exitCode: ExitCodeType,
+  message: string,
+  retryable: boolean,
+  details?: Record<string, unknown>,
+  stack?: string,
+): ErrorEnvelope {
+  const guidance = CLI_GUIDANCE[errorCode];
+  const mergedDetails = details || stack
+    ? { ...(details ?? {}), ...(stack ? { stack } : {}) }
+    : undefined;
+  return {
+    ok: false,
+    v: ENVELOPE_VERSION,
+    error_code: errorCode,
+    category: getCategory(exitCode),
+    error: message,
+    recoverable: retryable,  // internal 'retryable' → public 'recoverable'
+    ...(guidance ? { suggestion: guidance } : {}),
+    ...(mergedDetails ? { details: mergedDetails } : {}),
+  };
 }
 
 // Classification result returned by classifyError()
@@ -242,6 +338,7 @@ export const CLI_GUIDANCE: Record<string, string> = {
   NETWORK_ERROR: 'Could not connect to Helius. Check your internet connection and retry.',
   INSUFFICIENT_SOL: 'Fund your wallet with ~0.001 SOL for transaction fees, then retry.',
   INSUFFICIENT_USDC: 'Fund your wallet with the required USDC amount, then retry.',
+  INSUFFICIENT_FUNDS: 'Fund your wallet with the amounts listed in `details.missing`, then retry.',
   PAYMENT_FAILED: 'The on-chain payment did not complete. Check your wallet balance and retry.',
   NOT_LOGGED_IN: 'Run `helius login` to authenticate, or `helius signup` to create a new account.',
   KEYPAIR_NOT_FOUND: 'Run `helius keygen` to generate a keypair first.',
@@ -275,7 +372,8 @@ export function handleCommandError(
   sendCommandEvent(cmdName, { exitCode, success: false });
 
   if (options.json) {
-    outputJson({ error: errorCode, message, retryable, ...(guidance ? { guidance } : {}) });
+    const stack = _debugEnabled && error instanceof Error ? error.stack : undefined;
+    writeEnvelope(buildErrorEnvelope(errorCode, exitCode, message, retryable, undefined, stack));
   } else {
     const hint = retryable ? chalk.gray(" (transient — safe to retry)") : "";
     spinner?.fail(`${message}${hint}`);
@@ -310,7 +408,7 @@ export function jsonReplacer(_key: string, value: unknown): unknown {
 }
 
 export function outputJson(data: unknown): void {
-  console.log(JSON.stringify(data, jsonReplacer, 2));
+  writeEnvelope({ ok: true, v: ENVELOPE_VERSION, data });
 }
 
 export function exitWithError(
@@ -320,10 +418,13 @@ export function exitWithError(
   json = true,
 ): never {
   const exitCode = getExitCode(errorCode);
+  const retryable = RETRYABLE_CODES.has(exitCode);
+
+  const cmdName = getCurrentCommand() || 'unknown';
+  sendCommandEvent(cmdName, { exitCode, success: false });
 
   if (json) {
-    const retryable = RETRYABLE_CODES.has(exitCode);
-    outputJson({ error: errorCode, message, retryable, ...details });
+    writeEnvelope(buildErrorEnvelope(errorCode, exitCode, message, retryable, details));
   } else {
     console.error(chalk.red(message));
     const guidance = CLI_GUIDANCE[errorCode];
