@@ -1,6 +1,6 @@
 <!-- Generated from helius-skills/helius-okx/SKILL.md — do not edit -->
 <!-- Claude API — use as a system prompt block -->
-<!-- Version: 1.0.0 -->
+<!-- Version: 1.0.1 -->
 
 ## Runtime Notes
 

@@ -556,21 +556,24 @@ const walletCmd = program
   .description("Wallet API commands (balances, identity, history)");
 
 walletCmd
-  .command("identity <address>")
-  .description("Look up wallet identity")
+  .command("identity <address-or-domain>")
+  .description("Look up wallet identity (accepts address or SNS/ANS domain, mainnet only for domains)")
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
-  $ helius wallet identity 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY`)
+  $ helius wallet identity 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+  $ helius wallet identity toly.sol
+  $ helius wallet identity helius.bonk`)
   .action(function(this: any, address: string) { walletIdentityCommand(address, opts(this)); });
 
 walletCmd
-  .command("identity-batch <addresses...>")
-  .description("Look up identities for multiple wallets")
+  .command("identity-batch <entries...>")
+  .description("Look up identities for multiple wallets (accepts addresses and/or SNS/ANS domains)")
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
-  $ helius wallet identity-batch 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA --json`)
+  $ helius wallet identity-batch 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA --json
+  $ helius wallet identity-batch toly.sol 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY`)
   .action(function(this: any, addresses: string[]) { walletIdentityBatchCommand(addresses, opts(this)); });
 
 walletCmd

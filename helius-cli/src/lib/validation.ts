@@ -8,6 +8,12 @@ const VALID_PERIODS = new Set(["monthly", "yearly"]);
 // Base58 character set (no 0, O, I, l)
 const BASE58_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
+// Mirror of the wallet-api server's isValidDomainName so any input the server
+// accepts (SNS .sol, ANS .bonk/.poor/etc., multi-label subdomains, underscores)
+// passes client validation.
+const DOMAIN_RE = /^[a-zA-Z0-9]([a-zA-Z0-9_-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]+)+$/;
+const DOMAIN_MAX_LEN = 255;
+
 export function validateSignupPlan(plan: string): string | null {
   if (!SIGNUP_PLANS.has(plan.toLowerCase())) {
     const available = [...SIGNUP_PLANS].join(", ");
@@ -48,6 +54,20 @@ export function validateAddress(addr: string): string | null {
 export function validateAddresses(addrs: string[]): string | null {
   for (const addr of addrs) {
     const err = validateAddress(addr);
+    if (err) return err;
+  }
+  return null;
+}
+
+export function validateAddressOrDomain(input: string): string | null {
+  if (BASE58_RE.test(input)) return null;
+  if (input.length <= DOMAIN_MAX_LEN && DOMAIN_RE.test(input)) return null;
+  return `Invalid Solana address or domain: ${input}`;
+}
+
+export function validateAddressesOrDomains(inputs: string[]): string | null {
+  for (const s of inputs) {
+    const err = validateAddressOrDomain(s);
     if (err) return err;
   }
   return null;

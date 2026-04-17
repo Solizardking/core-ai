@@ -10,9 +10,9 @@ export function registerWalletTools(server: McpServer) {
   // ─── Get Wallet Identity ───
   server.tool(
     'getWalletIdentity',
-    'BEST FOR: identifying a single known wallet. PREFER batchWalletIdentity for multiple addresses. Identify known wallets (exchanges, protocols, institutions). Returns name, type, category, tags. Credit cost: 100 credits.',
+    'BEST FOR: identifying a single known wallet. PREFER batchWalletIdentity for multiple addresses. Identify known wallets (exchanges, protocols, institutions). Returns name, type, category, tags. Also accepts SNS/ANS domains (e.g., `toly.sol`, `helius.bonk`) — mainnet only. Credit cost: 100 credits.',
     {
-      address: z.string().describe('Solana wallet address (base58 encoded)')
+      address: z.string().describe('Solana wallet address (base58) or SNS/ANS domain (e.g., toly.sol, helius.bonk — mainnet only)')
     },
     async ({ address }) => {
       if (!hasApiKey()) return noApiKeyResponse();
@@ -40,9 +40,9 @@ export function registerWalletTools(server: McpServer) {
   // ─── Batch Wallet Identity ───
   server.tool(
     'batchWalletIdentity',
-    'BEST FOR: identifying multiple wallets at once (up to 100). PREFER getWalletIdentity for a single address. Look up identities for up to 100 Solana addresses. Returns names, types, and categories. Credit cost: 100 credits.',
+    'BEST FOR: identifying multiple wallets at once (up to 100). PREFER getWalletIdentity for a single address. Look up identities for up to 100 entries. Returns names, types, and categories. Entries may be addresses or SNS/ANS domains (mainnet only); unresolved domains are returned with `unresolved: true`. Credit cost: 100 credits.',
     {
-      addresses: z.array(z.string()).describe('Array of Solana wallet addresses (base58 encoded, max 100)')
+      addresses: z.array(z.string()).describe('Array of up to 100 entries — each a base58 address or SNS/ANS domain')
     },
     async ({ addresses }) => {
       if (!hasApiKey()) return noApiKeyResponse();
@@ -64,23 +64,30 @@ export function registerWalletTools(server: McpServer) {
 
         const lines = [`**Batch Identity Lookup** (${results.length} results)`, ''];
 
-        for (const entry of results) {
+        for (const entry of results as Array<any>) {
+          if (entry.unresolved) {
+            lines.push(`- \`${entry.inputDomain || '?'}\` — Unresolved domain`);
+            continue;
+          }
           const addr = formatAddress(entry.address || '');
+          const subject = entry.inputDomain && entry.address
+            ? `\`${entry.inputDomain}\` → ${addr}`
+            : addr;
           if (entry.name) {
-            lines.push(`- **${entry.name}** — ${addr}`);
+            lines.push(`- **${entry.name}** — ${subject}`);
             const details: string[] = [];
             if (entry.type) details.push(entry.type);
             if (entry.category) details.push(entry.category);
             if (details.length > 0) lines.push(`  ${details.join(' | ')}`);
           } else {
-            lines.push(`- ${addr} — Unknown`);
+            lines.push(`- ${subject} — Unknown`);
           }
         }
 
         return mcpText(lines.join('\n'));
       } catch (err) {
         return handleToolError(err, 'Error fetching batch identities', [
-          addressError('Batch Identity'),
+          addressError('Batch Identity', 'Entries must be base58 addresses or SNS/ANS domains.'),
         ]);
       }
     }

@@ -2,7 +2,7 @@
 
 ---
 name: helius-phantom
-version: "1.0.0"
+version: "1.0.1"
 description: >
   Build frontend Solana applications with Phantom Connect SDK and Helius
   infrastructure. Use this skill when: connecting Phantom wallet in React,

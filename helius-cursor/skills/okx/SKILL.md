@@ -2,7 +2,7 @@
 name: okx
 description: Build Solana trading and intelligence applications combining OKX DEX aggregation with Helius infrastructure. Integration-only layer — describes when and how to compose OKX tools with Helius tools for swaps, token discovery, smart money signals, meme token analysis, and portfolio intelligence.
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Helius x OKX — Build Trading & Intelligence Apps on Solana

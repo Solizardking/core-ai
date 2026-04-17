@@ -4,7 +4,7 @@ description: Build Solana trading and intelligence applications combining OKX DE
 license: MIT
 metadata:
   author: Helius Labs
-  version: "1.0.0"
+  version: "1.0.1"
   tags:
     - solana
     - trading

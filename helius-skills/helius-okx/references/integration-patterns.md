@@ -306,7 +306,7 @@ Helius parseTransactions ──> Trade History
 3. **Price charts**: OKX `market kline` for candlestick data on selected tokens
 4. **PnL analysis**: OKX `portfolio-overview` for realized/unrealized PnL and win rate
 5. **Trade history**: Helius `parseTransactions` for human-readable transaction log
-6. **Identity**: Helius `getWalletIdentity` to check if wallet is a known entity
+6. **Identity**: Helius `getWalletIdentity` to check if wallet is a known entity — accepts an address or SNS/ANS domain
 
 ### Multi-Chain Extension
 
