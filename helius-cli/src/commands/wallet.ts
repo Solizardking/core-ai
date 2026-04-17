@@ -2,14 +2,14 @@ import chalk from "chalk";
 import { resolveApiKey, restRequest, type ResolveOptions } from "../lib/helius.js";
 import { formatAddress, formatTable, formatEnumLabel, type TableColumn } from "../lib/formatters.js";
 import { outputJson, exitWithError, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
-import { validateAddress, validateAddresses } from "../lib/validation.js";
+import { validateAddress, validateAddressOrDomain, validateAddressesOrDomains } from "../lib/validation.js";
 
 interface WalletOptions extends OutputOptions, ResolveOptions, RetryOptions {}
 
 export async function walletIdentityCommand(address: string, options: WalletOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const addrErr = validateAddress(address);
+    const addrErr = validateAddressOrDomain(address);
     if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     spinner?.start("Resolving API key...");
     const apiKey = await resolveApiKey(options);
@@ -17,11 +17,15 @@ export async function walletIdentityCommand(address: string, options: WalletOpti
     const result = await withRetry(() => restRequest(`/v1/wallet/${address}/identity`, apiKey), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
+    const resolved = result?.address || address;
+    const header = result?.inputDomain && result?.address
+      ? `${chalk.cyan(result.inputDomain)} ${chalk.gray("→")} ${chalk.cyan(result.address)}`
+      : chalk.cyan(resolved);
     if (!result || (!result.name && !result.type)) {
-      console.log(chalk.yellow(`\nNo known identity for ${address}`));
+      console.log(chalk.yellow(`\nNo known identity for ${header}`));
       return;
     }
-    console.log(chalk.bold(`\nWallet Identity for ${chalk.cyan(address)}:\n`));
+    console.log(chalk.bold(`\nWallet Identity for ${header}:\n`));
     if (result.name) console.log(`  ${chalk.gray("Name:")}     ${chalk.green(result.name)}`);
     if (result.type) console.log(`  ${chalk.gray("Type:")}     ${formatEnumLabel(result.type)}`);
     if (result.category) console.log(`  ${chalk.gray("Category:")} ${result.category}`);
@@ -34,7 +38,7 @@ export async function walletIdentityCommand(address: string, options: WalletOpti
 export async function walletIdentityBatchCommand(addresses: string[], options: WalletOptions = {}): Promise<void> {
   const spinner = createSpinner(options);
   try {
-    const addrErr = validateAddresses(addresses);
+    const addrErr = validateAddressesOrDomains(addresses);
     if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     spinner?.start("Resolving API key...");
     const apiKey = await resolveApiKey(options);
@@ -48,11 +52,25 @@ export async function walletIdentityBatchCommand(addresses: string[], options: W
     const identities = Array.isArray(result) ? result : [];
     console.log(chalk.bold(`\nWallet Identities (${identities.length}):\n`));
     for (const id of identities) {
-      if (id.name || id.type) {
-        console.log(`  ${chalk.cyan(id.address || "?")} - ${chalk.green(id.name || "Unknown")} (${id.type ? formatEnumLabel(id.type) : "N/A"})`);
+      if (id.unresolved) continue;
+      const subject = id.inputDomain && id.address
+        ? `${chalk.cyan(id.inputDomain)} ${chalk.gray("→")} ${chalk.cyan(id.address)}`
+        : chalk.cyan(id.address || id.inputDomain || "?");
+      const hasIdentity = id.name || (id.type && id.type !== "unknown");
+      if (hasIdentity) {
+        console.log(`  ${subject} - ${chalk.green(id.name || "Unknown")} (${id.type ? formatEnumLabel(id.type) : "N/A"})`);
+      } else if (id.inputDomain) {
+        console.log(`  ${subject} - ${chalk.gray("no known identity")}`);
       }
     }
-    const unknown = identities.filter((i: any) => !i.name && !i.type);
+    const unresolved = identities.filter((i: any) => i.unresolved);
+    if (unresolved.length) {
+      console.log(chalk.yellow(`\n  ${unresolved.length} domain(s) could not be resolved:`));
+      for (const id of unresolved) {
+        console.log(chalk.yellow(`    ${id.inputDomain || "?"}`));
+      }
+    }
+    const unknown = identities.filter((i: any) => !i.unresolved && !i.inputDomain && !i.name && (!i.type || i.type === "unknown"));
     if (unknown.length) {
       console.log(chalk.gray(`\n  ${unknown.length} wallet(s) have no known identity`));
     }

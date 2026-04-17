@@ -131,8 +131,8 @@ helius config clear               # Reset config
 
 | Command | Description |
 |---|---|
-| `helius wallet identity <address>` | Look up wallet identity |
-| `helius wallet identity-batch <addresses...>` | Look up identities for multiple wallets |
+| `helius wallet identity <address-or-domain>` | Look up wallet identity (address or SNS/ANS domain) |
+| `helius wallet identity-batch <entries...>` | Look up identities for multiple wallets (addresses and/or domains) |
 | `helius wallet balances <address>` | Get all token balances with USD values |
 | `helius wallet history <address>` | Get transaction history with balance changes |
 | `helius wallet transfers <address>` | Get token transfers |

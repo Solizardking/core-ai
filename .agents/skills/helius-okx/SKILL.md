@@ -2,7 +2,7 @@
 
 ---
 name: helius-okx
-version: "1.0.0"
+version: "1.0.1"
 description: >
   Build Solana trading and intelligence applications combining OKX DEX aggregation
   with Helius infrastructure. Use this skill when: executing swaps via OKX's 500+

@@ -2,7 +2,7 @@
 
 ---
 name: helius-dflow
-version: "1.1.0"
+version: "1.1.1"
 description: >
   Build Solana trading applications combining DFlow trading APIs with Helius
   infrastructure. Use this skill when: building swap UIs or trading terminals,
