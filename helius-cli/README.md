@@ -2,9 +2,9 @@
 
 Official command-line interface for [Helius](https://helius.dev) — the leading Solana RPC and API provider. Built for developers and LLM agents.
 
-## v2.0 migration notes
+## v1.3.0 migration notes
 
-Every `--json` response is now wrapped in a uniform envelope. **This is a breaking change** for consumers parsing the pre-2.0 shapes.
+Every `--json` response is now wrapped in a uniform envelope. **This is a breaking change** for consumers parsing the pre-1.3 shapes, but is shipped as a minor bump — confirm your integrations before upgrading.
 
 Two breakage axes:
 
@@ -264,7 +264,7 @@ Helius CLI supports the [NO_DNA](https://no-dna.org) convention. When the `NO_DN
 | 57 | Server error (HTTP 5xx) | **Yes** |
 | 58 | Network error (connection failed) | **Yes** |
 
-All `--json` error envelopes include a `recoverable` field (same meaning as the pre-2.0 `retryable`).
+All `--json` error envelopes include a `recoverable` field (same meaning as the pre-1.3 `retryable`).
 
 ## Output Format
 

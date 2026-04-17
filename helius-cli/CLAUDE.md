@@ -46,7 +46,7 @@ All data commands follow this pattern:
 2. Resolve API key via `resolveApiKey(options)` — flag > env > config > JWT auto-resolve
 3. Get SDK client via `getClient(apiKey, network)`
 4. Call SDK method
-5. Output: formatted terminal (chalk) or `outputJson(payload)` for `--json`. As of v2, `outputJson()` auto-wraps its argument in `{ ok: true, v: 1, data: <payload> }` — callers still pass the raw payload.
+5. Output: formatted terminal (chalk) or `outputJson(payload)` for `--json`. As of v1.3, `outputJson()` auto-wraps its argument in `{ ok: true, v: 1, data: <payload> }` — callers still pass the raw payload.
 6. Error: use `handleCommandError(error, options, spinner)` — classifies the error, emits the error envelope (`{ ok: false, v: 1, error_code, category, error, recoverable, suggestion?, details? }`) or spinner output, and exits with the classified exit code
 
 Standard catch block template (all commands except `ws.ts`):
@@ -86,11 +86,11 @@ WebSocket commands (`ws.ts`) use a variant that preserves the AbortError early-r
   - 57 `SERVER_ERROR` — HTTP 5xx or server error message; **transient, safe to retry**
   - 58 `NETWORK_ERROR` — ECONNREFUSED/ETIMEDOUT/fetch failed; **transient, safe to retry**
 
-The `recoverable` field in `--json` error envelopes reflects this directly (renamed from pre-2.0 `retryable`).
+The `recoverable` field in `--json` error envelopes reflects this directly (renamed from pre-1.3 `retryable`).
 
-New in v2: exit code 23 `INSUFFICIENT_FUNDS` — signup/upgrade paths where both SOL and USDC may be short; emit `details.missing` listing the shortfalls.
+New in v1.3: exit code 23 `INSUFFICIENT_FUNDS` — signup/upgrade paths where both SOL and USDC may be short; emit `details.missing` listing the shortfalls.
 
-## Output Envelope (v2)
+## Output Envelope (v1.3)
 
 All `--json` output goes through one of two shapes, defined in `src/lib/output.ts`:
 
