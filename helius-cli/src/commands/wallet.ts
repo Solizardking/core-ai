@@ -17,11 +17,15 @@ export async function walletIdentityCommand(address: string, options: WalletOpti
     const result = await withRetry(() => restRequest(`/v1/wallet/${address}/identity`, apiKey), options, spinner);
     spinner?.stop();
     if (options.json) { outputJson(result); return; }
+    const resolved = result?.address || address;
+    const header = result?.inputDomain && result?.address
+      ? `${chalk.cyan(result.inputDomain)} ${chalk.gray("→")} ${chalk.cyan(result.address)}`
+      : chalk.cyan(resolved);
     if (!result || (!result.name && !result.type)) {
-      console.log(chalk.yellow(`\nNo known identity for ${address}`));
+      console.log(chalk.yellow(`\nNo known identity for ${header}`));
       return;
     }
-    console.log(chalk.bold(`\nWallet Identity for ${chalk.cyan(address)}:\n`));
+    console.log(chalk.bold(`\nWallet Identity for ${header}:\n`));
     if (result.name) console.log(`  ${chalk.gray("Name:")}     ${chalk.green(result.name)}`);
     if (result.type) console.log(`  ${chalk.gray("Type:")}     ${formatEnumLabel(result.type)}`);
     if (result.category) console.log(`  ${chalk.gray("Category:")} ${result.category}`);
@@ -52,8 +56,11 @@ export async function walletIdentityBatchCommand(addresses: string[], options: W
       const subject = id.inputDomain && id.address
         ? `${chalk.cyan(id.inputDomain)} ${chalk.gray("→")} ${chalk.cyan(id.address)}`
         : chalk.cyan(id.address || id.inputDomain || "?");
-      if (id.name || (id.type && id.type !== "unknown")) {
+      const hasIdentity = id.name || (id.type && id.type !== "unknown");
+      if (hasIdentity) {
         console.log(`  ${subject} - ${chalk.green(id.name || "Unknown")} (${id.type ? formatEnumLabel(id.type) : "N/A"})`);
+      } else if (id.inputDomain) {
+        console.log(`  ${subject} - ${chalk.gray("no known identity")}`);
       }
     }
     const unresolved = identities.filter((i: any) => i.unresolved);
@@ -63,7 +70,7 @@ export async function walletIdentityBatchCommand(addresses: string[], options: W
         console.log(chalk.yellow(`    ${id.inputDomain || "?"}`));
       }
     }
-    const unknown = identities.filter((i: any) => !i.unresolved && !i.name && (!i.type || i.type === "unknown"));
+    const unknown = identities.filter((i: any) => !i.unresolved && !i.inputDomain && !i.name && (!i.type || i.type === "unknown"));
     if (unknown.length) {
       console.log(chalk.gray(`\n  ${unknown.length} wallet(s) have no known identity`));
     }

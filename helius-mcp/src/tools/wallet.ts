@@ -19,10 +19,12 @@ export function registerWalletTools(server: McpServer) {
 
       try {
         const client = getHeliusClient();
-        const data = await client.wallet.getIdentity({ wallet: address });
+        // TODO: drop `any` once helius-sdk types include inputDomain on the identity response
+        const data = await client.wallet.getIdentity({ wallet: address }) as any;
 
         const lines = ['**Wallet Identity**', ''];
-        lines.push(`**Address:** ${formatAddress(address)}`);
+        if (data.inputDomain) lines.push(`**Input:** ${data.inputDomain}`);
+        lines.push(`**Address:** ${formatAddress(data.address || address)}`);
         if (data.name) lines.push(`**Name:** ${data.name}`);
         if (data.type) lines.push(`**Type:** ${data.type}`);
         if (data.category) lines.push(`**Category:** ${data.category}`);
@@ -42,28 +44,29 @@ export function registerWalletTools(server: McpServer) {
     'batchWalletIdentity',
     'BEST FOR: identifying multiple wallets at once (up to 100). PREFER getWalletIdentity for a single address. Look up identities for up to 100 entries. Returns names, types, and categories. Entries may be addresses or SNS/ANS domains (mainnet only); unresolved domains are returned with `unresolved: true`. Credit cost: 100 credits.',
     {
-      addresses: z.array(z.string()).describe('Array of up to 100 entries — each a base58 address or SNS/ANS domain')
+      entries: z.array(z.string()).describe('Array of up to 100 entries — each a base58 address or SNS/ANS domain')
     },
-    async ({ addresses }) => {
+    async ({ entries }) => {
       if (!hasApiKey()) return noApiKeyResponse();
 
-      if (addresses.length > 100) {
+      if (entries.length > 100) {
         return mcpError(
-          'Maximum 100 addresses per batch request.',
-          { type: 'VALIDATION', code: 'TOO_MANY_ITEMS', retryable: false, recovery: 'Reduce batch to 100 or fewer addresses.' }
+          'Maximum 100 entries per batch request.',
+          { type: 'VALIDATION', code: 'TOO_MANY_ITEMS', retryable: false, recovery: 'Reduce batch to 100 or fewer entries.' }
         );
       }
 
       try {
         const client = getHeliusClient();
-        const results = await client.wallet.getBatchIdentity({ addresses });
+        const results = await client.wallet.getBatchIdentity({ addresses: entries });
 
         if (results.length === 0) {
-          return mcpText(`**Batch Identity Lookup** (${addresses.length} addresses)\n\nNo identities found.`);
+          return mcpText(`**Batch Identity Lookup** (${entries.length} entries)\n\nNo identities found.`);
         }
 
         const lines = [`**Batch Identity Lookup** (${results.length} results)`, ''];
 
+        // TODO: drop `Array<any>` once helius-sdk types include inputDomain/unresolved on the batch response
         for (const entry of results as Array<any>) {
           if (entry.unresolved) {
             lines.push(`- \`${entry.inputDomain || '?'}\` — Unresolved domain`);
