@@ -88,8 +88,33 @@ const RETRYABLE_CODES = new Set<ExitCodeType>([
   ExitCode.NETWORK_ERROR,
 ]);
 
+// Known error code strings. Used as the key type for errorToExitCode and
+// categoryForErrorCode so the compiler enforces matching coverage in both.
+export type ErrorCode =
+  | "NOT_LOGGED_IN"
+  | "KEYPAIR_NOT_FOUND"
+  | "AUTH_FAILED"
+  | "INSUFFICIENT_SOL"
+  | "INSUFFICIENT_USDC"
+  | "PAYMENT_FAILED"
+  | "NO_PROJECTS"
+  | "PROJECT_NOT_FOUND"
+  | "MULTIPLE_PROJECTS"
+  | "PROJECT_EXISTS"
+  | "API_ERROR"
+  | "NO_API_KEYS"
+  | "NO_API_KEY"
+  | "SDK_ERROR"
+  | "INVALID_ADDRESS"
+  | "INVALID_INPUT"
+  | "INVALID_API_KEY"
+  | "NOT_FOUND"
+  | "RATE_LIMITED"
+  | "SERVER_ERROR"
+  | "NETWORK_ERROR";
+
 // Map error code strings to exit codes
-const errorToExitCode: Record<string, ExitCodeType> = {
+const errorToExitCode: Record<ErrorCode, ExitCodeType> = {
   NOT_LOGGED_IN: ExitCode.NOT_LOGGED_IN,
   KEYPAIR_NOT_FOUND: ExitCode.KEYPAIR_NOT_FOUND,
   AUTH_FAILED: ExitCode.AUTH_FAILED,
@@ -114,7 +139,53 @@ const errorToExitCode: Record<string, ExitCodeType> = {
 };
 
 export function getExitCode(errorCode: string): ExitCodeType {
-  return errorToExitCode[errorCode] || ExitCode.GENERAL_ERROR;
+  // Cast to ErrorCode to index the tightly-typed map; runtime misses fall
+  // through to GENERAL_ERROR via `||`.
+  return errorToExitCode[errorCode as ErrorCode] || ExitCode.GENERAL_ERROR;
+}
+
+// Error categories for JSON output. Agents can branch on `category` without
+// needing to memorize the exit code range for a given errorCode.
+//
+// Note: the 50-59 range (SDK/data errors) spans multiple categories — e.g.
+// INVALID_API_KEY is "auth", INVALID_ADDRESS is "input", NETWORK_ERROR is
+// "network" — so category is derived per-errorCode, not per exit-code-range.
+export type ErrorCategory =
+  | "auth"
+  | "balance"
+  | "project"
+  | "api"
+  | "input"
+  | "network"
+  | "general";
+
+const categoryForErrorCode: Record<ErrorCode, ErrorCategory> = {
+  NOT_LOGGED_IN: "auth",
+  KEYPAIR_NOT_FOUND: "auth",
+  AUTH_FAILED: "auth",
+  NO_API_KEY: "auth",
+  INVALID_API_KEY: "auth",
+  INSUFFICIENT_SOL: "balance",
+  INSUFFICIENT_USDC: "balance",
+  PAYMENT_FAILED: "balance",
+  NO_PROJECTS: "project",
+  PROJECT_NOT_FOUND: "project",
+  MULTIPLE_PROJECTS: "project",
+  PROJECT_EXISTS: "project",
+  API_ERROR: "api",
+  NO_API_KEYS: "api",
+  SDK_ERROR: "api",
+  NOT_FOUND: "api",
+  RATE_LIMITED: "api",
+  SERVER_ERROR: "api",
+  INVALID_ADDRESS: "input",
+  INVALID_INPUT: "input",
+  NETWORK_ERROR: "network",
+};
+
+export function getCategory(errorCode: string): ErrorCategory {
+  // Cast mirrors getExitCode; runtime misses fall through to "general".
+  return categoryForErrorCode[errorCode as ErrorCode] || "general";
 }
 
 // Classification result returned by classifyError()
@@ -275,7 +346,8 @@ export function handleCommandError(
   sendCommandEvent(cmdName, { exitCode, success: false });
 
   if (options.json) {
-    outputJson({ error: errorCode, message, retryable, ...(guidance ? { guidance } : {}) });
+    const category = getCategory(errorCode);
+    outputJson({ error: errorCode, message, category, retryable, ...(guidance ? { guidance } : {}) });
   } else {
     const hint = retryable ? chalk.gray(" (transient — safe to retry)") : "";
     spinner?.fail(`${message}${hint}`);
@@ -323,7 +395,10 @@ export function exitWithError(
 
   if (json) {
     const retryable = RETRYABLE_CODES.has(exitCode);
-    outputJson({ error: errorCode, message, retryable, ...details });
+    const category = getCategory(errorCode);
+    // Spread details first so canonical fields (error, message, category,
+    // retryable) can't be accidentally overridden by a caller.
+    outputJson({ ...details, error: errorCode, message, category, retryable });
   } else {
     console.error(chalk.red(message));
     const guidance = CLI_GUIDANCE[errorCode];
