@@ -181,7 +181,7 @@ const exitCodeToCategory: Record<ExitCodeType, Category> = {
   [ExitCode.NETWORK_ERROR]: "network",
 };
 
-function getCategory(exitCode: ExitCodeType): Category {
+export function getCategory(exitCode: ExitCodeType): Category {
   return exitCodeToCategory[exitCode] ?? "general";
 }
 
