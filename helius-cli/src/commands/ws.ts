@@ -6,7 +6,10 @@ import { validateAddress, validateSignature } from "../lib/validation.js";
 
 interface WsOptions extends OutputOptions, ResolveOptions {}
 
-/** Emit a JSON envelope: { event, timestamp, data } */
+// Streaming events are line-delimited `{ event, timestamp, data }` objects and
+// intentionally bypass outputJson()'s envelope ({ ok, v, data }). Wrapping
+// every notification would break stream parsers. Validation failures in this
+// file still go through exitWithError(), which does use the envelope.
 function emitEvent(event: string, data: unknown): void {
   console.log(JSON.stringify({ event, timestamp: new Date().toISOString(), data }, jsonReplacer));
 }
@@ -41,7 +44,13 @@ function handleWsError(error: unknown, options: WsOptions): void {
   sendCommandEvent(cmdName, { exitCode, success: false });
 
   if (options.json) {
-    emitEvent("error", { error: errorCode, message, category: getCategory(errorCode), retryable, ...(guidance ? { guidance } : {}) });
+    emitEvent("error", {
+      error_code: errorCode,
+      category: getCategory(exitCode),
+      error: message,
+      recoverable: retryable,
+      ...(guidance ? { suggestion: guidance } : {}),
+    });
   } else {
     const hint = retryable ? chalk.gray(" (transient — safe to retry)") : "";
     console.error(chalk.red(`Error: ${message}${hint}`));
