@@ -148,7 +148,7 @@ export type ErrorEnvelope = {
   category: Category;
   error: string;
   recoverable: boolean;
-  suggestion?: string;
+  suggestion: string;
   details?: Record<string, unknown>;
 };
 
@@ -197,7 +197,8 @@ function buildErrorEnvelope(
   details?: Record<string, unknown>,
   stack?: string,
 ): ErrorEnvelope {
-  const guidance = CLI_GUIDANCE[errorCode];
+  const guidance = CLI_GUIDANCE[errorCode]
+    ?? 'An error occurred. Re-run with --debug for more details.';
   const mergedDetails = details || stack
     ? { ...(details ?? {}), ...(stack ? { stack } : {}) }
     : undefined;
@@ -208,7 +209,7 @@ function buildErrorEnvelope(
     category: getCategory(exitCode),
     error: message,
     recoverable: retryable,  // internal 'retryable' → public 'recoverable'
-    ...(guidance ? { suggestion: guidance } : {}),
+    suggestion: guidance,
     ...(mergedDetails ? { details: mergedDetails } : {}),
   };
 }
@@ -347,6 +348,11 @@ export const CLI_GUIDANCE: Record<string, string> = {
   PROJECT_NOT_FOUND: 'Run `helius projects` to list available projects.',
   NO_API_KEYS: 'Run `helius apikeys create` to create an API key.',
   INVALID_INPUT: 'Check command usage with --help.',
+  AUTH_FAILED: 'Your credentials are invalid or expired. Run `helius login` to re-authenticate.',
+  PROJECT_EXISTS: 'A project with this name already exists. Run `helius projects` to list them or pick a different name.',
+  API_ERROR: 'The Helius management API returned an error. Retry, or inspect `details` for more information.',
+  SDK_ERROR: 'Unclassified SDK error. Re-run with --debug for a stack trace.',
+  INVALID_ADDRESS: 'The provided address is not a valid base58 Solana pubkey. Verify the address format.',
 };
 
 export function handleCommandError(

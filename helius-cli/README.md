@@ -306,7 +306,7 @@ Fields:
 - `category` (error only) — coarse bucket; one of: `success`, `general`, `auth`, `payment`, `project`, `api`, `sdk`, `validation`, `not_found`, `rate_limit`, `server`, `network`. Use this when you want to group errors without enumerating every code.
 - `error` (error only) — human-readable message.
 - `recoverable` (error only) — `true` if retrying may succeed (rate limits, transient 5xx, network). `false` for permanent errors like invalid address or invalid API key.
-- `suggestion` (error only, optional) — actionable hint when one is available. Not every error code has one.
+- `suggestion` (error only, always present) — a short actionable next step for the given error code.
 - `details` (error only, optional) — extra structured context (e.g. `projects` list for `MULTIPLE_PROJECTS`, `missing` array for `INSUFFICIENT_FUNDS`). Under `--debug`, also includes a `stack` field for unclassified errors.
 
 Envelope keys are intentionally `snake_case` (`error_code`, not `errorCode`) for ergonomic shell use — `jq '.error_code'` reads naturally. Internal TypeScript names elsewhere in the codebase still use `camelCase`.

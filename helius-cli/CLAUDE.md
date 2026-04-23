@@ -47,7 +47,7 @@ All data commands follow this pattern:
 3. Get SDK client via `getClient(apiKey, network)`
 4. Call SDK method
 5. Output: formatted terminal (chalk) or `outputJson(payload)` for `--json`. As of v1.3, `outputJson()` auto-wraps its argument in `{ ok: true, v: 1, data: <payload> }` — callers still pass the raw payload.
-6. Error: use `handleCommandError(error, options, spinner)` — classifies the error, emits the error envelope (`{ ok: false, v: 1, error_code, category, error, recoverable, suggestion?, details? }`) or spinner output, and exits with the classified exit code
+6. Error: use `handleCommandError(error, options, spinner)` — classifies the error, emits the error envelope (`{ ok: false, v: 1, error_code, category, error, recoverable, suggestion, details? }`) or spinner output, and exits with the classified exit code
 
 Standard catch block template (all commands except `ws.ts`):
 ```ts
@@ -95,7 +95,7 @@ New in v1.3: exit code 23 `INSUFFICIENT_FUNDS` — signup/upgrade paths where bo
 All `--json` output goes through one of two shapes, defined in `src/lib/output.ts`:
 
 - **Success:** `{ ok: true, v: 1, data: <payload> }` — `outputJson(payload)` wraps automatically.
-- **Error:** `{ ok: false, v: 1, error_code, category, error, recoverable, suggestion?, details? }` — built by `buildErrorEnvelope()` and written by `handleCommandError()` / `exitWithError()`.
+- **Error:** `{ ok: false, v: 1, error_code, category, error, recoverable, suggestion, details? }` — built by `buildErrorEnvelope()` and written by `handleCommandError()` / `exitWithError()`. `suggestion` is always present (falls back to a generic "re-run with --debug" hint if the error code has no `CLI_GUIDANCE` entry).
 
 Exported types: `Envelope<T>`, `SuccessEnvelope<T>`, `ErrorEnvelope`, `Category`.
 
@@ -103,7 +103,7 @@ When adding a new error code:
 1. Add it to `ExitCode` (pick the right range — 10-19 auth, 20-29 payment, etc.).
 2. Add it to `errorToExitCode`.
 3. Add it to `exitCodeToCategory` (pick the public `Category`).
-4. Optionally add a human-readable hint to `CLI_GUIDANCE` (shows up as `suggestion`).
+4. Add a human-readable hint to `CLI_GUIDANCE` (required — `suggestion` is always present in JSON output; missing entries fall back to a generic "re-run with --debug" hint, which is agent-useless).
 
 `getExitCode()` logs a `debug()` warning when handed an unknown code. Under `--debug`, run your command once; if you see the warning, the new code isn't wired up yet.
 
