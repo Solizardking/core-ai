@@ -1,8 +1,10 @@
 import chalk from "chalk";
-import { address } from "@solana/kit";
+import { address, createKeyPairSignerFromBytes, type KeyPairSigner } from "@solana/kit";
 import { getCloseAccountInstruction } from "@solana-program/token";
+import type { GtaV2Account } from "helius-sdk/types/types";
+import type { SenderRegion, SendViaSenderOptions } from "helius-sdk/transactions/types";
 import { setupClient, type ResolveOptions } from "../lib/helius.js";
-import { loadKeypairFromFile, getAddress } from "../lib/wallet.js";
+import { loadKeypairFromFile } from "../lib/wallet.js";
 import { formatSol } from "../lib/formatters.js";
 import {
   outputJson,
@@ -50,13 +52,14 @@ export async function reclaimCommand(
   try {
     // Load signer. Always required for a real run; optional in dry-run if
     // an explicit owner address is provided (useful for auditing a wallet).
-    let signer: any = null;
+    let signer: KeyPairSigner | null = null;
     let signerAddress: string | null = null;
 
     if (options.keypair) {
       try {
-        signer = await loadKeypairFromFile(options.keypair);
-        signerAddress = await getAddress(signer);
+        const keypair = await loadKeypairFromFile(options.keypair);
+        signer = await createKeyPairSignerFromBytes(keypair.secretKey);
+        signerAddress = signer.address;
       } catch (e) {
         const needSigner = !options.dryRun || !ownerArg;
         if (needSigner) {
@@ -88,16 +91,16 @@ export async function reclaimCommand(
       options,
       `Scanning token accounts for ${owner}...`,
     );
-    const accounts: any[] = await withRetry(
+    const accounts: ReadonlyArray<GtaV2Account> = await withRetry(
       () =>
         helius.getAllTokenAccountsByOwner(
-          owner as any,
+          owner,
           { programId: TOKEN_PROGRAM_ID },
-          { encoding: "jsonParsed" as any },
+          { encoding: "jsonParsed" },
         ),
       options,
       spinner,
-    ) as any;
+    );
 
     // Filter closable accounts.
     const closable: ClosableAta[] = [];
@@ -296,8 +299,8 @@ export async function reclaimCommand(
     const destErr = validateAddress(destinationAddr);
     if (destErr) exitWithError("INVALID_ADDRESS", destErr, undefined, !!options.json);
     const destination = address(destinationAddr);
-    const region = (options.region || "Default") as any;
-    const senderOpts: Record<string, unknown> = { region };
+    const region = (options.region || "Default") as SenderRegion;
+    const senderOpts: Partial<SendViaSenderOptions> = { region };
     if (options.swqosOnly) senderOpts.swqosOnly = true;
     if (options.tipAmount) {
       const tip = parseInt(options.tipAmount, 10);
@@ -338,7 +341,7 @@ export async function reclaimCommand(
           account: address(a.address),
           destination,
           owner: signer,
-        } as any),
+        }),
       );
 
       spinner?.start(
@@ -347,14 +350,14 @@ export async function reclaimCommand(
       try {
         const signature: string = await withRetry(
           () =>
-            (helius as any).tx.sendTransactionWithSender({
+            helius.tx.sendTransactionWithSender({
               signers: [signer],
               instructions,
               ...senderOpts,
             }),
           options,
           spinner,
-        ) as any;
+        );
         results.push({
           ok: true,
           batchIndex: i + 1,
