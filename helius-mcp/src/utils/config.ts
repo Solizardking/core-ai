@@ -29,7 +29,10 @@ function recoverPartialConfig(raw: string): HeliusConfig {
   const patterns: { key: keyof HeliusConfig; regex: RegExp }[] = [
     { key: "jwt", regex: /"jwt"\s*:\s*"([^"]+)"/ },
     { key: "apiKey", regex: /"apiKey"\s*:\s*"([^"]+)"/ },
-    { key: "network", regex: /"network"\s*:\s*"([^"]+)"/ },
+    {
+      key: "network",
+      regex: /"network"\s*:\s*"(mainnet|mainnet-beta|devnet)"/,
+    },
     { key: "projectId", regex: /"projectId"\s*:\s*"([^"]+)"/ },
   ];
 
