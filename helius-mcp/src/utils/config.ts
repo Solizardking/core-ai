@@ -23,16 +23,92 @@ function ensureDir(): void {
   }
 }
 
-export function loadConfig(): HeliusConfig {
-  try {
-    if (fs.existsSync(SHARED_CONFIG_PATH)) {
-      const data = fs.readFileSync(SHARED_CONFIG_PATH, "utf-8");
-      return JSON.parse(data);
+/** Best-effort recovery when config.json is corrupted (matches helius-cli behavior). */
+function recoverPartialConfig(raw: string): HeliusConfig {
+  const recovered: HeliusConfig = {};
+  const patterns: { key: keyof HeliusConfig; regex: RegExp }[] = [
+    { key: "jwt", regex: /"jwt"\s*:\s*"([^"]+)"/ },
+    { key: "apiKey", regex: /"apiKey"\s*:\s*"([^"]+)"/ },
+    { key: "network", regex: /"network"\s*:\s*"([^"]+)"/ },
+    { key: "projectId", regex: /"projectId"\s*:\s*"([^"]+)"/ },
+  ];
+
+  for (const { key, regex } of patterns) {
+    const match = raw.match(regex);
+    if (match) {
+      (recovered as Record<string, string>)[key] = match[1];
     }
-  } catch {
-    // Return empty config on error
   }
-  return {};
+
+  const budgetMatch = raw.match(/"budget"\s*:\s*"(free|developer|business|professional)"/);
+  const complexityMatch = raw.match(/"complexity"\s*:\s*"(low|medium|high)"/);
+  if (budgetMatch || complexityMatch) {
+    recovered.preferences = {};
+    if (budgetMatch) {
+      recovered.preferences.budget = budgetMatch[1] as NonNullable<
+        HeliusConfig["preferences"]
+      >["budget"];
+    }
+    if (complexityMatch) {
+      recovered.preferences.complexity = complexityMatch[1] as NonNullable<
+        HeliusConfig["preferences"]
+      >["complexity"];
+    }
+  }
+
+  return recovered;
+}
+
+function recoveredFieldSummary(cfg: HeliusConfig): string {
+  const keys: string[] = [];
+  for (const k of Object.keys(cfg) as (keyof HeliusConfig)[]) {
+    if (k === "preferences" && cfg.preferences) {
+      for (const pk of Object.keys(cfg.preferences)) {
+        keys.push(`preferences.${pk}`);
+      }
+    } else if (k !== "preferences") {
+      keys.push(k);
+    }
+  }
+  return keys.join(", ");
+}
+
+export function loadConfig(): HeliusConfig {
+  if (!fs.existsSync(SHARED_CONFIG_PATH)) {
+    return {};
+  }
+
+  let raw: string;
+  try {
+    raw = fs.readFileSync(SHARED_CONFIG_PATH, "utf-8");
+  } catch {
+    console.error(`Warning: ${SHARED_CONFIG_PATH} exists but could not be read.`);
+    return {};
+  }
+
+  try {
+    return JSON.parse(raw) as HeliusConfig;
+  } catch {
+    const recovered = recoverPartialConfig(raw);
+    const summary = recoveredFieldSummary(recovered);
+
+    if (summary.length > 0) {
+      console.error(
+        `Warning: ${SHARED_CONFIG_PATH} is corrupted (invalid JSON). Recovered fields: ${summary}.`,
+      );
+      saveConfig(recovered);
+      console.error("Repaired config saved. Fields that did not match known keys may have been lost.");
+      return recovered;
+    }
+
+    console.error(
+      `Warning: ${SHARED_CONFIG_PATH} is corrupted (invalid JSON) and could not be recovered.`,
+    );
+    console.error(
+      'Run Helius MCP config helpers or edit the file manually; see CLI `helius config clear` if you use helius-cli.',
+    );
+    return {};
+  }
 }
 
 export function saveConfig(config: HeliusConfig): void {

@@ -10,7 +10,6 @@ const HELIUS_DIR = path.join(os.homedir(), '.helius');
 const KEYPAIR_PATH = path.join(HELIUS_DIR, 'keypair.json');
 const WALLET_CACHE_PATH = path.join(HELIUS_DIR, 'wallet-address');
 
-let feedbackEnabled = true;
 let walletAddress: string | null = null;
 let identifySent = false;
 
@@ -76,8 +75,6 @@ function getDistinctId(): string {
 }
 
 function posthogCapture(event: string, properties: Record<string, unknown>): void {
-  if (!feedbackEnabled) return;
-
   fetch(POSTHOG_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -87,7 +84,7 @@ function posthogCapture(event: string, properties: Record<string, unknown>): voi
       properties,
     }),
   }).catch(() => {
-    feedbackEnabled = false;
+    /* ignore delivery failure */
   });
 }
 

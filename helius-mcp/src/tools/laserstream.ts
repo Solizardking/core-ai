@@ -1,7 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { getLaserstreamUrl, getNetwork } from '../utils/helius.js';
+import { getLaserstreamUrl, getNetwork, hasApiKey } from '../utils/helius.js';
 import { mcpText, mcpError, validateEnum, handleToolError, warnInvalidAddresses, warnAddressConflicts } from '../utils/errors.js';
+import { noApiKeyResponse } from './shared.js';
 import { fetchDoc, extractSections, truncateDoc } from '../utils/docs.js';
 
 export function registerLaserstreamTools(server: McpServer) {
@@ -27,6 +28,8 @@ export function registerLaserstreamTools(server: McpServer) {
       keepalive: z.boolean().optional().default(true).describe('Send gRPC keepalive pings to maintain the connection (default: true). Set to false only if your client handles its own keepalive.')
     },
     async (params) => {
+      if (!hasApiKey()) return noApiKeyResponse();
+
       let err;
       err = validateEnum(params.region, ['ewr', 'pitt', 'slc', 'lax', 'lon', 'ams', 'fra', 'tyo', 'sgp'], 'Laserstream Error', 'region');
       if (err) return err;
