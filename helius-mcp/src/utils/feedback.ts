@@ -20,7 +20,6 @@ interface FeedbackEvent {
 }
 
 let clientInfo: { name: string; version: string } | null = null;
-let feedbackEnabled = true;
 let walletAddress: string | null = null;
 let identifySent = false;
 
@@ -62,8 +61,6 @@ function getDistinctId(): string {
 }
 
 function posthogCapture(event: string, properties: Record<string, unknown>): void {
-  if (!feedbackEnabled) return;
-
   fetch(POSTHOG_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -73,7 +70,7 @@ function posthogCapture(event: string, properties: Record<string, unknown>): voi
       properties,
     }),
   }).catch(() => {
-    feedbackEnabled = false;
+    /* ignore delivery failure */
   });
 }
 

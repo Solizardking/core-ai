@@ -73,7 +73,8 @@ export function getEnhancedWebSocketUrl(): string {
 }
 
 export function getLaserstreamUrl(region?: 'ewr' | 'pitt' | 'slc' | 'lax' | 'lon' | 'ams' | 'fra' | 'tyo' | 'sgp'): string {
-  const apiKey = getApiKey();
+  // Endpoint host is public; clients pass apiKey separately (e.g. @helius/laserstream subscribe options).
+  // Do not call getApiKey() here or docs tools like getLaserstreamInfo fail unnecessarily.
   const network = getNetwork();
   if (network === 'devnet') {
     return `https://laserstream-devnet-ewr.helius-rpc.com`;
