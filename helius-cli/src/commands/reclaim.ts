@@ -155,8 +155,19 @@ export async function reclaimCommand(
     const totalReclaimable = toClose.reduce((sum, a) => sum + a.lamports, 0);
 
     // Build batches.
-    const parsedBatch = options.batchSize ? parseInt(options.batchSize, 10) : DEFAULT_BATCH_SIZE;
-    const batchSize = Number.isNaN(parsedBatch) || parsedBatch < 1 ? DEFAULT_BATCH_SIZE : parsedBatch;
+    let batchSize = DEFAULT_BATCH_SIZE;
+    if (options.batchSize !== undefined) {
+      const parsed = parseInt(options.batchSize, 10);
+      if (Number.isNaN(parsed) || parsed < 1) {
+        exitWithError(
+          "INVALID_INPUT",
+          `Invalid --batch-size: ${options.batchSize}. Must be a positive integer.`,
+          undefined,
+          !!options.json,
+        );
+      }
+      batchSize = parsed;
+    }
     const batches: ClosableAta[][] = [];
     for (let i = 0; i < toClose.length; i += batchSize) {
       batches.push(toClose.slice(i, i + batchSize));
