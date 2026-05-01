@@ -50,6 +50,7 @@ import {
   zkSignaturesForAssetCommand,
 } from "../src/commands/zk.js";
 import { sendBroadcastCommand, sendRawCommand, sendSenderCommand, sendPollCommand, sendComputeUnitsCommand } from "../src/commands/send.js";
+import { reclaimCommand } from "../src/commands/reclaim.js";
 import { wsAccountCommand, wsLogsCommand, wsSlotCommand, wsSignatureCommand, wsProgramCommand } from "../src/commands/ws.js";
 import { simdListCommand, simdGetCommand } from "../src/commands/simd.js";
 import { owsLinkCommand, owsUnlinkCommand, owsStatusCommand } from "../src/commands/ows.js";
@@ -1139,6 +1140,34 @@ sendCmd
 Examples:
   $ helius send compute-units <base64-tx> --json`)
   .action(function(this: any, tx: string) { sendComputeUnitsCommand(tx, opts(this)); });
+
+// ── Reclaim rent from empty token accounts ──
+
+program
+  .command("reclaim [owner]")
+  .description("Close empty SPL token accounts and reclaim rent via Helius Sender")
+  .option("-k, --keypair <path>", "Path to Solana keypair file", getDefaultKeypairPath())
+  .option("--destination <addr>", "Address to receive reclaimed lamports (default: signer)")
+  .option("--region <region>", "Sender region (Default, US_SLC, US_EAST, etc.)", "Default")
+  .option("--swqos-only", "Route only through SWQoS (cheaper tip)")
+  .option("--tip-amount <lamports>", "Override auto-tip for Sender")
+  .option("--batch-size <n>", "Number of accounts closed per transaction", "20")
+  .option("--limit <n>", "Cap total accounts closed across all batches")
+  .option("--dry-run", "List closable accounts without sending")
+  .option("-y, --yes", "Skip confirmation prompt")
+  .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius reclaim --dry-run
+  $ helius reclaim --dry-run 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
+  $ helius reclaim -y
+  $ helius reclaim --limit 50 --batch-size 15 --region US_EAST --swqos-only --yes --json
+
+Token-2022 accounts are not scanned in v1. Only empty, initialized (non-frozen)
+SPL Token accounts where closeAuthority is unset or matches the keypair will be
+closed. Each batch is sent independently via Helius Sender; a failed batch does
+not abort later batches.`)
+  .action(function(this: any, owner?: string) { reclaimCommand(owner, opts(this)); });
 
 // ── WebSocket subscriptions ──
 
