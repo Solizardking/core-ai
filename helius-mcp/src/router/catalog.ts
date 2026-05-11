@@ -449,6 +449,12 @@ catalog.getTransactionHistory = makeEntry('getTransactionHistory', {
   continuationModel: 'transactionHistory',
 });
 
+catalog.getTransfersByAddress = makeEntry('getTransfersByAddress', {
+  responseFamily: 'history',
+  defaultDetail: 'standard',
+  continuationModel: 'transactionHistory',
+});
+
 for (const action of ACTION_NAMES) {
   if (!catalog[action]) {
     throw new Error(`Missing action catalog entry for ${action}`);

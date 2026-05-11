@@ -799,4 +799,197 @@ export function registerTransactionTools(server: McpServer) {
       }
     }
   );
+
+  // Get Transfers By Address — parsed token + native SOL transfers (one row per transfer)
+  server.tool(
+    'getTransfersByAddress',
+    'BEST FOR: parsed token + native SOL transfers for an address — one row per transfer (not per transaction). Filters: mint, direction (in/out/any), counterparty (with), time/slot/amount ranges, solMode. Use getTransactionHistory when you need whole-transaction context. Paginated via paginationToken.',
+    {
+      address: z.string().describe('Solana address (base58 encoded)'),
+      with: z.string().optional().describe('Filter by counterparty address — returns only transfers to/from this address'),
+      direction: z.string().optional().default('any').describe('"in" | "out" | "any" — relative to the queried address'),
+      mint: z.string().optional().describe('Filter by token mint. Use the WSOL mint to filter native SOL when solMode="merged".'),
+      solMode: z.string().optional().describe('"merged" treats SOL and WSOL as one asset; "separate" keeps them distinct'),
+      limit: z.number().optional().default(25).describe('Max transfers per page (1-100)'),
+      sortOrder: z.string().optional().default('desc').describe('"desc" = newest first (default), "asc" = oldest first'),
+      paginationToken: z.string().optional().describe('Cursor from a previous response — pass to fetch the next page'),
+      commitment: z.string().optional().describe('"finalized" | "confirmed"'),
+      amountGte: z.string().optional().describe('Raw u64 amount (as string) lower bound — not UI amount'),
+      amountLte: z.string().optional().describe('Raw u64 amount (as string) upper bound — not UI amount'),
+      blockTimeGte: z.number().optional().describe('Filter: block time >= this Unix timestamp (seconds)'),
+      blockTimeLte: z.number().optional().describe('Filter: block time <= this Unix timestamp (seconds)'),
+      slotGte: z.number().optional().describe('Filter: slot >= this value'),
+      slotLte: z.number().optional().describe('Filter: slot <= this value'),
+    },
+    async ({
+      address,
+      with: counterparty,
+      direction,
+      mint,
+      solMode,
+      limit,
+      sortOrder,
+      paginationToken,
+      commitment,
+      amountGte,
+      amountLte,
+      blockTimeGte,
+      blockTimeLte,
+      slotGte,
+      slotLte,
+    }) => {
+      if (!hasApiKey()) return noApiKeyResponse();
+      const helius = getHeliusClient();
+
+      let err;
+      err = validateEnum(direction, ['in', 'out', 'any'], 'Transfers By Address Error', 'direction');
+      if (err) return err;
+      err = validateEnum(sortOrder, ['asc', 'desc'], 'Transfers By Address Error', 'sortOrder');
+      if (err) return err;
+      if (solMode) {
+        err = validateEnum(solMode, ['merged', 'separate'], 'Transfers By Address Error', 'solMode');
+        if (err) return err;
+      }
+      if (commitment) {
+        err = validateEnum(commitment, ['finalized', 'confirmed'], 'Transfers By Address Error', 'commitment');
+        if (err) return err;
+      }
+
+      type AmountFilter = { gt?: number; gte?: number; lt?: number; lte?: number };
+      type Filters = {
+        amount?: AmountFilter;
+        blockTime?: AmountFilter;
+        slot?: AmountFilter;
+      };
+
+      const parseAmountBound = (raw: string | undefined): number | undefined => {
+        if (raw === undefined) return undefined;
+        const n = Number(raw);
+        if (!Number.isFinite(n)) {
+          return undefined;
+        }
+        if (!Number.isSafeInteger(n)) {
+          // Outside JS safe integer range — bound dropped silently rather than risk precision loss.
+          // SDK filter type is number, not bigint; document in the description.
+          return undefined;
+        }
+        return n;
+      };
+
+      const filters: Filters = {};
+      const aGte = parseAmountBound(amountGte);
+      const aLte = parseAmountBound(amountLte);
+      if (aGte !== undefined || aLte !== undefined) {
+        filters.amount = {};
+        if (aGte !== undefined) filters.amount.gte = aGte;
+        if (aLte !== undefined) filters.amount.lte = aLte;
+      }
+      if (blockTimeGte !== undefined || blockTimeLte !== undefined) {
+        filters.blockTime = {};
+        if (blockTimeGte !== undefined) filters.blockTime.gte = blockTimeGte;
+        if (blockTimeLte !== undefined) filters.blockTime.lte = blockTimeLte;
+      }
+      if (slotGte !== undefined || slotLte !== undefined) {
+        filters.slot = {};
+        if (slotGte !== undefined) filters.slot.gte = slotGte;
+        if (slotLte !== undefined) filters.slot.lte = slotLte;
+      }
+
+      const config: Record<string, unknown> = {
+        direction,
+        limit: Math.min(Math.max(limit, 1), 100),
+        sortOrder,
+      };
+      if (counterparty) config.with = counterparty;
+      if (mint) config.mint = mint;
+      if (solMode) config.solMode = solMode;
+      if (paginationToken) config.paginationToken = paginationToken;
+      if (commitment) config.commitment = commitment;
+      if (Object.keys(filters).length > 0) config.filters = filters;
+
+      type TransferRow = {
+        signature: string;
+        slot: number;
+        blockTime: number;
+        type: string;
+        fromUserAccount: string | null;
+        toUserAccount: string | null;
+        fromTokenAccount?: string;
+        toTokenAccount?: string;
+        mint: string;
+        amount: string;
+        decimals: number;
+        uiAmount: string;
+        feeAmount?: string;
+        feeUiAmount?: string;
+        confirmationStatus: string;
+        transactionIdx: number;
+        instructionIdx: number;
+        innerInstructionIdx: number;
+      };
+      type TransfersResult = { data: ReadonlyArray<TransferRow>; paginationToken: string | null };
+
+      let result: TransfersResult;
+      try {
+        // SDK method shipped in helius-sdk PR #313; cast until @types catch up in npm release.
+        result = await (helius as any).getTransfersByAddress([address, config]) as TransfersResult;
+      } catch (e) {
+        return handleToolError(e, 'Error fetching transfers');
+      }
+
+      if (!result || !result.data || result.data.length === 0) {
+        return mcpText(`**Transfers for ${formatAddress(address)}**\n\nNo transfers found.`);
+      }
+
+      const mints = new Set<string>();
+      for (const t of result.data) {
+        if (t.mint) mints.add(t.mint);
+      }
+      const tokenMetadata = await fetchTokenMetadata(helius, mints);
+
+      const symbolFor = (m: string) => {
+        const asset = tokenMetadata.get(m);
+        return asset?.token_info?.symbol || asset?.content?.metadata?.symbol || asset?.content?.metadata?.name || formatAddress(m);
+      };
+
+      const WSOL = 'So11111111111111111111111111111111111111112';
+      const isNativeSol = (t: TransferRow) => t.mint === WSOL && t.fromTokenAccount === undefined && t.toTokenAccount === undefined;
+
+      const formatAmount = (t: TransferRow): string => {
+        if (isNativeSol(t)) {
+          // amount is raw lamports as string
+          const n = Number(t.amount);
+          if (Number.isFinite(n)) return formatSol(n);
+        }
+        // Use uiAmount (string, precision-preserving) directly and trim trailing zeros for readability
+        const ui = t.uiAmount ?? '';
+        if (!ui.includes('.')) return ui;
+        return ui.replace(/0+$/, '').replace(/\.$/, '');
+      };
+
+      const orderLabel = sortOrder === 'asc' ? 'oldest first' : 'newest first';
+      const lines = [`**Transfers for ${formatAddress(address)}** (${result.data.length} transfers, ${orderLabel})`, ''];
+
+      for (const t of result.data) {
+        const sym = isNativeSol(t) ? 'SOL' : symbolFor(t.mint);
+        const from = t.fromUserAccount ? formatAddress(t.fromUserAccount) : (t.type === 'mint' ? 'mint' : '?');
+        const to = t.toUserAccount ? formatAddress(t.toUserAccount) : (t.type === 'burn' ? 'burn' : '?');
+        const time = t.blockTime ? formatTimestamp(t.blockTime) : 'N/A';
+        const dirArrow = '→';
+        lines.push(`${t.type.toUpperCase()} ${formatAmount(t)} ${sym} (${t.mint})`);
+        lines.push(`   ${from} ${dirArrow} ${to}`);
+        lines.push(`   Sig: \`${t.signature}\` | Slot: ${t.slot.toLocaleString()} | ${time}`);
+        if (t.feeAmount && t.feeAmount !== '0') {
+          lines.push(`   Fee: ${t.feeUiAmount ?? t.feeAmount} ${sym}`);
+        }
+        lines.push('');
+      }
+
+      if (result.paginationToken) {
+        lines.push(`**Next Page Token:** \`${result.paginationToken}\``);
+      }
+
+      return mcpText(truncateResponse(lines.join('\n')));
+    }
+  );
 }
