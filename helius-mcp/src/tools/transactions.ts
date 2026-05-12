@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getHeliusClient, hasApiKey } from '../utils/helius.js';
 import { formatSol, formatAddress, formatTimestamp, LAMPORTS_PER_SOL } from '../utils/formatters.js';
 import { noApiKeyResponse } from './shared.js';
-import { mcpText, getErrorMessage, validateEnum, handleToolError, http400Error } from '../utils/errors.js';
+import { mcpText, mcpError, getErrorMessage, validateEnum, handleToolError, http400Error } from '../utils/errors.js';
 import bs58 from 'bs58';
 
 // ─── Shared Types ───
@@ -862,27 +862,38 @@ export function registerTransactionTools(server: McpServer) {
         slot?: AmountFilter;
       };
 
-      const parseAmountBound = (raw: string | undefined): number | undefined => {
+      // SDK's TransferComparisonFilter types amount as `number`, so values outside JS safe-integer
+      // range (>2^53) can't be passed without precision loss. u64 raw amounts on high-decimal tokens
+      // can exceed this. Surface a clear error rather than silently dropping the filter.
+      const parseAmountBound = (raw: string | undefined, label: string): number | undefined | { error: string } => {
         if (raw === undefined) return undefined;
         const n = Number(raw);
         if (!Number.isFinite(n)) {
-          return undefined;
+          return { error: `${label} must be a numeric raw u64 amount (got "${raw}")` };
         }
-        if (!Number.isSafeInteger(n)) {
-          // Outside JS safe integer range — bound dropped silently rather than risk precision loss.
-          // SDK filter type is number, not bigint; document in the description.
-          return undefined;
+        if (!Number.isSafeInteger(n) || n < 0) {
+          return {
+            error: `${label}="${raw}" is outside JS safe integer range (>2^53) or negative. The SDK's amount filter is typed as number — pass a smaller raw amount or filter client-side. (u64 raw amounts can exceed this; high-decimal SPL tokens are the common case.)`,
+          };
         }
         return n;
       };
 
       const filters: Filters = {};
-      const aGte = parseAmountBound(amountGte);
-      const aLte = parseAmountBound(amountLte);
+      const aGte = parseAmountBound(amountGte, 'amountGte');
+      const aLte = parseAmountBound(amountLte, 'amountLte');
+      const amountErrMeta = {
+        type: 'VALIDATION' as const,
+        code: 'INVALID_AMOUNT_BOUND',
+        retryable: false,
+        recovery: 'Pass a raw u64 amount within JS safe integer range (<= 2^53), or filter client-side after fetching.',
+      };
+      if (aGte && typeof aGte === 'object') return mcpError(aGte.error, amountErrMeta);
+      if (aLte && typeof aLte === 'object') return mcpError(aLte.error, amountErrMeta);
       if (aGte !== undefined || aLte !== undefined) {
         filters.amount = {};
-        if (aGte !== undefined) filters.amount.gte = aGte;
-        if (aLte !== undefined) filters.amount.lte = aLte;
+        if (typeof aGte === 'number') filters.amount.gte = aGte;
+        if (typeof aLte === 'number') filters.amount.lte = aLte;
       }
       if (blockTimeGte !== undefined || blockTimeLte !== undefined) {
         filters.blockTime = {};
@@ -953,7 +964,9 @@ export function registerTransactionTools(server: McpServer) {
       };
 
       const WSOL = 'So11111111111111111111111111111111111111112';
-      const isNativeSol = (t: TransferRow) => t.mint === WSOL && t.fromTokenAccount === undefined && t.toTokenAccount === undefined;
+      // SDK contract: native SOL transfers omit fromTokenAccount/toTokenAccount. JSON deserialization
+      // can surface either `undefined` (key absent) or `null` (key present with null value) — accept both.
+      const isNativeSol = (t: TransferRow) => t.mint === WSOL && t.fromTokenAccount == null && t.toTokenAccount == null;
 
       const formatAmount = (t: TransferRow): string => {
         if (isNativeSol(t)) {

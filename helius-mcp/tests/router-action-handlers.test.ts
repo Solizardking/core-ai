@@ -157,6 +157,22 @@ describe('action handler bridge', () => {
     expect(result.content?.[0]?.text).toContain('**Next Page Token:** `NEXT_TOKEN`');
   });
 
+  it('rejects amount bounds that exceed JS safe-integer range', async () => {
+    const result = await callActionHandler(
+      'getTransfersByAddress',
+      {
+        address: 'BenchWallet11111111111111111111111111111111',
+        amountGte: '9999999999999999999', // > 2^53
+      },
+      {},
+    );
+
+    expect(result.isError).toBe(true);
+    expect(result.content?.[0]?.text).toContain('amountGte');
+    expect(result.content?.[0]?.text).toContain('safe integer range');
+    expect(getTransfersByAddress).not.toHaveBeenCalled();
+  });
+
   it('returns a clear validation error when getTransfersByAddress is missing address', async () => {
     await expect(
       callActionHandler(

@@ -152,7 +152,8 @@ export async function txTransfersCommand(address: string, options: TxTransfersOp
     const WSOL = "So11111111111111111111111111111111111111112";
     console.log(chalk.bold(`\nTransfers for ${chalk.cyan(address)}:\n`));
     for (const t of data) {
-      const isSol = t.mint === WSOL && t.fromTokenAccount === undefined && t.toTokenAccount === undefined;
+      // SDK omits from/toTokenAccount for native SOL transfers; accept null or undefined from JSON.
+      const isSol = t.mint === WSOL && t.fromTokenAccount == null && t.toTokenAccount == null;
       const amount = isSol ? formatSol(Number(t.amount)) : `${t.uiAmount} ${formatAddress(t.mint)}`;
       const symbol = isSol ? "SOL" : "";
       const from = t.fromUserAccount ? formatAddress(t.fromUserAccount) : (t.type === "mint" ? "mint" : "?");
