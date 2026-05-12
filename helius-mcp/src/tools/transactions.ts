@@ -986,7 +986,7 @@ export function registerTransactionTools(server: McpServer) {
         const sym = isNativeSol(t) ? 'SOL' : symbolFor(t.mint);
         const from = t.fromUserAccount ? formatAddress(t.fromUserAccount) : (t.type === 'mint' ? 'mint' : '?');
         const to = t.toUserAccount ? formatAddress(t.toUserAccount) : (t.type === 'burn' ? 'burn' : '?');
-        const time = t.blockTime ? formatTimestamp(t.blockTime) : 'N/A';
+        const time = t.blockTime ? formatTimestamp(Number(t.blockTime)) : 'N/A';
         const dirArrow = '→';
         lines.push(`${t.type.toUpperCase()} ${formatAmount(t)} ${sym} (${t.mint})`);
         lines.push(`   ${from} ${dirArrow} ${to}`);

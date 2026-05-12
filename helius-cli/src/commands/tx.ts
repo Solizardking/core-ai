@@ -205,10 +205,10 @@ export async function txTransfersCommand(address: string, options: TxTransfersOp
       const symbol = isSol ? "SOL" : "";
       const from = t.fromUserAccount ? formatAddress(t.fromUserAccount) : (t.type === "mint" ? "mint" : "?");
       const to = t.toUserAccount ? formatAddress(t.toUserAccount) : (t.type === "burn" ? "burn" : "?");
-      const time = t.blockTime ? formatTimestamp(t.blockTime) : "N/A";
+      const time = t.blockTime ? formatTimestamp(Number(t.blockTime)) : "N/A";
       console.log(`  ${chalk.yellow((t.type || "transfer").padEnd(10))} ${amount}${symbol ? " " + symbol : ""}`);
       console.log(`    ${from} ${chalk.gray("→")} ${to}`);
-      console.log(`    ${chalk.gray("sig:")} ${chalk.cyan(formatAddress(t.signature))}  ${chalk.gray("slot:")} ${t.slot}  ${chalk.gray(time)}`);
+      console.log(`    ${chalk.gray("sig:")} ${chalk.cyan(formatAddress(t.signature))}  ${chalk.gray("slot:")} ${t.slot.toString()}  ${chalk.gray(time)}`);
     }
     console.log(chalk.gray(`\n  ${data.length} transfer(s) shown`));
     if (result?.paginationToken) {
