@@ -93,14 +93,14 @@ describe('action handler bridge', () => {
     );
 
     expect(result.isError).not.toBe(true);
-    expect(getTransfersByAddress).toHaveBeenCalledWith([
+    expect(getTransfersByAddress).toHaveBeenCalledWith(
       'BenchWallet11111111111111111111111111111111',
       {
         direction: 'any',
         limit: 5,
         sortOrder: 'desc',
       },
-    ]);
+    );
     expect(result.content?.[0]?.text).toContain('No transfers found.');
   });
 
@@ -143,7 +143,7 @@ describe('action handler bridge', () => {
     );
 
     expect(result.isError).not.toBe(true);
-    expect(getTransfersByAddress).toHaveBeenCalledWith([
+    expect(getTransfersByAddress).toHaveBeenCalledWith(
       'BenchWallet11111111111111111111111111111111',
       {
         direction: 'in',
@@ -153,7 +153,7 @@ describe('action handler bridge', () => {
         paginationToken: 'PREV',
         filters: { blockTime: { gte: 1700000000 } },
       },
-    ]);
+    );
     expect(result.content?.[0]?.text).toContain('**Next Page Token:** `NEXT_TOKEN`');
   });
 
