@@ -810,7 +810,7 @@ export function registerTransactionTools(server: McpServer) {
       direction: z.string().optional().default('any').describe('"in" | "out" | "any" — relative to the queried address'),
       mint: z.string().optional().describe('Filter by token mint. Use the WSOL mint to filter native SOL when solMode="merged".'),
       solMode: z.string().optional().describe('"merged" treats SOL and WSOL as one asset; "separate" keeps them distinct'),
-      limit: z.number().optional().default(25).describe('Max transfers per page (1-100)'),
+      limit: z.number().int().min(1).max(100).optional().default(25).describe('Max transfers per page (1-100)'),
       sortOrder: z.string().optional().default('desc').describe('"desc" = newest first (default), "asc" = oldest first'),
       paginationToken: z.string().optional().describe('Cursor from a previous response — pass to fetch the next page'),
       commitment: z.string().optional().describe('"finalized" | "confirmed"'),

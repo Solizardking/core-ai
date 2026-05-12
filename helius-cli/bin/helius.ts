@@ -394,6 +394,12 @@ txCmd
   .option("--pagination-token <token>", "Cursor from a previous response")
   .option("--block-time-gte <ts>", "Unix seconds lower bound")
   .option("--block-time-lte <ts>", "Unix seconds upper bound")
+  .option("--slot-gte <slot>", "Slot lower bound")
+  .option("--slot-lte <slot>", "Slot upper bound")
+  .option("--amount-gte <raw>", "Raw u64 amount lower bound (not UI amount)")
+  .option("--amount-lte <raw>", "Raw u64 amount upper bound (not UI amount)")
+  .option("--sol-mode <mode>", "merged | separate — treat SOL/WSOL as one asset, or keep distinct")
+  .option("--commitment <level>", "finalized | confirmed")
   .option("--json", "Output JSON envelope")
   .addHelpText('after', `
 Examples:

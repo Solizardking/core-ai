@@ -107,6 +107,12 @@ interface TxTransfersOptions extends TxOptions {
   paginationToken?: string;
   blockTimeGte?: string;
   blockTimeLte?: string;
+  commitment?: string;
+  solMode?: string;
+  amountGte?: string;
+  amountLte?: string;
+  slotGte?: string;
+  slotLte?: string;
 }
 
 export async function txTransfersCommand(address: string, options: TxTransfersOptions = {}): Promise<void> {
@@ -114,6 +120,19 @@ export async function txTransfersCommand(address: string, options: TxTransfersOp
   try {
     const addrErr = validateAddress(address);
     if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
+
+    if (options.commitment && !["finalized", "confirmed"].includes(options.commitment)) {
+      exitWithError("INVALID_INPUT", `--commitment must be "finalized" or "confirmed" (got "${options.commitment}")`, undefined, !!options.json);
+    }
+    if (options.solMode && !["merged", "separate"].includes(options.solMode)) {
+      exitWithError("INVALID_INPUT", `--sol-mode must be "merged" or "separate" (got "${options.solMode}")`, undefined, !!options.json);
+    }
+    if (options.direction && !["in", "out", "any"].includes(options.direction)) {
+      exitWithError("INVALID_INPUT", `--direction must be "in", "out", or "any" (got "${options.direction}")`, undefined, !!options.json);
+    }
+    if (options.sortOrder && !["asc", "desc"].includes(options.sortOrder)) {
+      exitWithError("INVALID_INPUT", `--sort-order must be "asc" or "desc" (got "${options.sortOrder}")`, undefined, !!options.json);
+    }
 
     const helius = await setupClient(spinner, options, "Fetching transfers...");
 
@@ -125,12 +144,41 @@ export async function txTransfersCommand(address: string, options: TxTransfersOp
     if (options.mint) config.mint = options.mint;
     if (options.with) config.with = options.with;
     if (options.paginationToken) config.paginationToken = options.paginationToken;
+    if (options.commitment) config.commitment = options.commitment;
+    if (options.solMode) config.solMode = options.solMode;
+
+    // SDK's TransferComparisonFilter types amount as `number`, so raw u64 values outside JS safe-integer
+    // range (>2^53) can't be passed without precision loss. Mirror the MCP handler: surface a clear error
+    // rather than silently dropping the filter.
+    const parseAmountBound = (raw: string | undefined, label: string): number | undefined => {
+      if (raw === undefined) return undefined;
+      const n = Number(raw);
+      if (!Number.isFinite(n)) {
+        exitWithError("INVALID_INPUT", `${label} must be a numeric raw u64 amount (got "${raw}")`, undefined, !!options.json);
+      }
+      if (!Number.isSafeInteger(n) || n < 0) {
+        exitWithError("INVALID_INPUT", `${label}="${raw}" is outside JS safe integer range (>2^53) or negative. Pass a smaller raw amount or filter client-side.`, undefined, !!options.json);
+      }
+      return n;
+    };
 
     const filters: Record<string, { gte?: number; lte?: number }> = {};
     if (options.blockTimeGte || options.blockTimeLte) {
       filters.blockTime = {};
       if (options.blockTimeGte) filters.blockTime.gte = parseInt(options.blockTimeGte, 10);
       if (options.blockTimeLte) filters.blockTime.lte = parseInt(options.blockTimeLte, 10);
+    }
+    if (options.slotGte || options.slotLte) {
+      filters.slot = {};
+      if (options.slotGte) filters.slot.gte = parseInt(options.slotGte, 10);
+      if (options.slotLte) filters.slot.lte = parseInt(options.slotLte, 10);
+    }
+    const aGte = parseAmountBound(options.amountGte, "--amount-gte");
+    const aLte = parseAmountBound(options.amountLte, "--amount-lte");
+    if (aGte !== undefined || aLte !== undefined) {
+      filters.amount = {};
+      if (aGte !== undefined) filters.amount.gte = aGte;
+      if (aLte !== undefined) filters.amount.lte = aLte;
     }
     if (Object.keys(filters).length > 0) config.filters = filters;
 
