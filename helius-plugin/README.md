@@ -29,7 +29,13 @@ claude --plugin-dir ./helius-plugin
 
 **Phantom frontend skill** (`/helius:phantom`) — makes Claude an expert at building frontend Solana dApps with Phantom Connect SDK (`@phantom/react-sdk`, `@phantom/browser-sdk`, `@phantom/react-native-sdk`). Covers wallet connection (React, React Native, vanilla JS), transaction signing via Helius Sender, API key proxying, token gating, NFT minting, crypto payments, real-time updates, and secure frontend architecture.
 
-**Reference files** — deep documentation for DAS API, Sender, Priority Fees, Webhooks, WebSockets, Laserstream, Wallet API, Enhanced Transactions, Onboarding, DFlow spot trading, prediction markets, WebSocket streaming, Proof KYC, Phantom React/Browser/React Native SDKs, transactions, token gating, NFT minting, payments, frontend security, and integration patterns.
+**Jupiter DeFi skill** (`/helius:jupiter`) — makes Claude an expert at building Solana DeFi applications combining Jupiter's APIs with Helius infrastructure. Covers token swaps (Swap API V2), lending/borrowing (Lend protocol), limit orders (Trigger), DCA (Recurring), token and price data, perps/prediction markets, the Jupiter Plugin and Portal, plus transaction submission via Sender, fee optimization, real-time streaming, and wallet intelligence.
+
+**OKX integration skill** (`/helius:okx`) — teaches Claude how to compose OKX's DEX aggregation and market data tools with Helius's Solana infrastructure. Integration-only layer (install the `onchainos-skills` library separately) covering swaps, token discovery, trending rankings, smart money signals, meme token analysis, and portfolio intelligence.
+
+**SVM architecture skill** (`/helius:svm`) — makes Claude a Solana protocol expert. Covers the SVM execution engine, account model, consensus, transactions, validator economics, data layer, development tooling, and token extensions — sourced from the Helius blog, SIMDs, and Agave/Firedancer source. Use this for the "how" and "why" of Solana, not for building with APIs.
+
+**Reference files** — deep documentation for DAS API, Sender, Priority Fees, Webhooks, WebSockets, Laserstream, Wallet API, Enhanced Transactions, Onboarding, DFlow spot trading, prediction markets, WebSocket streaming, Proof KYC, Phantom React/Browser/React Native SDKs, Jupiter swap/lend/trigger/recurring/tokens-price/perps-predictions/plugin/portal, transactions, token gating, NFT minting, payments, frontend security, SVM compilation/programs/execution/accounts/transactions/consensus/validators/data/development/tokens, and integration patterns.
 
 ## Usage
 
@@ -40,6 +46,8 @@ Once installed, just ask questions in plain English:
 - "Set up webhooks to monitor my wallet for incoming transfers"
 - "Parse this transaction: 5abc..."
 - "Build a portfolio tracker with real-time updates"
+- "Quote and execute a Jupiter swap, then land it via Helius Sender"
+- "Explain how Solana's transaction scheduler works"
 
 Claude picks the right tools and reads the right reference files automatically.
 
