@@ -182,8 +182,7 @@ export async function txTransfersCommand(address: string, options: TxTransfersOp
     }
     if (Object.keys(filters).length > 0) config.filters = filters;
 
-    // SDK method shipped in helius-sdk PR #313; cast until npm release catches up.
-    const result: any = await withRetry(() => (helius as any).getTransfersByAddress([address, config]), options, spinner);
+    const result: any = await withRetry(() => (helius as any).getTransfersByAddress(address, config), options, spinner);
     spinner?.stop();
 
     if (options.json) {

@@ -942,8 +942,7 @@ export function registerTransactionTools(server: McpServer) {
 
       let result: TransfersResult;
       try {
-        // SDK method shipped in helius-sdk PR #313; cast until @types catch up in npm release.
-        result = await (helius as any).getTransfersByAddress([address, config]) as TransfersResult;
+        result = await (helius as any).getTransfersByAddress(address, config) as TransfersResult;
       } catch (e) {
         return handleToolError(e, 'Error fetching transfers');
       }
