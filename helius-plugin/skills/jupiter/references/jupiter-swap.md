@@ -28,8 +28,11 @@ Jupiter V2 offers two integration paths:
 | Execution | Managed via `/execute` (Jupiter Beam) | Self-managed (your own RPC) |
 | Transaction control | None (pre-built) | Full (raw instructions) |
 | Compute budget | Included in transaction | Instructions provided (overridable) |
+| Jito tip inclusion | Handled internally by Jupiter Beam (no tip ix in the returned transaction; landing is Jupiter's responsibility) | Not included — you add a `SystemProgram.transfer` to a Jito tip account when submitting via Helius Sender |
 
 **Use `/order` + `/execute`** for most integrations (recommended). **Use `/build`** only when you need custom instructions, CPI, or full transaction control.
+
+> **Using Helius Sender?** Sender's dual-routing (Jito) requires a tip transfer **inside** the transaction. `/order`'s pre-built transaction does not include one, so signing and forwarding it to Sender will fail to land via Jito. Use `/build` and assemble the transaction yourself — see `references/integration-patterns.md` Pattern 1 for the full recipe and `references/helius-sender.md` for tip accounts and minimum amounts.
 
 ---
 
@@ -157,7 +160,8 @@ const buildResult = await response.json();
 2. Add your custom instructions alongside swap instructions
 3. Simulate with max CU limit (1,400,000) to estimate actual usage
 4. Build V0 transaction with estimated CU limit (1.2x simulated, capped at 1,400,000)
-5. Sign and send via your own RPC
+5. If submitting via Helius Sender, append a `SystemProgram.transfer` to a random Jito tip account (see `references/integration-patterns.md` Pattern 1)
+6. Sign and send via your own RPC (or Helius Sender)
 
 **Optional parameters**:
 - `slippageBps` — Slippage tolerance (default: 50 bps)

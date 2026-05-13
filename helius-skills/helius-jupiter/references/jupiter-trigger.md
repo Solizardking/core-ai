@@ -14,6 +14,8 @@ Auth: x-api-key header (required) + JWT Bearer token (required for most endpoint
 Status: Beta, under active development
 ```
 
+> **Trigger V2 is in active beta.** Endpoints, response shapes, and onboarding flows shift without notice. Verify against [dev.jup.ag/docs/trigger](https://dev.jup.ag/docs/trigger) before relying on this reference.
+
 ---
 
 ## Authentication (JWT Challenge-Response)
@@ -81,16 +83,21 @@ const headers = {
   'Authorization': `Bearer ${jwtToken}`,
 };
 
-// Check if vault exists
+// Check if a vault exists for this wallet
 const vaultRes = await fetch('https://api.jup.ag/trigger/v2/vault', { headers });
 // Returns: { userPubkey, vaultPubkey, privyVaultId, privyUserId? }
-// Returns 404 if no vault exists
-
-// Register vault (first-time, idempotent)
-const registerRes = await fetch('https://api.jup.ag/trigger/v2/vault/register', { headers });
-// Returns 201: { userPubkey, vaultPubkey, privyVaultId }
-// Returns 409 if already exists
+// Returns 404 if no vault exists (user has not completed onboarding)
 ```
+
+### Vault Onboarding
+
+Programmatic vault registration via the public API is **not currently available**. Jupiter's `POST /trigger/v2/vault/register` route returns a router-level plain-text `404 Not Found` in production, even with a valid JWT and `x-api-key`. Vault provisioning happens through Privy onboarding inside the **jup.ag web UI**.
+
+If `GET /trigger/v2/vault` returns `404`, surface a clear message to the user instructing them to visit [jup.ag](https://jup.ag) and complete the Trigger onboarding flow once. Subsequent `GET /vault` calls (and `POST /deposit/craft`, `POST /orders/price`, etc.) will succeed against the provisioned vault. There is no need to repeat the web flow per session — vaults are permanent per wallet.
+
+For headless agents that cannot route a user through the web UI, contact Jupiter support — there is no documented programmatic onboarding path at present.
+
+> **Error shapes.** Trigger V2 app-level errors return JSON like `{"error":"..."}`. A plain-text `404 Not Found` response body means the route is not registered server-side — re-check [dev.jup.ag/docs/trigger](https://dev.jup.ag/docs/trigger) rather than assuming a parameter, header, or auth issue. This distinction saves a debugging round-trip on a beta API.
 
 ---
 
@@ -382,7 +389,7 @@ Stop-loss orders use a higher default because execution certainty matters more t
 3. **Expiration is required** — No indefinite (GTC) orders in V2. Use 7-30 days; renew via `PATCH` for longer duration
 4. **`expiresAt` is in milliseconds** — Not seconds. Use `Date.now() + duration_ms`
 5. **JWT expires after 24 hours** — Re-authenticate via challenge-response; no refresh endpoint
-6. **Vault must be registered first** — Call `/vault/register` before first deposit
+6. **Vault must be onboarded first** — `/vault/register` is not callable programmatically (returns plain-text `404`). If `GET /vault` returns `404`, route the user through jup.ag web onboarding once. See the "Vault Onboarding" section above.
 7. **3-step order creation** — Craft deposit → sign → create order. All three steps are required
 8. **2-step cancellation** — Initiate → sign withdrawal. Order won't fill after step 1 even if step 2 is delayed
 9. **Amounts are in atomic units** — 1 SOL = 1_000_000_000 lamports, 1 USDC = 1_000_000
