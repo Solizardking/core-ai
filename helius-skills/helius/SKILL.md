@@ -96,8 +96,8 @@ Enhanced WebSockets (Developer+) for most needs; Laserstream gRPC (Business+ mai
 
 ### Transaction History & Parsing
 **Read**: `references/enhanced-transactions.md`
-**APIs**: Enhanced Transactions API (`getTransactionsByAddress`, `parseTransactions`), RPC (`getTransactionsForAddress`)
-**MCP tools** (if available): `parseTransactions`, `getTransactionHistory`
+**APIs**: Enhanced Transactions API (`getTransactionsByAddress`, `parseTransactions`), RPC (`getTransactionsForAddress`, `getTransfersByAddress`)
+**MCP tools** (if available): `parseTransactions`, `getTransactionHistory`, `getTransfersByAddress`
 **When**: human-readable tx data, transaction explorers, swap/transfer/NFT sale analysis, history filtering by type/time/slot
 
 ### Getting Started / Onboarding
@@ -146,6 +146,7 @@ Follow these rules in ALL implementations:
 - Use Helius APIs (via MCP, SDK, or REST) for live blockchain data — never hardcode or mock chain state
 - Prefer `parseTransactions` over raw RPC for transaction history — it returns human-readable data
 - For wallet transaction history, use `getTransactionsByAddress` (REST: `GET /v0/addresses/{addr}/transactions`, SDK: `helius.enhanced.getTransactionsByAddress()`) or `getTransactionsForAddress` ([REST RPC](https://www.helius.dev/docs/api-reference/rpc/http/gettransactionsforaddress), SDK: `helius.getTransactionsForAddress()`) or `getTransactionHistory` (MCP) — never manually chain `getSignaturesForAddress` + `getTransaction`. The combined endpoints handle signature fetching, enrichment, and pagination in a single call. Note: these methods have **different parameter shapes and pagination** — see `references/enhanced-transactions.md`.
+- For a per-transfer feed (one row per token/SOL transfer with mint/direction/counterparty/time filters rather than one row per transaction), use `getTransfersByAddress` (SDK: `helius.getTransfersByAddress([address, config])`, MCP: `heliusTransaction.getTransfersByAddress`).
 - Use `getAssetsByOwner` with `showFungible: true` to get both NFTs and fungible tokens in one call
 - Use `searchAssets` for multi-criteria queries instead of client-side filtering
 - Use batch endpoints (`getAsset` with multiple IDs, `getAssetProofBatch`) to minimize API calls
@@ -189,3 +190,4 @@ Follow these rules in ALL implementations:
 - **Two SDK methods for transaction history** — `helius.enhanced.getTransactionsByAddress()` and `helius.getTransactionsForAddress()` have completely different parameter shapes and pagination mechanisms. Do not mix them. See `references/enhanced-transactions.md` for details.
 - **Don't roll your own transaction history pipeline** — Manually calling `getSignaturesForAddress` then `getTransaction` for each signature is slower, more expensive, and misses Enhanced Transaction parsing. Use `getTransactionsByAddress` (REST: `GET /v0/addresses/{addr}/transactions`, SDK: `helius.enhanced.getTransactionsByAddress()`) or `getTransactionsForAddress` ([REST RPC](https://www.helius.dev/docs/api-reference/rpc/http/gettransactionsforaddress), SDK: `helius.getTransactionsForAddress()`) for application code, or `getTransactionHistory` (MCP) for agent queries. These combine fetching and parsing in one call. Note: `getTransactionsByAddress` and `getTransactionsForAddress` have **different parameter shapes and pagination** — see `references/enhanced-transactions.md`.
 - **Don't confuse `getTransactionHistory` with `getWalletHistory`** — `getTransactionHistory` (Enhanced Transactions API) returns parsed transaction data (type, transfers, events). `getWalletHistory` (Wallet API) returns balance changes per transaction. They have different response formats and use cases. See `references/enhanced-transactions.md` vs `references/wallet-api.md`.
+- **Don't confuse `getTransactionHistory` with `getTransfersByAddress`** — `getTransactionHistory` returns one row per transaction (full parsed tx). `getTransfersByAddress` returns one row per transfer (mint, amount, from/to, direction). Pick the granularity that matches what you actually need — per-transfer rows are easier to aggregate by mint/counterparty; per-transaction rows are easier for narrative descriptions.

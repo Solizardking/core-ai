@@ -97,6 +97,17 @@ function detectContinuation(action: ActionName, params: Record<string, unknown>,
     }
   }
 
+  if (action === 'getTransfersByAddress') {
+    // Fragile: depends on handler markdown format "**Next Page Token:** `<token>`" (mirrors getTransactionHistory)
+    const tokenMatch = text.match(/\*\*Next Page Token:\*\*\s+`([^`]+)`/);
+    if (tokenMatch) {
+      return {
+        model: 'transactionHistory',
+        next: { kind: 'rawApi', paginationToken: tokenMatch[1] },
+      };
+    }
+  }
+
   if (typeof params.page === 'number') {
     return { model: 'page', nextPage: params.page + 1 };
   }

@@ -15,7 +15,7 @@ import { rpcCommand } from "../src/commands/rpc.js";
 import { keygenCommand, getDefaultKeypairPath } from "../src/commands/keygen.js";
 import { configShowCommand, configSetApiKeyCommand, configSetNetworkCommand, configSetProjectCommand, configClearCommand } from "../src/commands/config-cmd.js";
 import { balanceCommand, tokensCommand, tokenHoldersCommand } from "../src/commands/balance.js";
-import { txParseCommand, txHistoryCommand, txFeesCommand } from "../src/commands/tx.js";
+import { txParseCommand, txHistoryCommand, txTransfersCommand, txFeesCommand } from "../src/commands/tx.js";
 import {
   assetGetCommand, assetBatchCommand, assetOwnerCommand, assetCreatorCommand,
   assetAuthorityCommand, assetCollectionCommand, assetSearchCommand,
@@ -382,6 +382,31 @@ Examples:
   $ helius tx history 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY
   $ helius tx history 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --limit 5 --type SWAP --json`)
   .action(function(this: any, address: string) { txHistoryCommand(address, opts(this)); });
+
+txCmd
+  .command("transfers <address>")
+  .description("List parsed token + SOL transfers for an address (RPC, rich filters)")
+  .option("-l, --limit <n>", "Max transfers per page (1-100, default 25)")
+  .option("--sort-order <order>", "asc | desc", "desc")
+  .option("--mint <mint>", "Filter by token mint address")
+  .option("--direction <dir>", "in | out | any", "any")
+  .option("--with <addr>", "Filter by counterparty address")
+  .option("--pagination-token <token>", "Cursor from a previous response")
+  .option("--block-time-gte <ts>", "Unix seconds lower bound")
+  .option("--block-time-lte <ts>", "Unix seconds upper bound")
+  .option("--slot-gte <slot>", "Slot lower bound")
+  .option("--slot-lte <slot>", "Slot upper bound")
+  .option("--amount-gte <raw>", "Raw u64 amount lower bound (not UI amount)")
+  .option("--amount-lte <raw>", "Raw u64 amount upper bound (not UI amount)")
+  .option("--sol-mode <mode>", "merged | separate — treat SOL/WSOL as one asset, or keep distinct")
+  .option("--commitment <level>", "finalized | confirmed")
+  .option("--json", "Output JSON envelope")
+  .addHelpText('after', `
+Examples:
+  $ helius tx transfers 86xCnPeV69n6t3DnyGvkKobf9FdN2H9oiVDdaMpo2MMY --limit 5
+  $ helius tx transfers <addr> --mint EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v --direction in
+  $ helius tx transfers <addr> --with <counterparty> --block-time-gte 1700000000 --json`)
+  .action(function(this: any, address: string) { txTransfersCommand(address, opts(this)); });
 
 txCmd
   .command("fees")
