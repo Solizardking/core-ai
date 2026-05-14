@@ -20,7 +20,7 @@ Helius Sender dual-routes a transaction to validators **and** Jito simultaneousl
 2. From the response, collect: `computeBudgetInstructions` (Jupiter's CU-price ix), `setupInstructions`, `swapInstruction`, `cleanupInstruction`, `otherInstructions`, `addressesByLookupTableAddress`, and `blockhashWithMetadata`.
 3. **Compute unit limit:** simulate first, then set the real limit. Build a probe message with `setComputeUnitLimit(1_400_000)`, run `simulateTransaction` against the Helius RPC, and on the real transaction set `setComputeUnitLimit(Math.min(Math.ceil(simulatedUnits * 1.2), 1_400_000))`. Do **not** hardcode 1.4M on the real transaction — over-allocating CUs lowers per-CU priority.
 4. Keep Jupiter's `computeBudgetInstructions` (CU price) as-is — do not replace.
-5. Append `SystemProgram.transfer({ fromPubkey: taker, toPubkey: randomJitoTipAccount, lamports: tipLamports })` after cleanup/other instructions. Use `getDynamicTipAmount()` from `references/helius-sender.md` (which floors at 200,000 lamports). Pick a random tip account from the 10-address mainnet list in `references/helius-sender.md`.
+5. Append `SystemProgram.transfer({ fromPubkey: taker, toPubkey: randomJitoTipAccount, lamports: Math.floor(tipAmountSOL * LAMPORTS_PER_SOL) })` after cleanup/other instructions. Use `getDynamicTipAmount()` from `references/helius-sender.md` — it returns **SOL** (floor `0.0002 SOL` = 200,000 lamports), so convert to lamports before constructing the transfer. Pick a random tip account from the 10-address mainnet list in `references/helius-sender.md`.
 6. Reconstruct `AddressLookupTableAccount[]` directly from `addressesByLookupTableAddress` — no extra `getAddressLookupTable` RPC fetch. Each key is the ALT address, value is the `addresses[]`.
 7. **Blockhash:** use `blockhashWithMetadata.blockhash` from the `/build` response by default — it is fresh as of the Jupiter call and saves an RPC round-trip. Only call `getLatestBlockhash` against the Helius RPC if more than ~30 seconds elapse between `/build` and submission (e.g. wallet UI signature delays), since stale blockhashes cause Sender to reject on the validator leg.
 8. Build `TransactionMessage` → `compileToV0Message(altAccounts)` → `VersionedTransaction`. Sign and submit to Helius Sender with `skipPreflight: true, maxRetries: 0` (mandatory — see `references/helius-sender.md`).
@@ -38,6 +38,7 @@ import {
   Keypair,
   Connection,
   TransactionInstruction,
+  LAMPORTS_PER_SOL,
 } from '@solana/web3.js';
 
 const JUPITER_API = 'https://api.jup.ag';
@@ -121,10 +122,14 @@ async function swapViaJupiterAndSender(
     ...(build.otherInstructions ?? []).map(decodeIx),
   ];
 
-  // 4. Jito tip transfer — required for Sender dual-routing.
-  const tipLamports = await getDynamicTipAmount();
+  // 4. Jito tip transfer — required for Sender dual-routing. getDynamicTipAmount() returns SOL.
+  const tipAmountSOL = await getDynamicTipAmount();
   const tipAccount = new PublicKey(JITO_TIP_ACCOUNTS[Math.floor(Math.random() * JITO_TIP_ACCOUNTS.length)]);
-  const tipIx = SystemProgram.transfer({ fromPubkey: taker, toPubkey: tipAccount, lamports: tipLamports });
+  const tipIx = SystemProgram.transfer({
+    fromPubkey: taker,
+    toPubkey: tipAccount,
+    lamports: Math.floor(tipAmountSOL * LAMPORTS_PER_SOL),
+  });
 
   // 5. Use Jupiter's blockhash (fresh as of /build). Refresh only if you sit on this for >~30s.
   const blockhash = build.blockhashWithMetadata.blockhash;
@@ -136,7 +141,7 @@ async function swapViaJupiterAndSender(
     instructions: [ComputeBudgetProgram.setComputeUnitLimit({ units: 1_400_000 }), ...jupiterIxs, tipIx],
   }).compileToV0Message(altAccounts);
   const probeTx = new VersionedTransaction(probeMsg);
-  probeTx.sign([keypair]);
+  // No need to sign — simulateTransaction is called with sigVerify: false and replaceRecentBlockhash: true.
   const sim = await connection.simulateTransaction(probeTx, { sigVerify: false, replaceRecentBlockhash: true });
   if (sim.value.err) throw new Error(`Simulation failed: ${JSON.stringify(sim.value.err)}`);
   const cuLimit = Math.min(Math.ceil((sim.value.unitsConsumed ?? 200_000) * 1.2), 1_400_000);
