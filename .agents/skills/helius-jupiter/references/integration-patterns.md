@@ -64,10 +64,10 @@ async function getDynamicTipAmount(): Promise<number> {
     const res = await fetch('https://bundles.jito.wtf/api/v1/bundles/tip_floor');
     const data = await res.json();
     if (data?.[0]?.landed_tips_75th_percentile) {
-      return Math.max(Math.floor(data[0].landed_tips_75th_percentile * 1e9), 200_000);
+      return Math.max(data[0].landed_tips_75th_percentile, 0.0002);
     }
   } catch {}
-  return 200_000;
+  return 0.0002;
 }
 
 function decodeIx(ix: any): TransactionInstruction {
