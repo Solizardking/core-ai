@@ -2477,23 +2477,75 @@ End-to-end patterns for combining Jupiter APIs with Helius infrastructure. These
 
 ## Pattern 1: Jupiter Swap via Helius Sender
 
-The most common integration. Jupiter Swap API provides the swap transaction; Helius Sender submits it for optimal block inclusion.
+Helius Sender dual-routes a transaction to validators **and** Jito simultaneously. The Jito leg requires a tip transfer **inside the transaction** — which Jupiter's `/order` pre-built transaction does **not** include. This pattern uses `/swap/v2/build` to get raw instructions, then locally assembles a V0 transaction with the tip transfer before submitting via Sender.
 
 ### Flow
 
-1. Get a quote from Jupiter `/swap/v2/order`
-2. Deserialize the returned base64 transaction
-3. Sign the transaction
-4. Submit via Helius Sender endpoint
-5. Confirm the transaction
+1. `GET /swap/v2/build` with `inputMint`, `outputMint`, `amount`, `taker`.
+2. From the response, collect: `computeBudgetInstructions` (Jupiter's CU-price ix), `setupInstructions`, `swapInstruction`, `cleanupInstruction`, `otherInstructions`, `addressesByLookupTableAddress`, and `blockhashWithMetadata`.
+3. **Compute unit limit:** simulate first, then set the real limit. Build a probe message with `setComputeUnitLimit(1_400_000)`, run `simulateTransaction` against the Helius RPC, and on the real transaction set `setComputeUnitLimit(Math.min(Math.ceil(simulatedUnits * 1.2), 1_400_000))`. Do **not** hardcode 1.4M on the real transaction — over-allocating CUs lowers per-CU priority.
+4. Keep Jupiter's `computeBudgetInstructions` (CU price) as-is — do not replace.
+5. Append `SystemProgram.transfer({ fromPubkey: taker, toPubkey: randomJitoTipAccount, lamports: Math.floor(tipAmountSOL * LAMPORTS_PER_SOL) })` after cleanup/other instructions. Use `getDynamicTipAmount()` from `references/helius-sender.md` — it returns **SOL** (floor `0.0002 SOL` = 200,000 lamports), so convert to lamports before constructing the transfer. Pick a random tip account from the 10-address mainnet list in `references/helius-sender.md`.
+6. Reconstruct `AddressLookupTableAccount[]` directly from `addressesByLookupTableAddress` — no extra `getAddressLookupTable` RPC fetch. Each key is the ALT address, value is the `addresses[]`.
+7. **Blockhash:** use `blockhashWithMetadata.blockhash` from the `/build` response by default — it is fresh as of the Jupiter call and saves an RPC round-trip. Only call `getLatestBlockhash` against the Helius RPC if more than ~30 seconds elapse between `/build` and submission (e.g. wallet UI signature delays), since stale blockhashes cause Sender to reject on the validator leg.
+8. Build `TransactionMessage` → `compileToV0Message(altAccounts)` → `VersionedTransaction`. Sign and submit to Helius Sender with `skipPreflight: true, maxRetries: 0` (mandatory — see `references/helius-sender.md`).
 
 ### TypeScript Example
 
 ```typescript
-import { VersionedTransaction, Keypair } from '@solana/web3.js';
+import {
+  VersionedTransaction,
+  TransactionMessage,
+  ComputeBudgetProgram,
+  SystemProgram,
+  PublicKey,
+  AddressLookupTableAccount,
+  Keypair,
+  Connection,
+  TransactionInstruction,
+  LAMPORTS_PER_SOL,
+} from '@solana/web3.js';
 
 const JUPITER_API = 'https://api.jup.ag';
+const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`;
 const SENDER_URL = `https://sender.helius-rpc.com/fast?api-key=${process.env.HELIUS_API_KEY}`;
+
+// See references/helius-sender.md for the full 10-address mainnet list.
+const JITO_TIP_ACCOUNTS = [
+  '4ACfpUFoaSD9bfPdeu6DBt89gB6ENTeHBXCAi87NhDEE',
+  'D2L6yPZ2FmmmTKPgzaMKdhu6EWZcTpLy1Vhx8uvZe7NZ',
+  '9bnz4RShgq1hAnLnZbP8kbgBg1kEmcJBYQq3gQbmnSta',
+  '5VY91ws6B2hMmBFRsXkoAAdsPHBJwRfBht4DXox3xkwn',
+  '2nyhqdwKcJZR2vcqCyrYsaPVdAnFoJjiksCXJ7hfEYgD',
+  '2q5pghRs6arqVjRvT5gfgWfWcHWmw1ZuCzphgd5KfWGJ',
+  'wyvPkWjVZz1M8fHQnMMCDTQDbkManefNNhweYk5WkcF',
+  '3KCKozbAaF75qEU33jtzozcJ29yJuaLJTy2jFdzUY8bT',
+  '4vieeGHPYPG2MmyPRcYjdiDmmhN3ww7hsFNap8pVN3Ey',
+  '4TQLFNWK8AovT1gFvda5jfw2oJeRMKEmw7aH6MGBJ3or',
+];
+
+async function getDynamicTipAmount(): Promise<number> {
+  try {
+    const res = await fetch('https://bundles.jito.wtf/api/v1/bundles/tip_floor');
+    const data = await res.json();
+    if (data?.[0]?.landed_tips_75th_percentile) {
+      return Math.max(data[0].landed_tips_75th_percentile, 0.0002);
+    }
+  } catch {}
+  return 0.0002;
+}
+
+function decodeIx(ix: any): TransactionInstruction {
+  return new TransactionInstruction({
+    programId: new PublicKey(ix.programId),
+    keys: ix.accounts.map((a: any) => ({
+      pubkey: new PublicKey(a.pubkey),
+      isSigner: a.isSigner,
+      isWritable: a.isWritable,
+    })),
+    data: Buffer.from(ix.data, 'base64'),
+  });
+}
 
 async function swapViaJupiterAndSender(
   keypair: Keypair,
@@ -2501,27 +2553,74 @@ async function swapViaJupiterAndSender(
   outputMint: string,
   amount: string,
 ): Promise<string> {
-  // 1. Get quote and transaction from Jupiter
-  const params = new URLSearchParams({
-    inputMint,
-    outputMint,
-    amount,
-    taker: keypair.publicKey.toBase58(),
-  });
+  const taker = keypair.publicKey;
+  const connection = new Connection(HELIUS_RPC);
 
-  const orderRes = await fetch(`${JUPITER_API}/swap/v2/order?${params}`, {
+  // 1. /build — raw instructions (no Jito tip, no CU limit)
+  const params = new URLSearchParams({ inputMint, outputMint, amount, taker: taker.toBase58() });
+  const buildRes = await fetch(`${JUPITER_API}/swap/v2/build?${params}`, {
     headers: { 'x-api-key': process.env.JUPITER_API_KEY! },
   });
-  const order = await orderRes.json();
+  const build = await buildRes.json();
+  if (build.error) throw new Error(`Jupiter /build error: ${build.error}`);
 
-  if (order.error) throw new Error(`Jupiter error: ${order.error}`);
+  // 2. Reconstruct ALTs directly from the response — no extra RPC fetch.
+  const altAccounts: AddressLookupTableAccount[] = Object.entries(
+    build.addressesByLookupTableAddress as Record<string, string[]>,
+  ).map(([key, addresses]) => new AddressLookupTableAccount({
+    key: new PublicKey(key),
+    state: {
+      deactivationSlot: BigInt('0xffffffffffffffff'),
+      lastExtendedSlot: 0,
+      lastExtendedSlotStartIndex: 0,
+      authority: undefined,
+      addresses: addresses.map((a) => new PublicKey(a)),
+    },
+  }));
 
-  // 2. Deserialize and sign
-  const txBuffer = Buffer.from(order.transaction, 'base64');
-  const transaction = VersionedTransaction.deserialize(txBuffer);
-  transaction.sign([keypair]);
+  // 3. Collect Jupiter instructions in order.
+  const jupiterIxs: TransactionInstruction[] = [
+    ...(build.computeBudgetInstructions ?? []).map(decodeIx), // CU price ix (keep as-is)
+    ...(build.setupInstructions ?? []).map(decodeIx),
+    decodeIx(build.swapInstruction),
+    ...(build.cleanupInstruction ? [decodeIx(build.cleanupInstruction)] : []),
+    ...(build.otherInstructions ?? []).map(decodeIx),
+  ];
 
-  // 3. Submit via Helius Sender
+  // 4. Jito tip transfer — required for Sender dual-routing. getDynamicTipAmount() returns SOL.
+  const tipAmountSOL = await getDynamicTipAmount();
+  const tipAccount = new PublicKey(JITO_TIP_ACCOUNTS[Math.floor(Math.random() * JITO_TIP_ACCOUNTS.length)]);
+  const tipIx = SystemProgram.transfer({
+    fromPubkey: taker,
+    toPubkey: tipAccount,
+    lamports: Math.floor(tipAmountSOL * LAMPORTS_PER_SOL),
+  });
+
+  // 5. Use Jupiter's blockhash (fresh as of /build). Refresh only if you sit on this for >~30s.
+  const blockhash = build.blockhashWithMetadata.blockhash;
+
+  // 6. Simulate with the 1.4M ceiling to measure actual CU usage.
+  const probeMsg = new TransactionMessage({
+    payerKey: taker,
+    recentBlockhash: blockhash,
+    instructions: [ComputeBudgetProgram.setComputeUnitLimit({ units: 1_400_000 }), ...jupiterIxs, tipIx],
+  }).compileToV0Message(altAccounts);
+  const probeTx = new VersionedTransaction(probeMsg);
+  // No need to sign — simulateTransaction is called with sigVerify: false and replaceRecentBlockhash: true.
+  const sim = await connection.simulateTransaction(probeTx, { sigVerify: false, replaceRecentBlockhash: true });
+  if (sim.value.err) throw new Error(`Simulation failed: ${JSON.stringify(sim.value.err)}`);
+  const cuLimit = Math.min(Math.ceil((sim.value.unitsConsumed ?? 200_000) * 1.2), 1_400_000);
+
+  // 7. Real transaction with the simulated CU limit.
+  const realMsg = new TransactionMessage({
+    payerKey: taker,
+    recentBlockhash: blockhash,
+    instructions: [ComputeBudgetProgram.setComputeUnitLimit({ units: cuLimit }), ...jupiterIxs, tipIx],
+  }).compileToV0Message(altAccounts);
+  const tx = new VersionedTransaction(realMsg);
+  tx.sign([keypair]);
+
+  // 8. Submit via Helius Sender. skipPreflight + maxRetries:0 are mandatory.
   const sendRes = await fetch(SENDER_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -2530,23 +2629,23 @@ async function swapViaJupiterAndSender(
       id: Date.now().toString(),
       method: 'sendTransaction',
       params: [
-        Buffer.from(transaction.serialize()).toString('base64'),
+        Buffer.from(tx.serialize()).toString('base64'),
         { encoding: 'base64', skipPreflight: true, maxRetries: 0 },
       ],
     }),
   });
-
   const sendResult = await sendRes.json();
   if (sendResult.error) throw new Error(`Sender error: ${sendResult.error.message}`);
-
   return sendResult.result; // transaction signature
 }
 ```
 
-### When to Use Jupiter Execute vs Helius Sender
+See `references/jupiter-swap.md` for the full `/build` response shape, and `references/helius-sender.md` for the complete tip account list, dynamic tip sizing, and the mandatory Sender submission requirements.
 
-- **Jupiter `/execute`**: Simpler — handles submission for you, includes `requestId` idempotency. Best for most use cases.
-- **Helius Sender**: More control — you submit directly with Jito bundles and SWQoS. Best when you need custom priority fees or are already using Helius Sender for other transactions.
+### When to Use `/order` + `/execute` vs `/build` + Helius Sender
+
+- **`/order` + `/execute`** — Jupiter manages submission (Beam), including Jito landing internally — you do not (and cannot) add a tip ix to the returned transaction. Idempotent retries via `requestId`. Use when you do not need custom transaction composition or direct control over the Jito tip.
+- **`/build` + Helius Sender** — You assemble the transaction (compute budget, swap, tip, ALTs) and submit through Sender for Jito + SWQoS dual-routing. Use when you need a Jito tip inside the transaction, custom priority fees, or composition with non-Jupiter instructions.
 
 ---
 
@@ -4078,8 +4177,11 @@ Jupiter V2 offers two integration paths:
 | Execution | Managed via `/execute` (Jupiter Beam) | Self-managed (your own RPC) |
 | Transaction control | None (pre-built) | Full (raw instructions) |
 | Compute budget | Included in transaction | Instructions provided (overridable) |
+| Jito tip inclusion | Handled internally by Jupiter Beam (no tip ix in the returned transaction; landing is Jupiter's responsibility) | Not included — you add a `SystemProgram.transfer` to a Jito tip account when submitting via Helius Sender |
 
 **Use `/order` + `/execute`** for most integrations (recommended). **Use `/build`** only when you need custom instructions, CPI, or full transaction control.
+
+> **Using Helius Sender?** Sender's dual-routing (Jito) requires a tip transfer **inside** the transaction. `/order`'s pre-built transaction does not include one, so signing and forwarding it to Sender will fail to land via Jito. Use `/build` and assemble the transaction yourself — see `references/integration-patterns.md` Pattern 1 for the full recipe and `references/helius-sender.md` for tip accounts and minimum amounts.
 
 ---
 
@@ -4207,7 +4309,8 @@ const buildResult = await response.json();
 2. Add your custom instructions alongside swap instructions
 3. Simulate with max CU limit (1,400,000) to estimate actual usage
 4. Build V0 transaction with estimated CU limit (1.2x simulated, capped at 1,400,000)
-5. Sign and send via your own RPC
+5. If submitting via Helius Sender, append a `SystemProgram.transfer` to a random Jito tip account (see `references/integration-patterns.md` Pattern 1)
+6. Sign and send via your own RPC (or Helius Sender)
 
 **Optional parameters**:
 - `slippageBps` — Slippage tolerance (default: 50 bps)
@@ -4586,6 +4689,8 @@ Auth: x-api-key header (required) + JWT Bearer token (required for most endpoint
 Status: Beta, under active development
 ```
 
+> **Trigger V2 is in active beta.** Endpoints, response shapes, and onboarding flows shift without notice. Verify against [dev.jup.ag/docs/trigger](https://dev.jup.ag/docs/trigger) before relying on this reference.
+
 ---
 
 ## Authentication (JWT Challenge-Response)
@@ -4653,16 +4758,21 @@ const headers = {
   'Authorization': `Bearer ${jwtToken}`,
 };
 
-// Check if vault exists
+// Check if a vault exists for this wallet
 const vaultRes = await fetch('https://api.jup.ag/trigger/v2/vault', { headers });
 // Returns: { userPubkey, vaultPubkey, privyVaultId, privyUserId? }
-// Returns 404 if no vault exists
-
-// Register vault (first-time, idempotent)
-const registerRes = await fetch('https://api.jup.ag/trigger/v2/vault/register', { headers });
-// Returns 201: { userPubkey, vaultPubkey, privyVaultId }
-// Returns 409 if already exists
+// Returns 404 if no vault exists (user has not completed onboarding)
 ```
+
+### Vault Onboarding
+
+Programmatic vault registration via the public API is **not currently available**. Jupiter's `POST /trigger/v2/vault/register` route returns a router-level plain-text `404 Not Found` in production, even with a valid JWT and `x-api-key`. Vault provisioning happens through Privy onboarding inside the **jup.ag web UI**.
+
+If `GET /trigger/v2/vault` returns `404`, surface a clear message to the user instructing them to visit [jup.ag](https://jup.ag) and complete the Trigger onboarding flow once. Subsequent `GET /vault` calls (and `POST /deposit/craft`, `POST /orders/price`, etc.) will succeed against the provisioned vault. There is no need to repeat the web flow per session — vaults are permanent per wallet.
+
+For headless agents that cannot route a user through the web UI, contact Jupiter support — there is no documented programmatic onboarding path at present.
+
+> **Error shapes.** Trigger V2 app-level errors return JSON like `{"error":"..."}`. A plain-text `404 Not Found` response body means the route is not registered server-side — re-check [dev.jup.ag/docs/trigger](https://dev.jup.ag/docs/trigger) rather than assuming a parameter, header, or auth issue. This distinction saves a debugging round-trip on a beta API.
 
 ---
 
@@ -4954,7 +5064,7 @@ Stop-loss orders use a higher default because execution certainty matters more t
 3. **Expiration is required** — No indefinite (GTC) orders in V2. Use 7-30 days; renew via `PATCH` for longer duration
 4. **`expiresAt` is in milliseconds** — Not seconds. Use `Date.now() + duration_ms`
 5. **JWT expires after 24 hours** — Re-authenticate via challenge-response; no refresh endpoint
-6. **Vault must be registered first** — Call `/vault/register` before first deposit
+6. **Vault must be onboarded first** — `/vault/register` is not callable programmatically (returns plain-text `404`). If `GET /vault` returns `404`, route the user through jup.ag web onboarding once. See the "Vault Onboarding" section above.
 7. **3-step order creation** — Craft deposit → sign → create order. All three steps are required
 8. **2-step cancellation** — Initiate → sign withdrawal. Order won't fill after step 1 even if step 2 is delayed
 9. **Amounts are in atomic units** — 1 SOL = 1_000_000_000 lamports, 1 USDC = 1_000_000
