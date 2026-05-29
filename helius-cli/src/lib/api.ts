@@ -6,6 +6,11 @@ import { listProjects as sdkListProjects } from "helius-sdk/auth/listProjects";
 import { getProject as sdkGetProject } from "helius-sdk/auth/getProject";
 import { createApiKey as sdkCreateApiKey } from "helius-sdk/auth/createApiKey";
 import { agenticSignup as sdkAgenticSignup } from "helius-sdk/auth/agenticSignup";
+import {
+  oauthTokenExchange as sdkOAuthTokenExchange,
+  type OAuthTokenResponse,
+  type OAuthTokenExchangeArgs,
+} from "helius-sdk/auth/oauthTokenExchange";
 import type {
   SignupResponse,
   Project,
@@ -51,6 +56,12 @@ export async function agenticSignup(
   return sdkAgenticSignup({ ...options, userAgent: CLI_USER_AGENT });
 }
 
+export async function oauthTokenExchange(
+  options: Omit<OAuthTokenExchangeArgs, "userAgent">,
+): Promise<OAuthTokenResponse> {
+  return sdkOAuthTokenExchange({ ...options, userAgent: CLI_USER_AGENT });
+}
+
 export type {
   Project,
   ProjectListItem,
@@ -63,3 +74,5 @@ export type {
   User,
   BillingCycle,
 } from "helius-sdk/auth/types";
+
+export type { OAuthTokenResponse, OAuthTokenExchangeArgs } from "helius-sdk/auth/oauthTokenExchange";

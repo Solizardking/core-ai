@@ -5,6 +5,8 @@ import { signupCommand } from "../src/commands/signup.js";
 import { upgradeCommand } from "../src/commands/upgrade.js";
 import { payCommand } from "../src/commands/pay.js";
 import { loginCommand } from "../src/commands/login.js";
+import { logoutCommand } from "../src/commands/logout.js";
+import { whoamiCommand } from "../src/commands/whoami.js";
 import { projectsCommand } from "../src/commands/projects.js";
 import { projectCommand } from "../src/commands/project.js";
 import { apikeysCommand, createApiKeyCommand } from "../src/commands/apikeys.js";
@@ -177,14 +179,41 @@ Examples:
 
 program
   .command("login")
-  .description("Authenticate with wallet")
-  .option("-k, --keypair <path>", "Path to Solana keypair file", getDefaultKeypairPath())
+  .description("Authenticate with your Helius account in the browser (OAuth/PKCE)")
   .option("--json", "Output in JSON format")
+  .option("--no-browser", "Print URL instead of opening the browser")
   .addHelpText('after', `
 Examples:
   $ helius login
-  $ helius login -k ~/my-keypair.json`)
+  $ helius login --no-browser
+  $ helius login --json
+
+Wallet-based account creation continues to work via \`helius signup\`.`)
   .action(loginCommand);
+
+program
+  .command("logout")
+  .description("Sign out and clear the local session token (keeps API key by default)")
+  .option("--all", "Wipe the entire local config (jwt, apiKey, projectId, network, owsWallet)")
+  .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius logout
+  $ helius logout --all
+  $ helius logout --json`)
+  .action(logoutCommand);
+
+program
+  .command("whoami")
+  .description("Show the current authenticated identity, session expiry, and local config")
+  .option("--verify", "Also verify the session token against the backend (one API call)")
+  .option("--json", "Output in JSON format")
+  .addHelpText('after', `
+Examples:
+  $ helius whoami
+  $ helius whoami --verify
+  $ helius whoami --json`)
+  .action(whoamiCommand);
 
 program
   .command("projects")

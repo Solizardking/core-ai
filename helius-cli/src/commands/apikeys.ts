@@ -14,7 +14,7 @@ async function resolveProjectId(jwt: string, projectId?: string, json?: boolean)
     if (json) {
       exitWithError("NO_PROJECTS", "No projects found", undefined, json);
     }
-    throw new Error("No projects found. Run `helius signup` to create your first project.");
+    throw new Error("No projects found. Create one in the dashboard at https://dashboard.helius.dev, or run `helius signup` to create a new account.");
   }
 
   if (projects.length > 1) {

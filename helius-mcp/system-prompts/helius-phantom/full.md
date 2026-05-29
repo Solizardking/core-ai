@@ -1707,7 +1707,7 @@ Getting users set up with Helius: creating accounts, obtaining API keys, underst
 | MCP Tool | What It Does |
 |---|---|
 | `setHeliusApiKey` | Configure an existing API key for the session (validates against `getBlockHeight`) |
-| `generateKeypair` | Generate or load a Solana keypair for agentic signup (persists to `~/.helius-cli/keypair.json`) |
+| `generateKeypair` | Generate or load a Solana keypair for agentic signup (persists to `~/.helius/keypair.json`) |
 | `checkSignupBalance` | Check if the signup wallet has sufficient SOL + USDC |
 | `agenticSignup` | Create a Helius account, pay with USDC, auto-configure API key |
 | `getAccountStatus` | Check current plan, credits remaining, rate limits, billing cycle, burn-rate projections |
@@ -1733,7 +1733,7 @@ If the environment variable `HELIUS_API_KEY` is already set, no action is needed
 
 The fully autonomous signup flow, no browser needed:
 
-1. **`generateKeypair`** — generates a new Solana keypair (or loads an existing one from `~/.helius-cli/keypair.json`). Returns the wallet address.
+1. **`generateKeypair`** — generates a new Solana keypair (or loads an existing one from `~/.helius/keypair.json`). Returns the wallet address.
 2. **User funds the wallet** with:
    - ~0.001 SOL for transaction fees
    - 1 USDC for the basic plan (or more for paid plans: $49 Developer, $499 Business, $999 Professional)
@@ -1755,7 +1755,7 @@ Here, paid plans refers to `"developer"`, `"business"`, and `"professional"`
 The `helius-cli` provides the same autonomous signup from the terminal:
 
 ```bash
-# Generate keypair (saved to ~/.helius-cli/keypair.json)
+# Generate keypair (saved to ~/.helius/keypair.json)
 helius keygen
 
 # Fund the wallet, then sign up (pays 1 USDC for basic plan)
@@ -1879,7 +1879,7 @@ HELIUS_NETWORK=mainnet-beta          # or devnet (default: mainnet-beta)
 
 The MCP persists API keys and JWTs to shared config files so they survive across sessions:
 - **API key**: saved to shared config path (accessible by both MCP and CLI)
-- **Keypair**: saved to `~/.helius-cli/keypair.json`
+- **Keypair**: saved to `~/.helius/keypair.json`
 - **JWT**: saved to shared config for authenticated session features
 
 ### Installing the MCP

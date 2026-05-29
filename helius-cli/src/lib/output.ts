@@ -343,7 +343,7 @@ export const CLI_GUIDANCE: Record<string, string> = {
   PAYMENT_FAILED: 'The on-chain payment did not complete. Check your wallet balance and retry.',
   NOT_LOGGED_IN: 'Run `helius login` to authenticate, or `helius signup` to create a new account.',
   KEYPAIR_NOT_FOUND: 'Run `helius keygen` to generate a keypair first.',
-  NO_PROJECTS: 'Run `helius signup` to create your first project.',
+  NO_PROJECTS: 'Create a project in the dashboard at https://dashboard.helius.dev, or run `helius signup` if you do not have an account yet.',
   MULTIPLE_PROJECTS: 'Specify a project ID. Run `helius projects` to list them.',
   PROJECT_NOT_FOUND: 'Run `helius projects` to list available projects.',
   NO_API_KEYS: 'Run `helius apikeys create` to create an API key.',

@@ -100,7 +100,19 @@ export function registerAuthTools(server: McpServer) {
         '',
         '---',
         '',
-        '## Path B — Create a new account',
+        '## Path B — I have an existing dashboard.helius.dev account',
+        '',
+        'If you already signed up at https://dashboard.helius.dev (email, Google, GitHub, or SSO), run `helius login` in your terminal:',
+        '',
+        '```bash',
+        'npx helius-cli@latest login',
+        '```',
+        '',
+        'This opens your default browser to authenticate via OAuth/PKCE and writes a session token to `~/.helius/config.json`. This MCP picks it up automatically — no further setup. Then call `setHeliusApiKey` with one of your keys (visible via `helius apikeys`), or just call `getAccountStatus` to confirm the session.',
+        '',
+        '---',
+        '',
+        '## Path C — Create a new account',
         '',
         'The signup is fully autonomous — no browser needed. It takes ~2 minutes:',
         '',
@@ -144,7 +156,7 @@ export function registerAuthTools(server: McpServer) {
         '',
         '---',
         '',
-        '## Path C — Use the Helius CLI',
+        '## Path D — Use the Helius CLI (keypair/USDC flow)',
         '',
         'Same flow from the terminal:',
         '```',
@@ -421,8 +433,8 @@ export function registerAuthTools(server: McpServer) {
         const jwt = getJwt();
         if (!jwt) {
           return mcpError(
-            'Not authenticated. Call `agenticSignup` or authenticate first.',
-            { type: 'AUTH', code: 'NOT_AUTHENTICATED', retryable: false, recovery: 'Call `agenticSignup` to authenticate.' }
+            'Not authenticated. Call `agenticSignup`, or run `helius login` in your terminal if you have a dashboard.helius.dev account.',
+            { type: 'AUTH', code: 'NOT_AUTHENTICATED', retryable: false, recovery: 'Call `agenticSignup` to authenticate, or run `helius login` in your terminal if you already have a dashboard.helius.dev account.' }
           );
         }
 
@@ -517,8 +529,8 @@ export function registerAuthTools(server: McpServer) {
         const jwt = getJwt();
         if (!jwt) {
           return mcpError(
-            'Not authenticated. Call `agenticSignup` or authenticate first.',
-            { type: 'AUTH', code: 'NOT_AUTHENTICATED', retryable: false, recovery: 'Call `agenticSignup` to authenticate.' }
+            'Not authenticated. Call `agenticSignup`, or run `helius login` in your terminal if you have a dashboard.helius.dev account.',
+            { type: 'AUTH', code: 'NOT_AUTHENTICATED', retryable: false, recovery: 'Call `agenticSignup` to authenticate, or run `helius login` in your terminal if you already have a dashboard.helius.dev account.' }
           );
         }
 
@@ -719,8 +731,8 @@ export function registerAuthTools(server: McpServer) {
         const jwt = getJwt();
         if (!jwt) {
           return mcpError(
-            'Not authenticated. Call `agenticSignup` or authenticate first.',
-            { type: 'AUTH', code: 'NOT_AUTHENTICATED', retryable: false, recovery: 'Call `agenticSignup` to authenticate.' }
+            'Not authenticated. Call `agenticSignup`, or run `helius login` in your terminal if you have a dashboard.helius.dev account.',
+            { type: 'AUTH', code: 'NOT_AUTHENTICATED', retryable: false, recovery: 'Call `agenticSignup` to authenticate, or run `helius login` in your terminal if you already have a dashboard.helius.dev account.' }
           );
         }
 

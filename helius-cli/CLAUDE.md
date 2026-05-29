@@ -32,7 +32,7 @@ src/
   lib/
     helius.ts          # SDK client wrapper — resolveApiKey(), getClient(), restRequest(), HeliusHttpError
     formatters.ts      # formatSol(), formatAddress(), formatTimestamp(), formatTable()
-    config.ts          # ~/.helius-cli/config.json — jwt, apiKey, network, projectId
+    config.ts          # ~/.helius/config.json — jwt, apiKey, network, projectId
     output.ts          # ExitCode enum, classifyError(), handleCommandError(), outputJson(), exitWithError()
     api.ts             # Helius management API (signup, projects, API keys)
     payment.ts         # USDC payment for signup
@@ -65,7 +65,7 @@ WebSocket commands (`ws.ts`) use a variant that preserves the AbortError early-r
 
 1. `--api-key <key>` CLI flag
 2. `HELIUS_API_KEY` environment variable
-3. `~/.helius-cli/config.json` → `apiKey` field
+3. `~/.helius/config.json` → `apiKey` field
 4. Auto-resolve from JWT: fetch project details → first API key
 
 ## Exit Code Ranges

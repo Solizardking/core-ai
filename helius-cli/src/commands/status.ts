@@ -25,7 +25,8 @@ export async function statusCommand(options: OutputOptions = {}): Promise<void> 
         exitWithError("NO_PROJECTS", "No projects found", undefined, true);
       }
       console.log(chalk.yellow("No projects found."));
-      console.log(chalk.gray("Run `helius signup` to create your first project."));
+      console.log(chalk.gray("Create a project in the dashboard at https://dashboard.helius.dev,"));
+      console.log(chalk.gray("or run `helius signup` if you don't have an account yet."));
       process.exit(ExitCode.NO_PROJECTS);
     }
 
