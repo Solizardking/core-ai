@@ -3,7 +3,7 @@ import type { AddressInfo } from "node:net";
 
 export interface LoopbackResult {
   port: number;
-  awaitCallback: (expectedState: string, timeoutMs: number) => Promise<string>;
+  awaitCallback: (timeoutMs: number) => Promise<string>;
   close: () => void;
 }
 
@@ -17,7 +17,13 @@ const ERROR_PAGE = (msg: string) =>
 
 /**
  * Starts an HTTP server bound to 127.0.0.1 on a random port (RFC 8252 §7.3).
- * Resolves when the browser hits `/oauth/callback` with a `code` and matching `state`.
+ * Resolves when the browser hits `/oauth/callback` with a `code` and a `state`
+ * matching `expectedState`.
+ *
+ * `state` is validated inside the request handler — not later — so the browser
+ * reflects the real outcome (a mismatch serves the error page, not "Logged in")
+ * and an early bad hit can't poison the flow. `awaitCallback` resolves to the
+ * raw authorization `code` (no encoding assumptions about its charset).
  *
  * The returned `awaitCallback` rejects on:
  *   - `OAUTH_ERROR:<error>` if the callback URL includes an `error` param
@@ -25,7 +31,7 @@ const ERROR_PAGE = (msg: string) =>
  *   - `STATE_MISMATCH` if the returned state doesn't match the expected value
  *   - `TIMEOUT` if no callback arrives within the timeout
  */
-export async function startLoopback(): Promise<LoopbackResult> {
+export async function startLoopback(expectedState: string): Promise<LoopbackResult> {
   const server: Server = createServer();
   let resolveCb!: (value: string) => void;
   let rejectCb!: (err: Error) => void;
@@ -44,22 +50,30 @@ export async function startLoopback(): Promise<LoopbackResult> {
     const state = url.searchParams.get("state");
     const error = url.searchParams.get("error");
 
+    // Serve an error page + reject, closing the connection so `helius login`
+    // returns immediately rather than waiting on a keep-alive socket.
+    const fail = (msg: string, err: Error) => {
+      res.writeHead(400, { "Content-Type": "text/html", Connection: "close" });
+      res.end(ERROR_PAGE(msg));
+      rejectCb(err);
+    };
+
     if (error) {
-      res.writeHead(400, { "Content-Type": "text/html" });
-      res.end(ERROR_PAGE(error));
-      rejectCb(new Error(`OAUTH_ERROR:${error}`));
+      fail(error, new Error(`OAUTH_ERROR:${error}`));
       return;
     }
     if (!code) {
-      res.writeHead(400, { "Content-Type": "text/html" });
-      res.end(ERROR_PAGE("missing authorization code"));
-      rejectCb(new Error("NO_CODE"));
+      fail("missing authorization code", new Error("NO_CODE"));
+      return;
+    }
+    if (state !== expectedState) {
+      fail("state mismatch — possible CSRF, please retry", new Error("STATE_MISMATCH"));
       return;
     }
 
-    res.writeHead(200, { "Content-Type": "text/html" });
+    res.writeHead(200, { "Content-Type": "text/html", Connection: "close" });
     res.end(SUCCESS_PAGE);
-    resolveCb(`${code}|${state ?? ""}`);
+    resolveCb(code);
   });
 
   await new Promise<void>((resolve, reject) => {
@@ -71,20 +85,22 @@ export async function startLoopback(): Promise<LoopbackResult> {
 
   return {
     port,
-    awaitCallback: async (expectedState, timeoutMs) => {
+    awaitCallback: async (timeoutMs) => {
       let timeoutHandle: NodeJS.Timeout | undefined;
       const timeoutPromise = new Promise<string>((_, rej) => {
         timeoutHandle = setTimeout(() => rej(new Error("TIMEOUT")), timeoutMs);
       });
       try {
-        const result = await Promise.race([cbPromise, timeoutPromise]);
-        const [code, state] = result.split("|");
-        if (state !== expectedState) throw new Error("STATE_MISMATCH");
-        return code;
+        return await Promise.race([cbPromise, timeoutPromise]);
       } finally {
         if (timeoutHandle) clearTimeout(timeoutHandle);
       }
     },
-    close: () => server.close(),
+    // Stop accepting connections and tear down idle keep-alive sockets
+    // (Node 18.2+) so the process can exit without waiting on a timeout.
+    close: () => {
+      server.close();
+      server.closeAllConnections?.();
+    },
   };
 }

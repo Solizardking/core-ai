@@ -247,12 +247,15 @@ export function classifyError(error: unknown): ErrorClassification {
     return classifyByStatus(error.status);
   }
 
-  // Tier 2 — HTTP status embedded in message (Enhanced TX and webhooks SDK paths)
-  // Matches: "Helius HTTP 429: ..." or "HTTP error! status: 429 - ..."
+  // Tier 2 — HTTP status embedded in message (Enhanced TX, webhooks, and auth SDK paths)
+  // Matches: "Helius HTTP 429: ...", "HTTP error! status: 429 - ...", or
+  // "API error (429): ..." (helius-sdk/auth authRequest — signup, projects, oauth)
   const heliusMatch = msg.match(/Helius HTTP (\d+):/);
   const webhookMatch = msg.match(/HTTP error! status: (\d+)/);
+  const authApiMatch = msg.match(/API error \((\d+)\)/);
   const embeddedStatus = heliusMatch ? parseInt(heliusMatch[1], 10)
     : webhookMatch ? parseInt(webhookMatch[1], 10)
+    : authApiMatch ? parseInt(authApiMatch[1], 10)
     : null;
   if (embeddedStatus !== null) {
     return classifyByStatus(embeddedStatus);

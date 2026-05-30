@@ -8,6 +8,7 @@ import {
   outputJson,
   handleCommandError,
   createSpinner,
+  classifyError,
   type OutputOptions,
 } from "../lib/output.js";
 
@@ -42,7 +43,11 @@ export async function loginCommand(options: LoginOptions): Promise<void> {
         }
         console.log(chalk.green(`✓ Already logged in as ${chalk.cyan(label)}.`));
         return;
-      } catch {
+      } catch (probeError) {
+        // Only a genuine auth failure (revoked/expired JWT → 401/403) should
+        // silently fall through to a fresh login. Transient failures (network,
+        // 5xx, rate limit) must surface rather than forcing a confusing re-login.
+        if (classifyError(probeError).errorCode !== "INVALID_API_KEY") throw probeError;
         // JWT invalid/revoked — fall through to fresh login.
       }
     }
@@ -51,7 +56,7 @@ export async function loginCommand(options: LoginOptions): Promise<void> {
     const state = generateState();
 
     spinner?.start("Starting local server...");
-    const loopback = await startLoopback();
+    const loopback = await startLoopback(state);
     spinner?.succeed(`Listening on http://127.0.0.1:${loopback.port}`);
 
     const redirectUri = `http://127.0.0.1:${loopback.port}/oauth/callback`;
@@ -82,7 +87,7 @@ export async function loginCommand(options: LoginOptions): Promise<void> {
     spinner?.start("Waiting for browser confirmation...");
     let code: string;
     try {
-      code = await loopback.awaitCallback(state, LOGIN_TIMEOUT_MS);
+      code = await loopback.awaitCallback(LOGIN_TIMEOUT_MS);
     } finally {
       loopback.close();
     }

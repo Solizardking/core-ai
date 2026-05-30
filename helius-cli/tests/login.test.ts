@@ -215,4 +215,46 @@ describe("loginCommand", () => {
     expect(stdout).toContain("Already logged in as");
     expect(exitCode).toBeUndefined();
   });
+
+  it("stale JWT (auth failure): falls through to a fresh login", async () => {
+    getJwtMock.mockReturnValue("header.payload.sig");
+    // Revoked/expired JWT — auth SDK throws "API error (401): ..." → INVALID_API_KEY.
+    listProjectsMock.mockRejectedValue(new Error("API error (401): unauthorized"));
+    oauthTokenExchangeMock.mockResolvedValue({
+      access_token: "FRESH_JWT",
+      token_type: "Bearer",
+      expires_in: 7 * 24 * 3600,
+      user: { id: "u", email: "e@x.com" },
+    });
+
+    const loginPromise = run({ browser: false });
+
+    let port: number | undefined;
+    for (let i = 0; i < 50 && !port; i++) {
+      await new Promise((r) => setTimeout(r, 20));
+      const m = stdout.match(/127\.0\.0\.1(?::|%3A)(\d+)/);
+      if (m) port = Number(m[1]);
+    }
+    expect(port).toBeDefined();
+    const state = stdout.match(/state=([A-Za-z0-9_-]+)/)?.[1];
+
+    await hitCallback(port!, { code: "AUTH_CODE", state: state! });
+    await loginPromise;
+
+    // Stale token discarded, fresh login completed.
+    expect(setJwtMock).toHaveBeenCalledWith("FRESH_JWT");
+    expect(exitCode).toBeUndefined();
+  });
+
+  it("transient probe failure: surfaces instead of silently re-logging in", async () => {
+    getJwtMock.mockReturnValue("header.payload.sig");
+    // 5xx during the already-logged-in probe → SERVER_ERROR (exit 57), not a re-login.
+    listProjectsMock.mockRejectedValue(new Error("API error (500): boom"));
+
+    await run({ browser: false });
+
+    expect(oauthTokenExchangeMock).not.toHaveBeenCalled();
+    expect(setJwtMock).not.toHaveBeenCalled();
+    expect(exitCode).toBe(57);
+  });
 });
