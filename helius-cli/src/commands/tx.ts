@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import type { GetEnhancedTransactionsByAddressRequest } from "helius-sdk/enhanced/types";
 import { setupClient, type ResolveOptions } from "../lib/helius.js";
 import { formatSol, formatTimestamp, formatAddress, formatEnumLabel } from "../lib/formatters.js";
 import { outputJson, exitWithError, handleCommandError, createSpinner, withRetry, type OutputOptions, type RetryOptions } from "../lib/output.js";
@@ -63,9 +64,10 @@ export async function txHistoryCommand(address: string, options: TxOptions & { l
     const addrErr = validateAddress(address);
     if (addrErr) exitWithError("INVALID_ADDRESS", addrErr, undefined, !!options.json);
     const helius = await setupClient(spinner, options, "Fetching transaction history...");
-    const params: any = { address };
+    const params: GetEnhancedTransactionsByAddressRequest = { address };
     if (options.limit) params.limit = parseInt(options.limit, 10);
-    if (options.before) params.before = options.before;
+    // SDK ignores unknown keys; `before` was a silent no-op (see enhanced-transactions docs).
+    if (options.before) params.beforeSignature = options.before;
     if (options.type) params.type = options.type;
     const result = await withRetry(() => helius.enhanced.getTransactionsByAddress(params), options, spinner);
     spinner?.stop();
