@@ -15,6 +15,14 @@ To maintain high standards of quality, readability, and performance, code should
 - **Documentation**: Update documentation if your changes affect how the MCP server is used.
 - **Testing**: Add or update tests for any new or modified functionality. Run the full test suite before submitting.
 
+## Signing Your Commits (Required)
+
+**All commits must be signed and verified.** Pull requests containing unsigned or unverified commits will fail CI and cannot be merged. Follow GitHub's official guide to set up commit signing (GPG or SSH):
+
+👉 **https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits**
+
+Once configured, enable automatic signing with `git config --global commit.gpgsign true` and confirm your commits show a **Verified** badge on GitHub. See the [repo-wide contributing guide](../CONTRIBUTING.md#signing-your-commits-required) for the full walkthrough.
+
 ## Pull Requests
 
 Pull Requests are the best way to propose changes. We actively welcome all contributions! To contribute:
