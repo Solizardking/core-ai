@@ -11,9 +11,15 @@ const SUCCESS_PAGE =
   "<!doctype html><html><body style=\"font-family: -apple-system, system-ui, sans-serif; max-width: 480px; margin: 80px auto; text-align: center;\">" +
   "<h1>Logged in</h1><p>You can close this tab and return to your terminal.</p></body></html>";
 
+// `msg` can carry the attacker-controllable OAuth `error` query param — always escape.
+const escapeHtml = (s: string): string =>
+  s.replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+  );
+
 const ERROR_PAGE = (msg: string) =>
   "<!doctype html><html><body style=\"font-family: -apple-system, system-ui, sans-serif; max-width: 480px; margin: 80px auto; text-align: center;\">" +
-  `<h1>Login failed</h1><p>${msg}</p><p>Return to your terminal for details.</p></body></html>`;
+  `<h1>Login failed</h1><p>${escapeHtml(msg)}</p><p>Return to your terminal for details.</p></body></html>`;
 
 /**
  * Starts an HTTP server bound to 127.0.0.1 on a random port (RFC 8252 §7.3).

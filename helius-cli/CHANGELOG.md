@@ -1,17 +1,5 @@
 # Changelog
 
-> **⚠️ Before merging v2.0.0 / publishing to npm:** this release depends on
-> `oauthTokenExchange`, `HELIUS_API_URL` env override, and JSON error parsing
-> being available in `helius-sdk`. Those land in a separate SDK PR. Sequence:
->
-> 1. Merge & publish the `helius-sdk` PR (new minor/major).
-> 2. Bump `helius-sdk` dep in `package.json` from `^2.2.2` to the new version.
-> 3. Verify `pnpm build` succeeds, then publish `helius-cli` v2.0.0.
->
-> Pre-existing build errors in `src/commands/signup.ts` and `src/lib/checkout.ts`
-> reference SDK functions (`agenticSignup`, `executeCheckout`, etc.) that were
-> removed in a separate, unrelated SDK migration — out of scope for this PR.
-
 ## 2.0.0 — Breaking change: OAuth/PKCE login
 
 `helius login` now opens your browser to authenticate via dashboard.helius.dev, instead of signing a message with a local Solana keypair.

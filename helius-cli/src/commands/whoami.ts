@@ -6,6 +6,7 @@ import {
   outputJson,
   handleCommandError,
   createSpinner,
+  classifyError,
   type OutputOptions,
 } from "../lib/output.js";
 
@@ -87,7 +88,11 @@ export async function whoamiCommand(options: WhoamiOptions): Promise<void> {
         await listProjects(jwt);
         serverVerified = true;
         spinner?.succeed("Token accepted by backend");
-      } catch {
+      } catch (verifyError) {
+        // Only a genuine auth failure (revoked/expired JWT → 401/403) means the
+        // token was rejected. Transient failures (network, 5xx, rate limit) must
+        // surface as their own error rather than reading as a bad token.
+        if (classifyError(verifyError).errorCode !== "INVALID_API_KEY") throw verifyError;
         serverVerified = false;
         spinner?.fail("Token rejected by backend");
       }
