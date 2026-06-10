@@ -110,13 +110,23 @@ export function registerAuthTools(server: McpServer) {
       // No API key — need to set up
       lines.push(
         '',
-        'You need a Helius API key to use these tools. Two paths:',
+        'You need a Helius API key to use these tools. Three paths:',
         '',
         '## Path A — I already have an API key',
         '',
         'Call `setHeliusApiKey` with your key from https://dashboard.helius.dev. All tools immediately available.',
         '',
-        '## Path B — Create a new account via crypto checkout',
+        '## Path B — I have an existing dashboard.helius.dev account',
+        '',
+        'If you already signed up at https://dashboard.helius.dev (email, Google, GitHub, or SSO), run `helius login` in your terminal:',
+        '',
+        '```bash',
+        'npx helius-cli@latest login',
+        '```',
+        '',
+        'This opens your default browser to authenticate via OAuth/PKCE and writes a session token to `~/.helius/config.json`. This MCP picks it up automatically — no further setup. Then call `setHeliusApiKey` with one of your keys (visible via `helius apikeys`), or just call `getAccountStatus` to confirm the session.',
+        '',
+        '## Path C — Create a new account via crypto checkout',
         '',
         '1. Call `generateKeypair` to create (or load) a Solana wallet — required for every signup mode, including link mode (the wallet address is bound to the payment intent).',
         '2. Call `signup` with your email/name. By default (`mode: "link"`) it returns a hosted-checkout URL the user can open in a browser to pay with any wallet.',
@@ -396,11 +406,11 @@ export function registerAuthTools(server: McpServer) {
       try {
         const jwt = getJwt();
         if (!jwt) {
-          return mcpError('Not authenticated. Call `signup` first.', {
+          return mcpError('Not authenticated. Call `signup`, or run `helius login` in your terminal if you have a dashboard.helius.dev account.', {
             type: 'AUTH',
             code: 'NOT_AUTHENTICATED',
             retryable: false,
-            recovery: 'Call `signup`.',
+            recovery: 'Call `signup`, or run `helius login` in your terminal if you already have a dashboard.helius.dev account.',
           });
         }
 
@@ -463,11 +473,11 @@ export function registerAuthTools(server: McpServer) {
       try {
         const jwt = getJwt();
         if (!jwt) {
-          return mcpError('Not authenticated. Call `signup` first.', {
+          return mcpError('Not authenticated. Call `signup`, or run `helius login` in your terminal if you have a dashboard.helius.dev account.', {
             type: 'AUTH',
             code: 'NOT_AUTHENTICATED',
             retryable: false,
-            recovery: 'Call `signup`.',
+            recovery: 'Call `signup`, or run `helius login` in your terminal if you already have a dashboard.helius.dev account.',
           });
         }
 
@@ -540,11 +550,11 @@ export function registerAuthTools(server: McpServer) {
       try {
         const jwt = getJwt();
         if (!jwt) {
-          return mcpError('Not authenticated. Call `signup` first.', {
+          return mcpError('Not authenticated. Call `signup`, or run `helius login` in your terminal if you have a dashboard.helius.dev account.', {
             type: 'AUTH',
             code: 'NOT_AUTHENTICATED',
             retryable: false,
-            recovery: 'Call `signup`.',
+            recovery: 'Call `signup`, or run `helius login` in your terminal if you already have a dashboard.helius.dev account.',
           });
         }
 
@@ -622,11 +632,11 @@ export function registerAuthTools(server: McpServer) {
       try {
         const jwt = getJwt();
         if (!jwt) {
-          return mcpError('Not authenticated. Call `signup` first.', {
+          return mcpError('Not authenticated. Call `signup`, or run `helius login` in your terminal if you have a dashboard.helius.dev account.', {
             type: 'AUTH',
             code: 'NOT_AUTHENTICATED',
             retryable: false,
-            recovery: 'Call `signup`.',
+            recovery: 'Call `signup`, or run `helius login` in your terminal if you already have a dashboard.helius.dev account.',
           });
         }
 

@@ -247,12 +247,15 @@ export function classifyError(error: unknown): ErrorClassification {
     return classifyByStatus(error.status);
   }
 
-  // Tier 2 — HTTP status embedded in message (Enhanced TX and webhooks SDK paths)
-  // Matches: "Helius HTTP 429: ..." or "HTTP error! status: 429 - ..."
+  // Tier 2 — HTTP status embedded in message (Enhanced TX, webhooks, and auth SDK paths)
+  // Matches: "Helius HTTP 429: ...", "HTTP error! status: 429 - ...", or
+  // "API error (429): ..." (helius-sdk/auth authRequest — signup, projects, oauth)
   const heliusMatch = msg.match(/Helius HTTP (\d+):/);
   const webhookMatch = msg.match(/HTTP error! status: (\d+)/);
+  const authApiMatch = msg.match(/API error \((\d+)\)/);
   const embeddedStatus = heliusMatch ? parseInt(heliusMatch[1], 10)
     : webhookMatch ? parseInt(webhookMatch[1], 10)
+    : authApiMatch ? parseInt(authApiMatch[1], 10)
     : null;
   if (embeddedStatus !== null) {
     return classifyByStatus(embeddedStatus);
@@ -343,7 +346,7 @@ export const CLI_GUIDANCE: Record<string, string> = {
   PAYMENT_FAILED: 'The on-chain payment did not complete. Check your wallet balance and retry.',
   NOT_LOGGED_IN: 'Run `helius login` to authenticate, or `helius signup` to create a new account.',
   KEYPAIR_NOT_FOUND: 'Run `helius keygen` to generate a keypair first.',
-  NO_PROJECTS: 'Run `helius signup` to create your first project.',
+  NO_PROJECTS: 'Create a project in the dashboard at https://dashboard.helius.dev, or run `helius signup` if you do not have an account yet.',
   MULTIPLE_PROJECTS: 'Specify a project ID. Run `helius projects` to list them.',
   PROJECT_NOT_FOUND: 'Run `helius projects` to list available projects.',
   NO_API_KEYS: 'Run `helius apikeys create` to create an API key.',

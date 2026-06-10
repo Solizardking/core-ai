@@ -5,6 +5,11 @@ import { createProject as sdkCreateProject } from "helius-sdk/auth/createProject
 import { listProjects as sdkListProjects } from "helius-sdk/auth/listProjects";
 import { getProject as sdkGetProject } from "helius-sdk/auth/getProject";
 import { createApiKey as sdkCreateApiKey } from "helius-sdk/auth/createApiKey";
+import {
+  oauthTokenExchange as sdkOAuthTokenExchange,
+  type OAuthTokenResponse,
+  type OAuthTokenExchangeArgs,
+} from "helius-sdk/auth/oauthTokenExchange";
 import { signup as sdkSignup } from "helius-sdk/auth/signup";
 import { signupAndPay as sdkSignupAndPay } from "helius-sdk/auth/signupAndPay";
 import { payPaymentLink as sdkPayPaymentLink } from "helius-sdk/auth/payPaymentLink";
@@ -148,6 +153,12 @@ export async function payRenewalAndPay(
   return sdkPayRenewalAndPay(secretKey, jwt, paymentIntentId, options);
 }
 
+export async function oauthTokenExchange(
+  options: Omit<OAuthTokenExchangeArgs, "userAgent">,
+): Promise<OAuthTokenResponse> {
+  return sdkOAuthTokenExchange({ ...options, userAgent: CLI_USER_AGENT });
+}
+
 export type {
   Project,
   ProjectListItem,
@@ -175,3 +186,5 @@ export type {
   PayRenewalResult,
   PayRenewalAndPayResult,
 } from "helius-sdk/auth/types";
+
+export type { OAuthTokenResponse, OAuthTokenExchangeArgs } from "helius-sdk/auth/oauthTokenExchange";

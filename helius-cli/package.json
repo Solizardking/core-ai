@@ -1,7 +1,7 @@
 {
   "name": "helius-cli",
-  "version": "1.3.0",
-  "description": "CLI to create free Helius accounts and manage projects",
+  "version": "2.0.0",
+  "description": "CLI to create and manage Helius accounts, with OAuth/PKCE browser-based login",
   "homepage": "https://www.helius.dev/cli.md",
   "repository": {
     "type": "git",

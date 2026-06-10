@@ -152,6 +152,12 @@ export function setJwt(jwt: string): void {
   save(config);
 }
 
+export function clearJwt(): void {
+  const config = load();
+  delete config.jwt;
+  save(config);
+}
+
 export function getApiKey(): string | undefined {
   return load().apiKey;
 }

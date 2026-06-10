@@ -1225,7 +1225,7 @@ Getting users set up with Helius: creating accounts, obtaining API keys, underst
 | MCP Tool | What It Does |
 |---|---|
 | `setHeliusApiKey` | Configure an existing API key for the session (validates against `getBlockHeight`) |
-| `generateKeypair` | Generate or load a Solana keypair for signup (persists to `~/.helius-cli/keypair.json`) |
+| `generateKeypair` | Generate or load a Solana keypair for signup (persists to `~/.helius/keypair.json`) |
 | `signup` | Create a Helius account via hosted payment link (`mode: "link"`), or pay USDC directly from the local keypair (`mode: "autopay"`), or finalize a previously-created intent (`mode: "resume"`) |
 | `getAccountStatus` | Check current plan, credits remaining, rate limits, billing cycle, burn-rate projections |
 | `getHeliusPlanInfo` | View plan details — pricing, credits, rate limits, features |
@@ -1277,7 +1277,7 @@ If the wallet already has an account on the same plan, `signup` detects it and r
 The `helius-cli` provides the same flow from the terminal:
 
 ```bash
-# Generate keypair (saved to ~/.helius-cli/keypair.json)
+# Generate keypair (saved to ~/.helius/keypair.json)
 helius keygen
 
 # Print a hosted payment link (default)
@@ -1419,7 +1419,7 @@ HELIUS_PAYMENT_HOST=https://dashboard.helius.dev   # override hosted-link host (
 
 The MCP persists API keys and JWTs to shared config files so they survive across sessions:
 - **API key**: saved to shared config path (accessible by both MCP and CLI)
-- **Keypair**: saved to `~/.helius-cli/keypair.json`
+- **Keypair**: saved to `~/.helius/keypair.json`
 - **JWT**: saved to shared config for authenticated session features
 - **Pending payment intent**: link-mode signup persists the pending intent so `mode: "resume"` (or `helius signup --resume`) can finalize after the user pays in the browser
 
