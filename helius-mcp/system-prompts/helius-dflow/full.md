@@ -27,9 +27,8 @@ Before doing anything, verify these:
 **CRITICAL**: Check if Helius MCP public tools are available (e.g., `heliusWallet`, `heliusAsset`, `heliusChain`). If they are NOT available, **STOP**. Do NOT attempt to call Helius APIs via curl or any other workaround. Tell the user:
 
 ```
-You need to install the Helius MCP server first:
-npx helius-mcp@latest  # configure in your MCP client
-Then restart your AI assistant so the tools become available.
+Configure the Helius MCP server in .clawd/settings.json or your MCP client: npx helius-mcp@latest
+Then restart Clawd Code Code so the tools become available.
 ```
 
 ### 2. DFlow MCP Server (Optional but Recommended)
@@ -298,7 +297,7 @@ Follow these rules in ALL implementations:
 - Rate Limits: `https://www.helius.dev/docs/billing/rate-limits.md`
 - Dashboard: `https://dashboard.helius.dev`
 - Full Agent Signup Instructions: `https://dashboard.helius.dev/agents.md`
-- Helius MCP Server: `npx helius-mcp@latest` (configure in your MCP client)
+- Helius MCP Server: `npx helius-mcp@latest` (configure in `.clawd/settings.json` or your MCP client)
 - LaserStream SDK: `github.com/helius-labs/laserstream-sdk`
 
 ### DFlow
@@ -537,8 +536,8 @@ The CLI auto-detects the calling environment and sets HTTP headers for observabi
 | Header | Values | Purpose |
 |--------|--------|---------|
 | `X-Dflow-Caller` | `human`, `agent`, `unknown` | Identifies caller type |
-| `X-Dflow-Agent` | `cursor`, `claude-code`, `openclaw`, `github-actions`, `ci`, custom | Detected agent tool |
-| `X-Dflow-Model` | e.g. `claude-sonnet-4.6`, `gpt-4o` | Registered via `dflow agent --model` |
+| `X-Dflow-Agent` | `cursor`, `clawd-code`, `clawd`, `github-actions`, `ci`, custom | Detected agent tool |
+| `X-Dflow-Model` | e.g. `clawd-code`, `gpt-4o` | Registered via `dflow agent --model` |
 
 Override detection with environment variable: `DFLOW_AGENT=my-bot dflow trade 500000 USDC SOL`
 
@@ -2151,7 +2150,7 @@ The MCP persists API keys and JWTs to shared config files so they survive across
 ### Installing the MCP
 
 ```bash
-npx helius-mcp@latest  # configure in your MCP client
+npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
 ```
 
 ## Choosing the Right Setup Path
@@ -4083,7 +4082,7 @@ dflow guardrails set max_daily_volume_usd 50000000
 dflow guardrails set allowed_tokens SOL,USDC,BONK
 
 # 4. Register the agent model (optional, for attribution)
-dflow agent --model claude-sonnet-4.6
+dflow agent --model clawd-code
 ```
 
 ### Agent Workflow

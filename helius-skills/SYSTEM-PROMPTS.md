@@ -10,7 +10,7 @@ Skills follow a 3-layer prompt architecture:
 
 | Layer | What | Where |
 |-------|------|-------|
-| **A: Harness** | Agent/runtime-specific behavior and tool rules | `AGENTS.md` (Codex), preamble in prompt variants (API), built-in (Claude Code) |
+| **A: Harness** | Agent/runtime-specific behavior and tool rules | `AGENTS.md` (Clawd), preamble in prompt variants (API), built-in (Clawd Code) |
 | **B: Skills** | Canonical, reusable, model-agnostic procedures | `SKILL.md` files in `helius-skills/` |
 | **C: Task** | User request + dynamic context | Provided at runtime by each platform |
 
@@ -22,17 +22,17 @@ Each skill ships with three prompt variants in `prompts/`:
 
 | File | Use case | Format |
 |------|----------|--------|
-| `openai.developer.md` | OpenAI Responses / Chat Completions API | Layer A preamble + skill content with `=== BEGIN SKILL ===` delimiters |
-| `claude.system.md` | Claude API system prompt | Layer A preamble + skill content with delimiters |
+| `clawd.developer.md` | OpenAI Responses / Chat Completions API | Layer A preamble + skill content with `=== BEGIN SKILL ===` delimiters |
+| `clawd.system.md` | Clawd API system prompt | Layer A preamble + skill content with delimiters |
 | `full.md` | Cursor Rules, ChatGPT custom instructions, other tools | All reference files inlined, no external dependencies |
 
 Find these in:
 - **Repo**: `.agents/skills/<skill>/prompts/`
 - **npm package**: `helius-mcp/system-prompts/<skill>/`
 
-## Codex CLI
+## Clawd CLI
 
-Codex auto-discovers skills from `.agents/skills/` in the repo root.
+Clawd auto-discovers skills from `.agents/skills/` in the repo root.
 
 ### Setup
 
@@ -44,7 +44,7 @@ Codex auto-discovers skills from `.agents/skills/` in the repo root.
 
 2. Configure the MCP server:
    ```bash
-   # Add helius-mcp as a tool source in your Codex configuration
+   # Add helius-mcp as a tool source in your Clawd configuration
    npx helius-mcp@latest
    ```
 
@@ -53,11 +53,11 @@ Codex auto-discovers skills from `.agents/skills/` in the repo root.
    export HELIUS_API_KEY=your-api-key
    ```
 
-4. Run Codex — it reads `AGENTS.md` and discovers `.agents/skills/` automatically.
+4. Run Clawd — it reads `AGENTS.md` and discovers `.agents/skills/` automatically.
 
 ### Skill Discovery
 
-Codex discovers skills based on name and description in the SKILL.md frontmatter. Skills are triggered implicitly when your task matches the description, or explicitly with `$helius`, `$helius-dflow`, `$helius-phantom`, `$svm`.
+Clawd discovers skills based on name and description in the SKILL.md frontmatter. Skills are triggered implicitly when your task matches the description, or explicitly with `$helius`, `$helius-dflow`, `$helius-phantom`, `$svm`.
 
 ### Installing into Your Project
 
@@ -69,7 +69,7 @@ cp -r /path/to/core-ai/.agents/ your-project/
 
 ## OpenAI API (Responses / Chat Completions)
 
-Use `openai.developer.md` as a `developer` message (preferred over `system` for procedural guidance).
+Use `clawd.developer.md` as a `developer` message (preferred over `system` for procedural guidance).
 
 ### Example — Responses API
 
@@ -79,7 +79,7 @@ from openai import OpenAI
 client = OpenAI()
 
 # Load the skill prompt
-with open(".agents/skills/helius/prompts/openai.developer.md") as f:
+with open(".agents/skills/helius/prompts/clawd.developer.md") as f:
     skill_prompt = f.read()
 
 response = client.responses.create(
@@ -96,7 +96,7 @@ from openai import OpenAI
 
 client = OpenAI()
 
-with open(".agents/skills/helius/prompts/openai.developer.md") as f:
+with open(".agents/skills/helius/prompts/clawd.developer.md") as f:
     skill_prompt = f.read()
 
 response = client.chat.completions.create(
@@ -112,22 +112,22 @@ response = client.chat.completions.create(
 
 If your OpenAI agent has MCP tools configured (via function calling), the skill prompt teaches the model which tools to use and when. Configure `helius-mcp` as a function-calling tool source in your agent framework.
 
-## Claude API
+## Clawd API
 
-Use `claude.system.md` as the system prompt.
+Use `clawd.system.md` as the system prompt.
 
 ### Example
 
 ```python
-import anthropic
+import clawd
 
-client = anthropic.Anthropic()
+client = clawd.Clawd()
 
-with open(".agents/skills/helius/prompts/claude.system.md") as f:
+with open(".agents/skills/helius/prompts/clawd.system.md") as f:
     skill_prompt = f.read()
 
 message = client.messages.create(
-    model="claude-sonnet-4-6-20250514",
+    model="clawd-code",
     max_tokens=4096,
     system=skill_prompt,
     messages=[
@@ -138,7 +138,7 @@ message = client.messages.create(
 
 ### With MCP Tools
 
-Claude supports MCP natively. Configure `helius-mcp` as an MCP tool source and the skill prompt provides routing logic for which tools to use.
+Clawd supports MCP natively. Configure `helius-mcp` as an MCP tool source and the skill prompt provides routing logic for which tools to use.
 
 ## Cursor Rules / ChatGPT Custom Instructions
 
@@ -168,9 +168,9 @@ If you want to convert a SKILL.md manually for a platform not listed above:
 
 ### What to Remove
 - `metadata:`, `mcp-server:`, `license:`, and `tags:` from YAML frontmatter (keep `name:` and `description:`)
-- `claude mcp add` commands → replace with generic MCP client instructions
+- `clawd mcp add` commands → replace with generic MCP client instructions
 - `/helius`, `/svm` slash-command references → replace with "the Helius skill" etc.
-- "restart Claude" → "restart your AI assistant"
+- "restart Clawd" → "restart your AI assistant"
 
 ### What to Transform
 - Enhance the `description:` field with when-to-use triggers for better implicit invocation

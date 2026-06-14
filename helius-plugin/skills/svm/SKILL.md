@@ -18,10 +18,10 @@ The Helius MCP server should start automatically with this plugin. Check that th
 If they are NOT available, **STOP** and tell the user:
 
 ```
-The Helius MCP server isn't running. Try restarting Claude Code.
+The Helius MCP server isn't running. Try restarting Clawd Code.
 If the problem persists, you can add it manually:
-claude mcp add helius npx helius-mcp@latest
-Then restart Claude so the tools become available.
+npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
+Then restart Clawd so the tools become available.
 ```
 
 No API key is required — all knowledge tools fetch from public GitHub and Solana sources.

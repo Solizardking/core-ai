@@ -15,7 +15,7 @@ You are an expert Solana developer building with Helius's infrastructure. Helius
 
 ### 1. Helius MCP Server
 
-**Recommended**: If Helius MCP tools are available (e.g., `heliusWallet`, `heliusAsset`), use them for live blockchain queries — they handle auth, pagination, and error handling automatically. If not available, suggest: `claude mcp add helius npx helius-mcp@latest` then restart Claude. Either way, continue with the task — all Helius functionality is also accessible via SDK and REST API.
+**Recommended**: If Helius MCP tools are available (e.g., `heliusWallet`, `heliusAsset`), use them for live blockchain queries — they handle auth, pagination, and error handling automatically. If not available, suggest: `npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client` then restart Clawd. Either way, continue with the task — all Helius functionality is also accessible via SDK and REST API.
 
 ### 2. MCP Router Surface
 
@@ -30,7 +30,28 @@ Examples:
 - `heliusStreaming({ action: "transactionSubscribe", accountInclude: ["..."] })`
 - `expandResult({ resultId: "..." })` to expand summary-first outputs
 
-### 3. API Key
+### 3. Light Protocol Skills for ZK Compression
+
+For compressed PDAs, compressed tokens, nullifiers, validity proofs, or custom ZK applications, install the upstream Light Protocol skills and use the ZK Compression docs MCP:
+
+```bash
+npx skills add Lightprotocol/skills
+```
+
+```json
+{
+  "mcpServers": {
+    "zkcompression": {
+      "type": "http",
+      "url": "https://www.zkcompression.com/mcp"
+    }
+  }
+}
+```
+
+Use the Helius `heliusCompression` MCP router for live indexed compression data and proofs. Use the Light Protocol skills for client/program implementation patterns (`@lightprotocol/stateless.js`, `@lightprotocol/compressed-token`, `light-client`, compressed PDA programs, and custom ZK apps).
+
+### 4. API Key
 
 If using MCP and a tool returns "API key not configured":
 
@@ -93,6 +114,14 @@ Enhanced WebSockets (Developer+) for most needs; Laserstream gRPC (Business+ mai
 **APIs**: Standard RPC (`getBalance`, `getAccountInfo`, `getBlock`), Token API (`getTokenBalances`, `getTokenAccounts`, `getTokenHolders`)
 **MCP tools** (if available): `getBalance`, `getTokenBalances`, `getAccountInfo`, `getTokenAccounts`, `getProgramAccounts`, `getTokenHolders`, `getBlock`, `getNetworkStatus`
 **When**: balance checks, account inspection, token holder distributions, block/network queries. No reference file needed.
+
+### ZK Compression / Light Protocol
+**Read**: `references/zk-compression.md`
+**Install skills**: `npx skills add Lightprotocol/skills`
+**Docs MCP**: `zkcompression` at `https://www.zkcompression.com/mcp`
+**APIs**: ZK Compression RPC, `@lightprotocol/stateless.js`, `@lightprotocol/compressed-token`, `light-client`
+**MCP tools** (if available): `getCompressedAccount`, `getCompressedAccountsByOwner`, `getMultipleCompressedAccounts`, `getCompressedBalance`, `getCompressedBalanceByOwner`, `getCompressedTokenAccountsByOwner`, `getCompressedTokenBalancesByOwnerV2`, `getCompressedAccountProof`, `getMultipleNewAddressProofs`, `getValidityProof`
+**When**: compressed accounts, compressed tokens, compressed PDAs, nullifiers, validity proofs, compressed state transaction building, custom ZK applications. Use Helius tools for live indexer/proof data and Light Protocol skills for implementation patterns.
 
 ### Transaction History & Parsing
 **Read**: `references/enhanced-transactions.md`

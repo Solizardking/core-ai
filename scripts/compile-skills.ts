@@ -4,7 +4,7 @@
  *
  * Reads canonical SKILL.md + references/ from helius-skills/<skill>/
  * Outputs to:
- *   .agents/skills/<skill>/           (Codex-native)
+ *   .agents/skills/<skill>/           (Clawd-native)
  *   helius-mcp/system-prompts/<skill>/ (npm-shipped)
  *
  * Usage: npx tsx scripts/compile-skills.ts
@@ -30,7 +30,7 @@ interface SkillConfig {
   dir: string;
   /** Directory name under helius-plugin/skills/ and helius-cursor/skills/ */
   pluginDir: string;
-  /** Enhanced multi-line description for Codex implicit invocation */
+  /** Enhanced multi-line description for Clawd implicit invocation */
   enhancedDescription: string;
 }
 
@@ -143,8 +143,8 @@ function injectVersion(frontmatter: string, version: string): string {
   return `${frontmatter}\nmetadata:\n  version: "${version}"`;
 }
 
-/** Build Codex-compatible frontmatter (name + enhanced description + version). */
-function buildCodexFrontmatter(name: string, enhancedDesc: string, version: string): string {
+/** Build Clawd-compatible frontmatter (name + enhanced description + version). */
+function buildClawdFrontmatter(name: string, enhancedDesc: string, version: string): string {
   return `---
 name: ${name}
 version: "${version}"
@@ -153,37 +153,37 @@ description: >
 ---`;
 }
 
-/** Strip Claude-specific language from body text. */
-function stripClaudeSpecific(body: string): string {
+/** Strip legacy assistant-specific language from body text. */
+function stripLegacyAssistantSpecific(body: string): string {
   let result = body;
 
-  // Replace "claude mcp add helius npx helius-mcp@latest" — inline backtick version
+  // Replace "npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client" — inline backtick version
   result = result.replace(
-    /`claude mcp add helius npx helius-mcp@latest`/g,
-    "`npx helius-mcp@latest` (configure in your MCP client)"
+    /`npx helius-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client`/g,
+    "`npx helius-mcp@latest` (configure in `.clawd/settings.json` or your MCP client)"
   );
 
-  // Replace bare "claude mcp add helius npx helius-mcp@latest" (inside code blocks)
+  // Replace bare "npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client" (inside code blocks)
   result = result.replace(
-    /^claude mcp add helius npx helius-mcp@latest$/gm,
-    "npx helius-mcp@latest  # configure in your MCP client"
+    /^npx helius-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client$/gm,
+    "npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client"
   );
 
-  // Replace multi-line code blocks with claude mcp add
+  // Replace multi-line code blocks with old assistant-specific MCP setup.
   result = result.replace(
-    /```\n(?:You need to install the Helius MCP server first:\n)?claude mcp add helius npx helius-mcp@latest\nThen restart Claude so the tools become available\.\n```/g,
-    "```\nConfigure the Helius MCP server in your MCP client: npx helius-mcp@latest\nThen restart your AI assistant so the tools become available.\n```"
+    /```\n(?:You need to install the Helius MCP server first:\n)?npx helius-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client\nThen restart Clawd so the tools become available\.\n```/g,
+    "```\nConfigure the Helius MCP server in .clawd/settings.json or your MCP client: npx helius-mcp@latest\nThen restart Clawd Code so the tools become available.\n```"
   );
 
   // Also handle the code block variant with leading text
   result = result.replace(
-    /```\nYou need to install the Helius MCP server first:\nclaude mcp add helius npx helius-mcp@latest\nThen restart Claude so the tools become available\.\n```/g,
-    "```\nConfigure the Helius MCP server in your MCP client: npx helius-mcp@latest\nThen restart your AI assistant so the tools become available.\n```"
+    /```\nYou need to install the Helius MCP server first:\nnpx helius-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client\nThen restart Clawd so the tools become available\.\n```/g,
+    "```\nConfigure the Helius MCP server in .clawd/settings.json or your MCP client: npx helius-mcp@latest\nThen restart Clawd Code so the tools become available.\n```"
   );
 
-  // Replace "claude mcp add" instructions for DFlow
+  // Replace old assistant-specific DFlow MCP setup.
   result = result.replace(
-    /It can also be installed by running the command `claude mcp add --transport http DFlow https:\/\/pond\.dflow\.net\/mcp`, or by being directly added to your project's `\.mcp\.json`:/g,
+    /It can also be installed by running the command `Configure DFlow MCP over HTTP: https:\/\/pond\.dflow\.net\/mcp`, or by being directly added to your project's `\.mcp\.json`:/g,
     "It can also be configured in your MCP client at `https://pond.dflow.net/mcp`, or by being directly added to your project's `.mcp.json`:"
   );
 
@@ -193,12 +193,13 @@ function stripClaudeSpecific(body: string): string {
   result = result.replace(/`\/helius`/g, "the Helius skill");
   result = result.replace(/`\/svm`/g, "the SVM skill");
 
-  // Replace "restart Claude" with generic
-  result = result.replace(/restart Claude/g, "restart your AI assistant");
+  // Replace legacy assistant restart language with Clawd Code language.
+  result = result.replace(/restart Clawd Code/g, "restart Clawd Code");
+  result = result.replace(/restart Clawd/g, "restart Clawd Code");
 
-  // Replace "Helius MCP Server: `claude mcp add helius npx helius-mcp@latest`" in Resources
+  // Replace "Helius MCP Server: `npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client`" in Resources
   result = result.replace(
-    /Helius MCP Server: `claude mcp add helius npx helius-mcp@latest`/g,
+    /Helius MCP Server: `npx helius-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client`/g,
     "Helius MCP Server: `npx helius-mcp@latest`"
   );
 
@@ -224,33 +225,33 @@ function renameHeadings(body: string): string {
   return result;
 }
 
-/** Build the OpenAI API preamble (Layer A harness for openai.developer.md). */
-function buildOpenAIPreamble(skillName: string, version: string): string {
+/** Build the Clawd developer preamble (Layer A harness for clawd.developer.md). */
+function buildClawdDeveloperPreamble(skillName: string, version: string): string {
   return `<!-- Generated from helius-skills/${skillName}/SKILL.md — do not edit -->
-<!-- OpenAI Responses / Chat Completions API — use as a \`developer\` message -->
+<!-- Clawd Code developer prompt — use as a Clawd runtime developer message -->
 <!-- Version: ${version} -->
 
 ## Runtime Notes
 
-- This skill is designed for the \`developer\` role message (preferred over \`system\` for procedural guidance)
-- MCP tools referenced below are available via function calling if you have configured \`helius-mcp\` as a tool source
+- This skill is designed for the Clawd Code developer layer
+- MCP tools referenced below are available when \`helius-mcp\` is configured in \`.clawd/settings.json\` or another MCP client
 - Structured output JSON can be enforced for automation via response_format
 - Reference files mentioned below are available in the skill directory or can be inlined from \`full.md\`
 
 `;
 }
 
-/** Build the Claude API preamble (Layer A harness for claude.system.md). */
-function buildClaudePreamble(skillName: string, version: string): string {
+/** Build the Clawd system preamble (Layer A harness for clawd.system.md). */
+function buildClawdSystemPreamble(skillName: string, version: string): string {
   return `<!-- Generated from helius-skills/${skillName}/SKILL.md — do not edit -->
-<!-- Claude API — use as a system prompt block -->
+<!-- Clawd Code system prompt block -->
 <!-- Version: ${version} -->
 
 ## Runtime Notes
 
 - This skill goes in the system prompt
-- MCP tools referenced below are available natively via Claude's MCP integration
-- Configure helius-mcp as an MCP tool source for live blockchain access
+- MCP tools referenced below are available through Clawd Code MCP integration
+- Configure helius-mcp in \`.clawd/settings.json\` as an MCP tool source for live blockchain access
 - Reference files mentioned below are available in the skill directory or can be inlined from \`full.md\`
 
 `;
@@ -292,11 +293,11 @@ function inlineReferences(body: string, refsDir: string): string {
     "**Reference**: See $1 (inlined below)"
   );
 
-  // Append all reference files at the end (with Claude-isms stripped)
+  // Append all reference files at the end (with legacy assistant references stripped)
   inlined += "\n\n---\n\n# Reference Files\n\n";
   for (const file of refFiles) {
     const raw = readFileSync(join(refsDir, file), "utf-8");
-    const cleaned = stripClaudeSpecific(raw);
+    const cleaned = stripLegacyAssistantSpecific(raw);
     inlined += `## ${file}\n\n${cleaned}\n\n---\n\n`;
   }
 
@@ -336,24 +337,24 @@ function compileSkill(config: SkillConfig): void {
   }
 
   // --- Apply transforms ---
-  let transformed = stripClaudeSpecific(body);
+  let transformed = stripLegacyAssistantSpecific(body);
   transformed = renameHeadings(transformed);
 
-  // --- Codex SKILL.md ---
-  const codexFrontmatter = buildCodexFrontmatter(name, config.enhancedDescription, version);
-  const codexSkillMd = `${codexFrontmatter}\n${transformed}`;
+  // --- Clawd SKILL.md ---
+  const clawdFrontmatter = buildClawdFrontmatter(name, config.enhancedDescription, version);
+  const clawdSkillMd = `${clawdFrontmatter}\n${transformed}`;
 
   // --- Prompt variants ---
   const compactBody = compactReferencePointers(transformed);
 
-  // openai.developer.md
-  const openaiContent =
-    buildOpenAIPreamble(config.dir, version) +
+  // clawd.developer.md
+  const clawdDeveloperContent =
+    buildClawdDeveloperPreamble(config.dir, version) +
     wrapWithDelimiters(name, compactBody);
 
-  // claude.system.md
-  const claudeContent =
-    buildClaudePreamble(config.dir, version) +
+  // clawd.system.md
+  const clawdSystemContent =
+    buildClawdSystemPreamble(config.dir, version) +
     wrapWithDelimiters(name, compactBody);
 
   // full.md (all references inlined, no frontmatter — targets Cursor Rules / ChatGPT)
@@ -369,10 +370,10 @@ function compileSkill(config: SkillConfig): void {
   mkdirSync(agentsPromptsDir, { recursive: true });
   mkdirSync(mcpSkillDir, { recursive: true });
 
-  // Codex SKILL.md
-  writeFileSync(join(agentsSkillDir, "SKILL.md"), generationHeader + codexSkillMd);
+  // Clawd SKILL.md
+  writeFileSync(join(agentsSkillDir, "SKILL.md"), generationHeader + clawdSkillMd);
 
-  // Copy reference files (with Claude-isms stripped)
+  // Copy reference files (with Clawd-isms stripped)
   if (existsSync(refsDir)) {
     const agentsRefsDir = join(agentsSkillDir, "references");
     mkdirSync(agentsRefsDir, { recursive: true });
@@ -381,7 +382,7 @@ function compileSkill(config: SkillConfig): void {
       const destPath = join(agentsRefsDir, file);
       if (file.endsWith(".md")) {
         const content = readFileSync(srcPath, "utf-8");
-        writeFileSync(destPath, stripClaudeSpecific(content));
+        writeFileSync(destPath, stripLegacyAssistantSpecific(content));
       } else {
         cpSync(srcPath, destPath);
       }
@@ -389,12 +390,12 @@ function compileSkill(config: SkillConfig): void {
   }
 
   // Prompt variants — both locations
-  writeFileSync(join(agentsPromptsDir, "openai.developer.md"), openaiContent);
-  writeFileSync(join(agentsPromptsDir, "claude.system.md"), claudeContent);
+  writeFileSync(join(agentsPromptsDir, "clawd.developer.md"), clawdDeveloperContent);
+  writeFileSync(join(agentsPromptsDir, "clawd.system.md"), clawdSystemContent);
   writeFileSync(join(agentsPromptsDir, "full.md"), fullContent);
 
-  writeFileSync(join(mcpSkillDir, "openai.developer.md"), openaiContent);
-  writeFileSync(join(mcpSkillDir, "claude.system.md"), claudeContent);
+  writeFileSync(join(mcpSkillDir, "clawd.developer.md"), clawdDeveloperContent);
+  writeFileSync(join(mcpSkillDir, "clawd.system.md"), clawdSystemContent);
   writeFileSync(join(mcpSkillDir, "full.md"), fullContent);
 
   // --- Sync version into plugin/cursor SKILL.md copies ---

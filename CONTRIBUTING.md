@@ -3,8 +3,8 @@
 Thank you for contributing to Helius Core AI! This monorepo houses several independent packages:
 
 - `helius-mcp/` — MCP server (npm: `helius-mcp`)
-- `helius-skills/` — Standalone Claude Code skill
-- `helius-plugin/` — Claude Code plugin
+- `helius-skills/` — Standalone Clawd Code skill
+- `helius-plugin/` — Clawd Code plugin
 - `helius-cursor/` — Cursor plugin
 - `helius-cli/` — CLI for account setup (npm: `helius-cli`)
 
@@ -61,7 +61,7 @@ git rebase --exec 'git commit --amend --no-edit -S' -i <base-branch>
 
 - Fork the repository and create a clearly scoped branch from `main` (e.g. `feat/my-feature`, `fix/bug-description`).
 - Make your changes, ensuring all commits are signed (see above).
-- Run the relevant package's build and tests before submitting (see that package's `CONTRIBUTING.md` or `CLAUDE.md`).
+- Run the relevant package's build and tests before submitting (see that package's `CONTRIBUTING.md` or `CLAWD.md`).
 - Open a pull request with a clear, conventional title (e.g. `feat(mcp): ...`, `fix(cli): ...`, `docs(skills): ...`) and reference any related issues (`Closes #1234`).
 
 ## License

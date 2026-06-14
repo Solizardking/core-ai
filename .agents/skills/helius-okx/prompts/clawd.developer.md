@@ -1,11 +1,11 @@
 <!-- Generated from helius-skills/helius-okx/SKILL.md — do not edit -->
-<!-- OpenAI Responses / Chat Completions API — use as a `developer` message -->
+<!-- Clawd Code developer prompt — use as a Clawd runtime developer message -->
 <!-- Version: 1.0.1 -->
 
 ## Runtime Notes
 
-- This skill is designed for the `developer` role message (preferred over `system` for procedural guidance)
-- MCP tools referenced below are available via function calling if you have configured `helius-mcp` as a tool source
+- This skill is designed for the Clawd Code developer layer
+- MCP tools referenced below are available when `helius-mcp` is configured in `.clawd/settings.json` or another MCP client
 - Structured output JSON can be enforced for automation via response_format
 - Reference files mentioned below are available in the skill directory or can be inlined from `full.md`
 
@@ -29,9 +29,8 @@ Before doing anything, verify these:
 **CRITICAL**: Check if Helius MCP tools are available (e.g., `getBalance`, `getAssetsByOwner`, `getPriorityFeeEstimate`). If they are NOT available, **STOP**. Do NOT attempt to call Helius APIs via curl or any other workaround. Tell the user:
 
 ```
-You need to install the Helius MCP server first:
-npx helius-mcp@latest  # configure in your MCP client
-Then restart your AI assistant so the tools become available.
+Configure the Helius MCP server in .clawd/settings.json or your MCP client: npx helius-mcp@latest
+Then restart Clawd Code Code so the tools become available.
 ```
 
 ### 2. OKX Skill Library (Required)
@@ -42,7 +41,7 @@ The OKX skill library provides the detailed domain knowledge for all OKX tools �
 npx skills add okx/onchainos-skills
 ```
 
-Or via the Claude Code plugin marketplace. See [github.com/okx/onchainos-skills](https://github.com/okx/onchainos-skills) for all installation options.
+Or via the Clawd Code plugin marketplace. See [github.com/okx/onchainos-skills](https://github.com/okx/onchainos-skills) for all installation options.
 
 ### 3. OKX CLI (`onchainos`)
 
@@ -170,7 +169,7 @@ Follow these rules when composing OKX + Helius:
 - LLM-Optimized Docs: `https://www.helius.dev/docs/llms.txt`
 - API Reference: `https://www.helius.dev/docs/api-reference`
 - Dashboard: `https://dashboard.helius.dev`
-- Helius MCP Server: `npx helius-mcp@latest` (configure in your MCP client)
+- Helius MCP Server: `npx helius-mcp@latest` (configure in `.clawd/settings.json` or your MCP client)
 - LaserStream SDK: `github.com/helius-labs/laserstream-sdk`
 
 ### OKX

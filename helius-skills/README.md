@@ -1,6 +1,6 @@
 # Helius Skills
 
-Standalone [Claude Code skills](https://docs.anthropic.com/en/docs/claude-code/skills) for building on Solana. Each skill is a self-contained directory — install it once and invoke it by name in any Claude Code session.
+Standalone [Clawd Code skills](https://docs.clawd.com/en/docs/clawd-code/skills) for building on Solana. Each skill is a self-contained directory — install it once and invoke it by name in any Clawd Code session.
 
 ## Skills
 
@@ -16,14 +16,14 @@ Standalone [Claude Code skills](https://docs.anthropic.com/en/docs/claude-code/s
 Each skill has its own `install.sh`:
 
 ```bash
-./helius/install.sh          # personal install (~/.claude/skills/)
-./helius/install.sh --project # project install (.claude/skills/)
+./helius/install.sh          # personal install (~/.clawd/skills/)
+./helius/install.sh --project # project install (.clawd/skills/)
 ```
 
 All skills require the Helius MCP server except `svm` (which uses public sources only):
 
 ```bash
-claude mcp add helius npx helius-mcp@latest
+npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
 ```
 
 Full installation instructions are in the [root README](../README.md#helius-skills).

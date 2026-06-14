@@ -10,7 +10,7 @@ Interested in contributing? Read the [contribution guide](https://github.com/hel
 
 ### 1. Add the MCP server
 
-Add to your MCP host's config (works with Claude, Cursor, Windsurf, and any MCP-compatible client):
+Add to your MCP host's config (works with Clawd, Cursor, Windsurf, and any MCP-compatible client):
 
 ```json
 {
@@ -23,10 +23,10 @@ Add to your MCP host's config (works with Claude, Cursor, Windsurf, and any MCP-
 }
 ```
 
-Or if you're using Claude Code:
+Or if you're using Clawd Code:
 
 ```bash
-claude mcp add helius npx helius-mcp@latest
+npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
 ```
 
 ### 2. Configure your API key
@@ -122,8 +122,8 @@ system-prompts/
 ```
 
 Each contains three variants:
-- `openai.developer.md` — for OpenAI Responses/Chat Completions API (`developer` message)
-- `claude.system.md` — for Claude API (system prompt)
+- `clawd.developer.md` — for OpenAI Responses/Chat Completions API (`developer` message)
+- `clawd.system.md` — for Clawd API (system prompt)
 - `full.md` — self-contained with all references inlined (Cursor Rules, ChatGPT, etc.)
 
 See [`helius-skills/SYSTEM-PROMPTS.md`](https://github.com/helius-labs/core-ai/blob/main/helius-skills/SYSTEM-PROMPTS.md) for integration guides and code examples.

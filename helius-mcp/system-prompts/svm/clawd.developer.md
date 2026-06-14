@@ -1,11 +1,11 @@
 <!-- Generated from helius-skills/svm/SKILL.md — do not edit -->
-<!-- OpenAI Responses / Chat Completions API — use as a `developer` message -->
+<!-- Clawd Code developer prompt — use as a Clawd runtime developer message -->
 <!-- Version: 1.0.0 -->
 
 ## Runtime Notes
 
-- This skill is designed for the `developer` role message (preferred over `system` for procedural guidance)
-- MCP tools referenced below are available via function calling if you have configured `helius-mcp` as a tool source
+- This skill is designed for the Clawd Code developer layer
+- MCP tools referenced below are available when `helius-mcp` is configured in `.clawd/settings.json` or another MCP client
 - Structured output JSON can be enforced for automation via response_format
 - Reference files mentioned below are available in the skill directory or can be inlined from `full.md`
 
@@ -21,9 +21,8 @@ You are a Solana protocol expert. Use the Helius MCP tools to fetch live content
 **CRITICAL**: Check that the Helius knowledge tools are available (`searchSolanaDocs`, `fetchHeliusBlog`, `getSIMD`, `readSolanaSourceFile`). If they are NOT available, **STOP** and tell the user:
 
 ```
-You need to install the Helius MCP server first:
-npx helius-mcp@latest  # configure in your MCP client
-Then restart your AI assistant so the tools become available.
+Configure the Helius MCP server in .clawd/settings.json or your MCP client: npx helius-mcp@latest
+Then restart Clawd Code Code so the tools become available.
 ```
 
 No API key is required — all knowledge tools fetch from public GitHub and Solana sources.

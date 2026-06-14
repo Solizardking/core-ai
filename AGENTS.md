@@ -1,38 +1,29 @@
-# Core AI — Agent Instructions
+# Core AI — Clawd Agent Instructions
 
-> This file is the Layer A harness for Codex CLI and other OpenAI-compatible agents.
+> This file is the Layer A harness for Clawd Code and other Clawd-compatible agents.
 > Skills in `.agents/skills/` provide the domain expertise (Layer B).
 
 ## Repository Overview
 
-This monorepo contains Helius developer tools for building on Solana:
+This monorepo contains Helius developer tools wrapped for Clawd Code:
 
 | Package | What it does |
 |---|---|
-| `helius-mcp/` | MCP server (`npx helius-mcp@latest`) — exposes 10 public tools total: 9 routed domain tools plus `expandResult` |
-| `helius-skills/` | Canonical skill source — SKILL.md + reference files for each domain |
-| `helius-plugin/` | Claude Code plugin — bundles skills + auto-starts MCP server |
-| `helius-cli/` | CLI for account setup, blockchain queries, and staking (`npx helius-cli@latest`) |
+| `helius-mcp/` | MCP server (`npx helius-mcp@latest`) — exposes 10 public tools total |
+| `helius-skills/` | Canonical skill source — `SKILL.md` + reference files for each domain |
+| `helius-plugin/` | Clawd Code plugin — bundles skills + auto-starts MCP server |
+| `helius-cli/` | CLI for account setup, blockchain queries, and staking |
+| `helius-cursor/` | Cursor-compatible skill/rule package |
 
-## MCP Server Setup
+## Clawd Code Setup
 
-The Helius MCP server provides live blockchain access through 10 public tools total: 9 routed domain tools plus `expandResult`. Configure it as an MCP tool source:
+Use the plugin directly:
 
-```
-npx helius-mcp@latest
-```
-
-This works with any MCP-compatible client. Use a domain tool such as `heliusWallet`, `heliusAsset`, or `heliusStreaming` plus `action: "getBalance"`, `action: "getAssetsByOwner"`, or `action: "createWebhook"` to call a specific Helius action. Use `expandResult` for summary-first follow-ups.
-
-For Codex, run `codex mcp add helius -- npx helius-mcp@latest` or add to `.codex/config.toml` (or `~/.codex/config.toml` for global):
-
-```toml
-[mcp_servers.helius]
-command = "npx"
-args = ["helius-mcp@latest"]
+```bash
+clawd --plugin-dir ./helius-plugin
 ```
 
-For other MCP clients, add to your project's `.mcp.json`:
+Or configure Helius MCP in `.clawd/settings.json`:
 
 ```json
 {
@@ -45,110 +36,75 @@ For other MCP clients, add to your project's `.mcp.json`:
 }
 ```
 
-## API Key Setup
+For ZK Compression docs and Light Protocol examples, add the docs MCP server and install the Light Protocol skill pack:
 
-Most tools require a Helius API key. Three paths:
+```json
+{
+  "mcpServers": {
+    "zkcompression": {
+      "type": "http",
+      "url": "https://www.zkcompression.com/mcp"
+    }
+  }
+}
+```
 
-**Path A — Existing key:** Set the `HELIUS_API_KEY` environment variable, or call the `setHeliusApiKey` MCP tool.
-
-**Path B — Signup:** Call `generateKeypair` → `signup` with `mode: "link"` (returns a hosted `paymentUrl` the user opens in a browser) → after payment, `signup` with `mode: "resume"`. Or `mode: "autopay"` to pay USDC from the local keypair (wallet must hold ~0.001 SOL + the plan amount in USDC). API key is configured automatically.
-
-**Path C — CLI:** `npx helius-cli@latest keygen` → `npx helius-cli@latest signup --plan agent --email ... --first-name ... --last-name ...` (link) → user pays in browser → `npx helius-cli@latest signup --resume`. Or `--pay` to autopay.
-
-Get keys from https://dashboard.helius.dev.
-
-## Public Tool Surface
-
-Helius MCP exposes 10 public tools total:
-
-- Routed domain tools: `heliusAccount`, `heliusWallet`, `heliusAsset`, `heliusTransaction`, `heliusChain`, `heliusStreaming`, `heliusKnowledge`, `heliusWrite`, `heliusCompression`
-- Expansion tool: `expandResult`
-
-The routed domain tools take a Helius action name in `action`. Example:
-
-- `heliusWallet` + `action: "getBalance"`
-- `heliusKnowledge` + `action: "getRateLimitInfo"`
-- `heliusStreaming` + `action: "createWebhook"`
-
-Heavy responses are summary-first. Use `expandResult({ resultId: "..." })` to fetch a full section, range, page, or continuation on demand.
+```bash
+npx skills add Lightprotocol/skills
+```
 
 ## Skills
 
-Skills are in `.agents/skills/`. Each provides expert routing, rules, and reference docs for a domain:
+Skills are in `.agents/skills/`. Each provides expert routing, rules, and reference docs:
 
 | Skill | Directory | When to use |
 |---|---|---|
-| **Helius** | `.agents/skills/helius/` | Building Solana apps with Helius infrastructure — transactions, DAS API, WebSockets, Laserstream, webhooks, wallet analysis |
-| **Helius DFlow** | `.agents/skills/helius-dflow/` | Trading apps combining DFlow (spot swaps, prediction markets, Proof KYC) with Helius |
-| **Helius Phantom** | `.agents/skills/helius-phantom/` | Frontend Solana apps with Phantom wallet + Helius — React, React Native, vanilla JS |
-| **SVM** | `.agents/skills/svm/` | Solana protocol internals — SVM engine, account model, consensus, validators, token extensions |
+| **Helius** | `.agents/skills/helius/` | Building Solana apps with Helius infrastructure |
+| **Helius DFlow** | `.agents/skills/helius-dflow/` | Trading apps combining DFlow with Helius |
+| **Helius Jupiter** | `.agents/skills/helius-jupiter/` | DeFi apps combining Jupiter with Helius |
+| **Helius Phantom** | `.agents/skills/helius-phantom/` | Frontend Solana apps with Phantom wallet + Helius |
+| **Helius OKX** | `.agents/skills/helius-okx/` | Trading/intelligence apps with OKX and Helius |
+| **SVM** | `.agents/skills/svm/` | Solana protocol internals |
 
-Each skill has:
-- `SKILL.md` — routing logic, rules, and domain expertise
-- `references/` — deep reference docs for specific products/APIs
-- `prompts/` — pre-formatted prompt variants for OpenAI API and Claude API
+For compressed PDAs, compressed tokens, nullifiers, validity proofs, or custom ZK apps, also load the Light Protocol skills installed via `npx skills add Lightprotocol/skills`.
 
-**Read the SKILL.md before implementing** — it tells you which reference files to read and which MCP tools to use for each type of task.
+Read the relevant `SKILL.md` before implementing. It tells you which reference files to read and which MCP tools to use.
 
 ## Coding Conventions
 
-### SDK Usage
-- **TypeScript**: `import { createHelius } from "helius-sdk"` → `const helius = createHelius({ apiKey: "apiKey" })`
-- **Rust**: `use helius::Helius` → `Helius::new("apiKey", Cluster::MainnetBeta)?`
-- For `@solana/kit` integration, use `helius.raw` for the underlying `Rpc` client
+- TypeScript: `import { createHelius } from "helius-sdk"` then `const helius = createHelius({ apiKey })`
+- Rust: `use helius::Helius` then `Helius::new("apiKey", Cluster::MainnetBeta)?`
+- For `@solana/kit` integration, use `helius.raw` for the underlying `Rpc` client.
+- For Clawd Code workflows, use `clawd-code <mode> "<prompt>"`.
 
-### Environment Variables
-- Never commit API keys to git — use `HELIUS_API_KEY` environment variable
-- Store keys in `.env` or `.env.local` (for Next.js, never `NEXT_PUBLIC_`)
+## Environment Variables
 
-### Explorer Links
-- Always use Orb (`https://orbmarkets.io`) for transaction and account links
-- Transaction: `https://orbmarkets.io/tx/{signature}`
-- Account: `https://orbmarkets.io/address/{address}`
-- Token: `https://orbmarkets.io/token/{token}`
+- Never commit API keys to git.
+- Use `HELIUS_API_KEY` for Helius tools.
+- Use `~/.clawd-code/.env` with `XAI_API_KEY`, `HELIUS_API_KEY`, and `SOLANA_RPC_URL` for Clawd Code.
 
 ## MCP Tool Usage Rules
 
-### Prefer Specific Routed Actions
-- Use `heliusWallet` + `getBalance` (1 credit) over `heliusWallet` + `getWalletBalances` (100 credits) when only SOL balance is needed
-- Use `heliusWallet` + `getTokenBalances` (10 credits) over `heliusWallet` + `getWalletBalances` when you don't need USD values
-- Use `heliusKnowledge` + `lookupHeliusDocs` with the `section` parameter for targeted lookups — full docs can be 10,000+ tokens
+- Use MCP tools for live blockchain data; do not hardcode or mock chain state.
+- Prefer specific routed actions, such as `heliusWallet` + `getBalance`, over broad expensive calls.
+- Use batch endpoints when available.
+- Use `heliusTransaction` + `parseTransactions` for human-readable transaction data.
+- Use `heliusKnowledge` + `troubleshootError` before manual diagnosis.
+- Use `heliusKnowledge` + `getRateLimitInfo` or `getHeliusCreditsInfo`; do not guess credit costs.
+- For pricing questions, start with `heliusAccount` + `getHeliusPlanInfo`.
 
-### Use Batch Endpoints
-- `heliusAsset` + `getAsset` accepts an `ids` array for batch lookups — one call instead of N
-- `heliusAsset` + `getAssetProofBatch` for multiple compressed NFT proofs
-- `heliusChain` + `getAccountInfo` accepts an `addresses` array for batch account lookups
+## Transaction Sending
 
-### Transaction Sending
-- Always use Helius Sender endpoints — never raw `sendTransaction` to standard RPC
-- Always include `skipPreflight: true` when using Sender
-- Always include `maxRetries: 0` when using Sender
-- Always include a Jito tip (minimum 0.0002 SOL) and priority fee
-- Use `heliusChain` + `getPriorityFeeEstimate` to get fee levels — never hardcode fees
-
-### Data Queries
-- Use `heliusTransaction` + `parseTransactions` over raw RPC for human-readable transaction data
-- Use `heliusAsset` + `getAssetsByOwner` with `showFungible: true` for both NFTs and fungible tokens
-- Use `heliusAsset` + `searchAssets` for multi-criteria queries instead of client-side filtering
-
-### Errors and Docs
-- Use `heliusKnowledge` + `troubleshootError` with the error code before manual diagnosis
-- Use `heliusKnowledge` + `getRateLimitInfo` or `getHeliusCreditsInfo` — never guess at credit costs
-- For pricing questions, start with `heliusAccount` + `getHeliusPlanInfo` — not `heliusKnowledge` + `lookupHeliusDocs`
-
-## Agent Behavior
-
-- Use MCP tools for live blockchain data — never hardcode or mock chain state
-- Read reference files before writing code — they contain product-specific patterns and pitfalls
-- Run tests and verify outputs after making changes
-- Handle rate limits with exponential backoff
-- Use appropriate commitment levels (`confirmed` for reads, `finalized` for critical operations)
+- Use Helius Sender endpoints for low-latency sends.
+- Include `skipPreflight: true` and `maxRetries: 0` when using Sender.
+- Include a Jito tip and priority fee.
+- Use `heliusChain` + `getPriorityFeeEstimate`; do not hardcode fees.
 
 ## Generated Content
 
 The following directories are generated by `npx tsx scripts/compile-skills.ts` from canonical sources in `helius-skills/`:
 
-- `.agents/skills/` — Codex-native skills + prompt variants
-- `helius-mcp/system-prompts/` — npm-shipped prompt copies
+- `.agents/skills/`
+- `helius-mcp/system-prompts/`
 
-Do not edit these directly — modify the canonical source in `helius-skills/` and re-run the compiler.
+Modify canonical source in `helius-skills/` and re-run the compiler.

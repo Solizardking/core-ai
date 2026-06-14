@@ -1,293 +1,152 @@
-# Helius Core AI
+# Clawd Core AI
 
-The official Helius AI tooling repository — everything you need to interact with Helius and Solana from the command line, from AI assistants like Claude, or autonomously as an agent.
+The Clawd-wrapped Helius AI tooling repository — live Solana infrastructure, Helius skills, MCP tooling, and Clawd Code integration for lobster-native agents.
+
+## Clawd Fork Note
+
+This fork keeps the Helius Solana infrastructure surface and replaces the old assistant/plugin identity with Clawd and Clawd Code. The intent is direct: show that the Helius agent tooling can run as a Clawd-native lobster stack while preserving the useful MCP, CLI, and skill machinery.
 
 ## Packages
 
 | Package | Description | Install |
 |---|---|---|
 | [`helius-cli`](./helius-cli) | CLI for managing Helius accounts and querying Solana data | `npm install -g helius-cli` |
-| [`helius-mcp`](./helius-mcp) | MCP server with 10 public tools total: 9 routed domains plus `expandResult` | `claude mcp add helius npx helius-mcp@latest` |
-| [`helius-skills`](./helius-skills) | Standalone Claude Code skills for building on Solana | `./install.sh` |
-| [`helius-plugin`](./helius-plugin) | Claude Code plugin — bundles all skills and auto-starts the MCP server | `/plugin install helius@helius` |
+| [`helius-mcp`](./helius-mcp) | MCP server with 10 public tools total: 9 routed domains plus `expandResult` | `npx helius-mcp@latest` in `.clawd/settings.json` |
+| [`helius-skills`](./helius-skills) | Standalone Clawd Code skills for building on Solana | `./install.sh` |
+| [`helius-plugin`](./helius-plugin) | Clawd Code plugin — bundles all skills and auto-starts the MCP server | `clawd --plugin-dir ./helius-plugin` |
 
----
+## Clawd Code Integration
+
+Use this repository with Clawd Code:
+
+```bash
+clawd --plugin-dir ./helius-plugin
+```
+
+For MCP-only setup, add Helius to `.clawd/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "helius": {
+      "command": "npx",
+      "args": ["helius-mcp@latest"]
+    }
+  }
+}
+```
+
+For ZK Compression and Light Protocol work, also install the Light Protocol skills and enable the documentation MCP:
+
+```bash
+npx skills add Lightprotocol/skills
+```
+
+```json
+{
+  "mcpServers": {
+    "zkcompression": {
+      "type": "http",
+      "url": "https://www.zkcompression.com/mcp"
+    }
+  }
+}
+```
 
 ## helius-cli
 
-A CLI built for developers and LLM agents to manage Helius accounts, query Solana blockchain data, and automate workflows.
-
-### Installation
+A CLI built for developers and Clawd agents to manage Helius accounts, query Solana blockchain data, and automate workflows.
 
 ```bash
 npm install -g helius-cli
-# or
-pnpm add -g helius-cli
-```
-
-### Quick Start
-
-#### Existing Helius users
-
-If you already have an API key, just set it and go:
-
-```bash
 helius config set-api-key <your-api-key>
-```
-
-Get your key from [dashboard.helius.dev](https://dashboard.helius.dev). That's it — skip the steps below.
-
-#### New users — create an account
-
-**Step 1 — Generate a keypair**
-
-```bash
-helius keygen
-```
-
-This creates a new Solana keypair and saves it to `~/.helius/keypair.json`. The public key is printed to the terminal — you'll need it for the next step.
-
-**Step 2 — Fund the keypair** *(manual)*
-
-Before creating an account, send the following to the public key from step 1:
-
-- **1 USDC** (used as payment for the basic plan)
-- **A small amount of SOL** to cover transaction fees (~0.01 SOL is sufficient)
-
-You can use any wallet or exchange to send funds. The CLI will not proceed until the keypair has the required balance.
-
-**Step 3 — Create your Helius account**
-
-```bash
-helius signup
-```
-
-**Step 4 — Start using the CLI**
-
-```bash
-# Query a wallet balance
 helius balance <wallet-address>
-
-# Parse a transaction
 helius tx parse <signature>
 ```
 
-### Features
-
-**Account & Auth** — Generate keypairs, create and upgrade Helius accounts, manage projects and API keys
-
-**Blockchain Queries** — SOL and token balances, transaction parsing and history, digital assets (NFTs) via the DAS API, account info, block data, network status, and priority fee estimation
-
-**Webhooks** — Create, update, and delete webhooks for transaction monitoring
-
-**Real-time Streaming** — WebSocket subscriptions for accounts, logs, slots, signatures, and programs
-
-**Staking** — Create and manage stake accounts, stake and unstake transactions
-
-**ZK Compression** — 24+ commands for working with compressed accounts and tokens
-
-**Transaction Sending** — Use Helius Sender for low-latency sends
-
-### Configuration
-
-The CLI stores configuration at `~/.helius/config.json`. API keys are resolved in this order:
-
-1. `--api-key <key>` flag
-2. `HELIUS_API_KEY` environment variable
-3. `~/.helius/config.json`
-
-```bash
-helius config show               # View current config
-helius config set-api-key <key>  # Set API key
-helius config set-network devnet # Switch to devnet
-helius config clear              # Reset config
-```
-
----
-
 ## helius-mcp
 
-A [Model Context Protocol](https://modelcontextprotocol.io) server that exposes Helius and Solana tools directly to AI assistants. Once connected, Claude and other MCP-compatible models can query blockchain data, manage webhooks, and send transactions without any additional code.
+A Model Context Protocol server that exposes Helius and Solana tools directly to Clawd Code and other MCP-compatible clients.
 
-> **Note on the Helius docs MCP:** The Helius docs site at [helius.dev/docs](https://www.helius.dev/docs) exposes a separate MCP server auto-generated by Mintlify. That server is scoped only to documentation search and is not related to this repo. `helius-mcp` here is the comprehensive server covering all Helius and Solana functionality.
+The server exposes 10 public tools total:
 
-### Public Tool Surface
+- `heliusAccount`
+- `heliusWallet`
+- `heliusAsset`
+- `heliusTransaction`
+- `heliusChain`
+- `heliusStreaming`
+- `heliusKnowledge`
+- `heliusWrite`
+- `heliusCompression`
+- `expandResult`
 
-The server exposes 10 public tools total: 9 routed domain tools plus `expandResult`.
-
-- `heliusAccount` — account setup, auth, plans, billing
-- `heliusWallet` — wallet balances, holdings, identity, wallet history
-- `heliusAsset` — assets, NFTs, collections, token holders
-- `heliusTransaction` — parsed transactions and wallet transaction history
-- `heliusChain` — raw chain state, token accounts, blocks, network status, stake reads, priority fees
-- `heliusStreaming` — webhook CRUD and live subscription configuration
-- `heliusKnowledge` — docs, guides, pricing references, troubleshooting, source, blog, SIMDs
-- `heliusWrite` — SOL/token transfers and staking mutations
-- `heliusCompression` — compressed account, proof, balance, and history queries
-- `expandResult` — expand summary-first results by `resultId`
-
-The 9 domain tools take a Helius action name in `action`, for example `heliusWallet` + `getBalance` or `heliusStreaming` + `createWebhook`. Heavy responses are summary-first; use `expandResult` to fetch a full section, range, page, or continuation on demand.
-
-### Add to Claude
-
-```bash
-claude mcp add helius npx helius-mcp@latest
-```
-
-### Configuration
-
-API keys are resolved in this order:
-
-1. `setHeliusApiKey` tool call within the session
-2. `HELIUS_API_KEY` environment variable
-3. `~/.helius/config.json`
-
-Set the network via `HELIUS_NETWORK` (defaults to `mainnet-beta`, supports `devnet`).
-
-### Local Development
-
-```bash
-cd helius-mcp
-pnpm install
-pnpm build
-
-# Add the local build to Claude
-claude mcp add helius node $(pwd)/dist/index.js
-```
-
----
+The routed domain tools take a Helius action name in `action`, for example `heliusWallet` + `getBalance` or `heliusStreaming` + `createWebhook`. Heavy responses are summary-first; use `expandResult` to fetch a full section, range, page, or continuation on demand.
 
 ## helius-skills
 
-Standalone [Claude Code skills](https://docs.anthropic.com/en/docs/claude-code/skills) that turn Claude into a domain expert. Each skill is a self-contained directory with a `SKILL.md` and reference files — install once, invoke with `/skill-name` in any Claude Code session.
-
-### Available Skills
+Standalone Clawd Code skills turn Clawd into a Solana domain expert. Each skill is a self-contained directory with a `SKILL.md` and reference files.
 
 | Skill | Invoke | Description |
 |---|---|---|
-| [`helius`](./helius-skills/helius) | `/helius` | Build Solana apps with Helius infrastructure — Sender, DAS API, WebSockets, Laserstream, webhooks, priority fees, and our Wallet API |
-| [`helius-dflow`](./helius-skills/helius-dflow) | `/helius-dflow` | Build Solana trading apps combining DFlow's trading APIs (spot swaps, prediction markets, Proof KYC) with Helius infrastructure |
-| [`svm`](./helius-skills/svm) | `/svm` | Explore Solana's architecture and protocol internals — SVM execution engine, account model, consensus, validator economics, and token extensions |
-| `helius-phantom` | `/helius-phantom` | Build browser-based Solana apps with Phantom wallet + Helius — wallet connection, transaction signing, API key proxying, and secure URLs |
+| [`helius`](./helius-skills/helius) | `/clawd:build` or the Helius skill | Build Solana apps with Helius infrastructure |
+| [`helius-dflow`](./helius-skills/helius-dflow) | `/clawd:dflow` | Build Solana trading apps with DFlow and Helius |
+| [`helius-jupiter`](./helius-skills/helius-jupiter) | `/clawd:jupiter` | Build DeFi apps with Jupiter and Helius |
+| [`helius-phantom`](./helius-skills/helius-phantom) | `/clawd:phantom` | Build frontend Solana apps with Phantom and Helius |
+| [`helius-okx`](./helius-skills/helius-okx) | `/clawd:okx` | Compose OKX DEX/intelligence tooling with Helius |
+| [`svm`](./helius-skills/svm) | `/clawd:svm` | Explore Solana architecture and protocol internals |
 
-### Installation
-
-Each skill has its own `install.sh`. Clone this repo and run the installer for whichever skills you want:
-
-```bash
-git clone https://github.com/helius-labs/core-ai.git
-cd core-ai
-
-# Install individual skills
-./helius-skills/helius/install.sh          # Helius skill
-./helius-skills/svm/install.sh             # SVM architecture skill
-```
-
-By default, skills install to `~/.claude/skills/` (personal, available in all projects). Use `--project` to install to `.claude/skills/` in your current project instead:
+For compressed PDA, compressed token, and custom ZK app development, install the upstream Light Protocol skills:
 
 ```bash
-./helius-skills/helius/install.sh --project
+npx skills add Lightprotocol/skills
 ```
 
-### Prerequisites
-
-All skills except `svm` require a Helius API key. The `svm` skill uses public knowledge tools only. Add the MCP server before using any skill:
-
-```bash
-claude mcp add helius npx helius-mcp@latest
-```
-
----
+By default, skill installers now target `~/.clawd/skills/`. Use `--project` to install to `.clawd/skills/` in your current project.
 
 ## helius-plugin
 
-An all-in-one [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code/plugins) that bundles all skills and auto-starts the MCP server. The easiest way to get everything set up in one step.
+An all-in-one Clawd Code plugin that bundles skills and auto-starts MCP servers.
 
-### Install
-
-```
-/plugin marketplace add helius-labs/claude-plugins
-/plugin install helius@helius
+```bash
+clawd --plugin-dir ./helius-plugin
 ```
 
-### What's Included
-
-**Helius MCP Server** — auto-starts with the plugin. Exposes 10 public tools total: 9 routed domain tools plus `expandResult`. Domain tools take Helius action names via `action`, and heavy responses are summary-first.
-
-**Skills:**
+Included skills:
 
 | Skill | Invoke | Description |
 |---|---|---|
-| Build | `/helius:build` | Expert Solana developer — Helius APIs, routing logic, SDK patterns, and common-mistake prevention |
-| DFlow | `/helius:dflow` | Expert Solana trading apps — DFlow swaps, prediction markets, Proof KYC, combined with Helius infrastructure |
-| SVM | `/helius:svm` | Solana protocol expert — architecture, internals, consensus, and validator economics |
-| Phantom *(coming soon)* | `/helius:phantom` | Expert frontend Solana dev — Phantom wallet integration, CORS handling, API proxying |
+| Build | `/clawd:build` | Expert Solana developer — Helius APIs, routing logic, SDK patterns |
+| DFlow | `/clawd:dflow` | Trading apps — DFlow swaps, prediction markets, KYC, Helius Sender |
+| Jupiter | `/clawd:jupiter` | DeFi apps — swaps, lending, limit orders, DCA, transaction submission |
+| Phantom | `/clawd:phantom` | Frontend Solana apps — Phantom wallet integration and secure proxying |
+| OKX | `/clawd:okx` | DEX aggregation and intelligence integrations |
+| SVM | `/clawd:svm` | Solana protocol architecture and internals |
 
-### API Key Setup
+## Generated Content
 
-The plugin auto-starts the MCP server, but you still need a Helius API key. On first use, Claude will guide you through one of these paths:
+The following directories are generated by `npx tsx scripts/compile-skills.ts` from canonical sources in `helius-skills/`:
 
-- **Existing key**: Use the `setHeliusApiKey` tool with your key from https://dashboard.helius.dev
-- **New account**: `generateKeypair` → `signup` with `mode: "link"` (browser pay) or `mode: "autopay"` (pay USDC from local keypair) → after browser payment, `signup` with `mode: "resume"`
-- **CLI**: `npx helius-cli@latest keygen` → `npx helius-cli@latest signup --plan agent` (link) → user pays in browser → `npx helius-cli@latest signup --resume` (or `--pay` to autopay)
+- `.agents/skills/` — Clawd-native skills + prompt variants
+- `helius-mcp/system-prompts/` — npm-shipped prompt copies
 
-### Local Testing
-
-```bash
-claude --plugin-dir ./helius-plugin
-```
-
----
-
-## Cross-Platform Skills
-
-Helius skills are model-agnostic — they work across Claude Code, Codex CLI, OpenAI API, Claude API, Cursor, and other AI tools.
-
-### 3-Layer Architecture
-
-| Layer | What | Where |
-|-------|------|-------|
-| **A: Harness** | Runtime-specific behavior | `AGENTS.md` (Codex), preamble in prompt variants (API), built-in (Claude Code) |
-| **B: Skills** | Reusable domain expertise | `SKILL.md` files — single source of truth in `helius-skills/` |
-| **C: Task** | User request | Provided at runtime |
-
-### Platform Support
-
-| Platform | How to use |
-|----------|-----------|
-| **Claude Code** | Install via `helius-plugin` or `helius-skills/install.sh` |
-| **Codex CLI** | Auto-discovers `AGENTS.md` + `.agents/skills/` from repo root |
-| **OpenAI API** | Use `.agents/skills/<skill>/prompts/openai.developer.md` as a `developer` message |
-| **Claude API** | Use `.agents/skills/<skill>/prompts/claude.system.md` as a system prompt |
-| **Cursor** | Use `.agents/skills/<skill>/prompts/full.md` as Cursor Rules |
-| **npm consumers** | Find prompts in `helius-mcp/system-prompts/` (shipped with the npm package) |
-
-See [`helius-skills/SYSTEM-PROMPTS.md`](./helius-skills/SYSTEM-PROMPTS.md) for detailed integration guides and code examples.
-
----
+Modify canonical sources in `helius-skills/` and re-run the compiler.
 
 ## Development
 
-All packages use TypeScript and `pnpm`.
-
 ```bash
 cd helius-cli   # or helius-mcp
-pnpm install    # Install dependencies
-pnpm build      # Compile TypeScript → dist/
-pnpm dev        # Watch mode
+pnpm install
+pnpm build
+pnpm test
 ```
 
-The skills and plugin (`helius-skills/`, `helius-plugin/`) are Markdown-based and require no build step.
-
-**Requirements:** Node.js 20+, pnpm, and a Helius API key — get one at [helius.dev](https://www.helius.dev).
-
----
+Requirements: Node.js 20+, pnpm, and a Helius API key from https://dashboard.helius.dev.
 
 ## Resources
 
+- [Clawd Code](../clawd-code)
 - [Helius](https://www.helius.dev/)
 - [Helius Docs](https://www.helius.dev/docs)
 - [helius-sdk](https://github.com/helius-labs/helius-sdk)
 - [Model Context Protocol](https://modelcontextprotocol.io)
-- [Claude Code Skills](https://docs.anthropic.com/en/docs/claude-code/skills)
-- [Claude Code Plugins](https://docs.anthropic.com/en/docs/claude-code/plugins)

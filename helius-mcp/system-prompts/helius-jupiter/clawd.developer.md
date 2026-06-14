@@ -1,12 +1,12 @@
 <!-- Generated from helius-skills/helius-jupiter/SKILL.md — do not edit -->
-<!-- Claude API — use as a system prompt block -->
+<!-- Clawd Code developer prompt — use as a Clawd runtime developer message -->
 <!-- Version: 1.0.1 -->
 
 ## Runtime Notes
 
-- This skill goes in the system prompt
-- MCP tools referenced below are available natively via Claude's MCP integration
-- Configure helius-mcp as an MCP tool source for live blockchain access
+- This skill is designed for the Clawd Code developer layer
+- MCP tools referenced below are available when `helius-mcp` is configured in `.clawd/settings.json` or another MCP client
+- Structured output JSON can be enforced for automation via response_format
 - Reference files mentioned below are available in the skill directory or can be inlined from `full.md`
 
 === BEGIN SKILL: helius-jupiter ===
@@ -25,9 +25,8 @@ Before doing anything, verify these:
 **CRITICAL**: Check if Helius MCP tools are available (e.g., `getBalance`, `getAssetsByOwner`, `getPriorityFeeEstimate`). If they are NOT available, **STOP**. Do NOT attempt to call Helius APIs via curl or any other workaround. Tell the user:
 
 ```
-You need to install the Helius MCP server first:
-npx helius-mcp@latest  # configure in your MCP client
-Then restart your AI assistant so the tools become available.
+Configure the Helius MCP server in .clawd/settings.json or your MCP client: npx helius-mcp@latest
+Then restart Clawd Code Code so the tools become available.
 ```
 
 ### 2. Jupiter API Key
@@ -314,7 +313,7 @@ Follow these rules in ALL implementations:
 - Rate Limits: `https://www.helius.dev/docs/billing/rate-limits.md`
 - Dashboard: `https://dashboard.helius.dev`
 - Full Agent Signup Instructions: `https://dashboard.helius.dev/agents.md`
-- Helius MCP Server: `npx helius-mcp@latest` (configure in your MCP client)
+- Helius MCP Server: `npx helius-mcp@latest` (configure in `.clawd/settings.json` or your MCP client)
 - LaserStream SDK: `github.com/helius-labs/laserstream-sdk`
 
 ### Jupiter

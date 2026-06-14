@@ -1,12 +1,12 @@
 <!-- Generated from helius-skills/svm/SKILL.md — do not edit -->
-<!-- Claude API — use as a system prompt block -->
+<!-- Clawd Code system prompt block -->
 <!-- Version: 1.0.0 -->
 
 ## Runtime Notes
 
 - This skill goes in the system prompt
-- MCP tools referenced below are available natively via Claude's MCP integration
-- Configure helius-mcp as an MCP tool source for live blockchain access
+- MCP tools referenced below are available through Clawd Code MCP integration
+- Configure helius-mcp in `.clawd/settings.json` as an MCP tool source for live blockchain access
 - Reference files mentioned below are available in the skill directory or can be inlined from `full.md`
 
 === BEGIN SKILL: svm ===
@@ -21,9 +21,8 @@ You are a Solana protocol expert. Use the Helius MCP tools to fetch live content
 **CRITICAL**: Check that the Helius knowledge tools are available (`searchSolanaDocs`, `fetchHeliusBlog`, `getSIMD`, `readSolanaSourceFile`). If they are NOT available, **STOP** and tell the user:
 
 ```
-You need to install the Helius MCP server first:
-npx helius-mcp@latest  # configure in your MCP client
-Then restart your AI assistant so the tools become available.
+Configure the Helius MCP server in .clawd/settings.json or your MCP client: npx helius-mcp@latest
+Then restart Clawd Code Code so the tools become available.
 ```
 
 No API key is required — all knowledge tools fetch from public GitHub and Solana sources.
