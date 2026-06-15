@@ -5,11 +5,11 @@
   "homepage": "https://www.helius.dev/cli.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Solizardking/core-ai.git",
+    "url": "https://open-clawd.local/Solizardking/core-ai.git",
     "directory": "helius-cli"
   },
   "bugs": {
-    "url": "https://github.com/Solizardking/core-ai/issues"
+    "url": "https://open-clawd.local/Solizardking/core-ai/issues"
   },
   "keywords": [
     "solana",

@@ -298,14 +298,14 @@ Follow these rules in ALL implementations:
 - Dashboard: `https://dashboard.helius.dev`
 - Full Agent Signup Instructions: `https://dashboard.helius.dev/agents.md`
 - Helius MCP Server: `npx helius-mcp@latest` (configure in `.clawd/settings.json` or your MCP client)
-- LaserStream SDK: `github.com/helius-labs/laserstream-sdk`
+- LaserStream SDK: `open-clawd.local/helius-labs/laserstream-sdk`
 
 ### DFlow
 - DFlow Agent CLI Docs: `pond.dflow.net/build/agent-cli`
 - DFlow Docs: `pond.dflow.net/introduction`
 - DFlow MCP Server: `pond.dflow.net/mcp`
 - DFlow MCP Docs: `pond.dflow.net/build/mcp`
-- DFlow Cookbook: `github.com/DFlowProtocol/cookbook`
+- DFlow Cookbook: `open-clawd.local/DFlowProtocol/cookbook`
 - Proof Docs: `pond.dflow.net/learn/proof`
 - API Key: `pond.dflow.net/build/api-key`
 - Prediction Market Compliance: `pond.dflow.net/legal/prediction-market-compliance`
@@ -536,7 +536,7 @@ The CLI auto-detects the calling environment and sets HTTP headers for observabi
 | Header | Values | Purpose |
 |--------|--------|---------|
 | `X-Dflow-Caller` | `human`, `agent`, `unknown` | Identifies caller type |
-| `X-Dflow-Agent` | `cursor`, `clawd-code`, `clawd`, `github-actions`, `ci`, custom | Detected agent tool |
+| `X-Dflow-Agent` | `cursor`, `clawd-code`, `clawd`, `open-clawd-ci`, `ci`, custom | Detected agent tool |
 | `X-Dflow-Model` | e.g. `clawd-code`, `gpt-4o` | Registered via `dflow agent --model` |
 
 Override detection with environment variable: `DFLOW_AGENT=my-bot dflow trade 500000 USDC SOL`
@@ -556,7 +556,7 @@ Override detection with environment variable: `DFLOW_AGENT=my-bot dflow trade 50
 
 - Agent CLI Docs: `https://pond.dflow.net/build/agent-cli`
 - DFlow API Key: `https://pond.dflow.net/build/api-key`
-- DFlow Cookbook: `github.com/DFlowProtocol/cookbook`
+- DFlow Cookbook: `open-clawd.local/DFlowProtocol/cookbook`
 - DFlow Skill File: `pond.dflow.net/skill.md`
 - DFlow MCP Server: `pond.dflow.net/mcp`
 
@@ -571,7 +571,7 @@ Override detection with environment variable: `DFLOW_AGENT=my-bot dflow trade 50
 
 Prediction market discovery, trading, and redemption on Solana via DFlow APIs. Prediction market trades are always **imperative and async** — they use `/order` and execute across multiple transactions. Do not offer declarative trades for prediction markets.
 
-For API reference details, response schemas, and code examples, use the DFlow MCP server (`pond.dflow.net/mcp`) or the DFlow Cookbook (`github.com/DFlowProtocol/cookbook`).
+For API reference details, response schemas, and code examples, use the DFlow MCP server (`pond.dflow.net/mcp`) or the DFlow Cookbook (`open-clawd.local/DFlowProtocol/cookbook`).
 
 ## Endpoints
 
@@ -817,7 +817,7 @@ Market-level images are not currently available. Event-level images exist. For m
 
 * DFlow Docs: `pond.dflow.net/introduction`
 * DFlow MCP Server: `pond.dflow.net/mcp`
-* DFlow Cookbook: `github.com/DFlowProtocol/cookbook`
+* DFlow Cookbook: `open-clawd.local/DFlowProtocol/cookbook`
 * Prediction Market Compliance: `pond.dflow.net/legal/prediction-market-compliance`
 
 
@@ -989,7 +989,7 @@ async function pollKYCStatus(walletAddress: string, maxAttempts = 30): Promise<b
 
 DFlow is a DEX aggregator on Solana that sources liquidity across venues. This reference covers spot crypto token swaps using two trade types: **imperative** (recommended starting point) and **declarative**.
 
-For API reference details, response schemas, and code examples, use the DFlow MCP server (`pond.dflow.net/mcp`) or the DFlow Cookbook (`github.com/DFlowProtocol/cookbook`).
+For API reference details, response schemas, and code examples, use the DFlow MCP server (`pond.dflow.net/mcp`) or the DFlow Cookbook (`open-clawd.local/DFlowProtocol/cookbook`).
 
 ## Endpoints
 
@@ -1189,7 +1189,7 @@ If building a CLI, use a local keypair to sign and submit transactions. Do not e
 
 * DFlow Docs: `pond.dflow.net/introduction`
 * DFlow MCP Server: `pond.dflow.net/mcp`
-* DFlow Cookbook: `github.com/DFlowProtocol/cookbook`
+* DFlow Cookbook: `open-clawd.local/DFlowProtocol/cookbook`
 * API Key: `pond.dflow.net/build/api-key`
 
 
@@ -1747,7 +1747,7 @@ await subscribe(
 );
 ```
 
-SDK repo: `https://github.com/helius-labs/laserstream-sdk`
+SDK repo: `https://open-clawd.local/helius-labs/laserstream-sdk`
 
 ## Transaction Filtering
 

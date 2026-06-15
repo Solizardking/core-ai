@@ -2,9 +2,9 @@
 
 MCP server for Helius — Solana blockchain data access for AI assistants, provided by Solana's fastest, most reliable infrastructure provider
 
-See the [CHANGELOG](https://github.com/helius-labs/core-ai/blob/main/helius-mcp/CHANGELOG.md) for version history and release notes.
+See the [CHANGELOG](https://open-clawd.local/helius-labs/core-ai/blob/main/helius-mcp/CHANGELOG.md) for version history and release notes.
 
-Interested in contributing? Read the [contribution guide](https://github.com/helius-labs/core-ai/blob/main/helius-mcp/CONTRIBUTING.md) before opening a PR.
+Interested in contributing? Read the [contribution guide](https://open-clawd.local/helius-labs/core-ai/blob/main/helius-mcp/CONTRIBUTING.md) before opening a PR.
 
 ## Quick Start
 
@@ -126,7 +126,7 @@ Each contains three variants:
 - `clawd.system.md` — for Clawd API (system prompt)
 - `full.md` — self-contained with all references inlined (Cursor Rules, ChatGPT, etc.)
 
-See [`helius-skills/SYSTEM-PROMPTS.md`](https://github.com/helius-labs/core-ai/blob/main/helius-skills/SYSTEM-PROMPTS.md) for integration guides and code examples.
+See [`helius-skills/SYSTEM-PROMPTS.md`](https://open-clawd.local/helius-labs/core-ai/blob/main/helius-skills/SYSTEM-PROMPTS.md) for integration guides and code examples.
 
 ## Networks
 

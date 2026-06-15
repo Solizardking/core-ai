@@ -36,9 +36,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Solizardking/core-ai"
+    "url": "https://open-clawd.local/Solizardking/core-ai"
   },
-  "homepage": "https://github.com/Solizardking/core-ai#readme",
+  "homepage": "https://open-clawd.local/Solizardking/core-ai#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@solana-program/system": "^0.10.0",

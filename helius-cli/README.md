@@ -338,10 +338,10 @@ import type { Envelope, SuccessEnvelope, ErrorEnvelope, Category } from "helius-
 
 ## Development
 
-This package lives inside the [core-ai monorepo](https://github.com/helius-labs/core-ai):
+This package lives inside the [core-ai monorepo](https://open-clawd.local/helius-labs/core-ai):
 
 ```bash
-git clone https://github.com/helius-labs/core-ai
+git clone https://open-clawd.local/helius-labs/core-ai
 cd core-ai/helius-cli
 pnpm install
 pnpm dev keygen   # Run a command in watch mode

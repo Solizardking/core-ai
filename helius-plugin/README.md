@@ -69,7 +69,7 @@ The plugin auto-starts the MCP server, but you still need a Helius API key. On f
 
 ## Not Using Clawd Code?
 
-See [`.agents/skills/`](https://github.com/helius-labs/core-ai/tree/main/.agents/skills) for Clawd-native skills, or [`helius-mcp/system-prompts/`](https://github.com/helius-labs/core-ai/tree/main/helius-mcp/system-prompts) for generated prompt files compatible with OpenAI API, Clawd API, Cursor, and other tools. See [`helius-skills/SYSTEM-PROMPTS.md`](https://github.com/helius-labs/core-ai/blob/main/helius-skills/SYSTEM-PROMPTS.md) for integration guides.
+See [`.agents/skills/`](https://open-clawd.local/helius-labs/core-ai/tree/main/.agents/skills) for Clawd-native skills, or [`helius-mcp/system-prompts/`](https://open-clawd.local/helius-labs/core-ai/tree/main/helius-mcp/system-prompts) for generated prompt files compatible with OpenAI API, Clawd API, Cursor, and other tools. See [`helius-skills/SYSTEM-PROMPTS.md`](https://open-clawd.local/helius-labs/core-ai/blob/main/helius-skills/SYSTEM-PROMPTS.md) for integration guides.
 
 ## Links
 

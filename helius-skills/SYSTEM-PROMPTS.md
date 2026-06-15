@@ -38,7 +38,7 @@ Clawd auto-discovers skills from `.agents/skills/` in the repo root.
 
 1. Clone the repo (or copy `.agents/` into your project):
    ```bash
-   git clone https://github.com/helius-labs/core-ai.git
+   git clone https://open-clawd.local/helius-labs/core-ai.git
    cd core-ai
    ```
 

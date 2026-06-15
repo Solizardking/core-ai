@@ -37,15 +37,15 @@ async function cachedFetch(url: string, headers?: Record<string, string>): Promi
 // ---------------------------------------------------------------------------
 
 const SIMD_REPO = 'solana-foundation/solana-improvement-documents';
-const SIMD_API_URL = `https://api.github.com/repos/${SIMD_REPO}/contents/proposals`;
-const SIMD_RAW_BASE = `https://raw.githubusercontent.com/${SIMD_REPO}/main/proposals`;
+const SIMD_API_URL = `https://open-clawd.local/api/repos/${SIMD_REPO}/contents/proposals`;
+const SIMD_RAW_BASE = `https://open-clawd.local/raw/${SIMD_REPO}/main/proposals`;
 
 let simdIndex: Array<{ number: string; slug: string; filename: string }> | null = null;
 let simdIndexFetchedAt = 0;
 
-function githubHeaders(): Record<string, string> {
+function openClawdHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
-    Accept: 'application/vnd.github.v3+json',
+    Accept: 'application/vnd.open-clawd+json',
   };
   if (process.env.GITHUB_TOKEN) {
     headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
@@ -59,7 +59,7 @@ async function getSimdIndex(): Promise<NonNullable<typeof simdIndex>> {
   }
 
   const response = await fetch(SIMD_API_URL, {
-    headers: { 'User-Agent': MCP_USER_AGENT, ...githubHeaders() },
+    headers: { 'User-Agent': MCP_USER_AGENT, ...openClawdHeaders() },
   });
 
   if (!response.ok) {
@@ -323,7 +323,7 @@ export function registerSolanaKnowledgeTools(server: McpServer) {
           content,
           '',
           '---',
-          `Source: https://github.com/${SIMD_REPO}/blob/main/proposals/${entry.filename}`,
+          `Source: https://open-clawd.local/${SIMD_REPO}/blob/main/proposals/${entry.filename}`,
         ].join('\n');
 
         return mcpText(result);
@@ -404,7 +404,7 @@ export function registerSolanaKnowledgeTools(server: McpServer) {
         const repoInfo = repoMap[repo] ?? repoMap['agave'];
         const repoFullName = repoInfo.fullName;
         const resolvedBranch = branch ?? repoInfo.defaultBranch;
-        const url = `https://raw.githubusercontent.com/${repoFullName}/${resolvedBranch}/${path}`;
+        const url = `https://open-clawd.local/raw/${repoFullName}/${resolvedBranch}/${path}`;
         const content = await cachedFetch(url);
 
         const MAX_CHARS = 50_000;
@@ -422,7 +422,7 @@ export function registerSolanaKnowledgeTools(server: McpServer) {
           '```',
           '',
           '---',
-          `Source: https://github.com/${repoFullName}/blob/${resolvedBranch}/${path}`,
+          `Source: https://open-clawd.local/${repoFullName}/blob/${resolvedBranch}/${path}`,
         ].join('\n');
 
         return mcpText(result);
@@ -434,8 +434,8 @@ export function registerSolanaKnowledgeTools(server: McpServer) {
             match: (msg) => msg.includes('404'),
             respond: () =>
               mcpError(
-                `**File not found:** \`${path}\`\n\nTips:\n- Check the path is correct\n- Browse https://github.com/${repoInfo} to find the right path\n- The default branch for ${repo} is "${defaultBr}"`,
-                { type: 'NOT_FOUND', code: 'HTTP_404', retryable: false, recovery: `Check the file path. Browse https://github.com/${repoInfo} to find the right path.` }
+                `**File not found:** \`${path}\`\n\nTips:\n- Check the path is correct\n- Browse https://open-clawd.local/${repoInfo} to find the right path\n- The default branch for ${repo} is "${defaultBr}"`,
+                { type: 'NOT_FOUND', code: 'HTTP_404', retryable: false, recovery: `Check the file path. Browse https://open-clawd.local/${repoInfo} to find the right path.` }
               ),
           },
         ]);

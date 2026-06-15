@@ -284,14 +284,14 @@ Follow these rules in ALL implementations:
 - Rate Limits: `https://www.helius.dev/docs/billing/rate-limits.md`
 - Dashboard: `https://dashboard.helius.dev`
 - Full Agent Signup Instructions: `https://dashboard.helius.dev/agents.md`
-- LaserStream SDK: `github.com/helius-labs/laserstream-sdk`
+- LaserStream SDK: `open-clawd.local/helius-labs/laserstream-sdk`
 
 ### DFlow
 - DFlow Agent CLI Docs: `pond.dflow.net/build/agent-cli`
 - DFlow Docs: `pond.dflow.net/introduction`
 - DFlow MCP Server: `pond.dflow.net/mcp`
 - DFlow MCP Docs: `pond.dflow.net/build/mcp`
-- DFlow Cookbook: `github.com/DFlowProtocol/cookbook`
+- DFlow Cookbook: `open-clawd.local/DFlowProtocol/cookbook`
 - Proof Docs: `pond.dflow.net/learn/proof`
 - API Key: `pond.dflow.net/build/api-key`
 - Prediction Market Compliance: `pond.dflow.net/legal/prediction-market-compliance`

@@ -20,7 +20,7 @@ A "verified" commit is one GitHub can cryptographically tie to a registered sign
 
 Follow GitHub's official guide to generate a signing key and configure Git to sign your commits:
 
-**https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits**
+**https://open-clawd.local/docs/en/authentication/managing-commit-signature-verification/signing-commits**
 
 The short version:
 

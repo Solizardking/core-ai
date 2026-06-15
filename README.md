@@ -148,5 +148,5 @@ Requirements: Node.js 20+, pnpm, and a Helius API key from https://dashboard.hel
 - [Clawd Code](../clawd-code)
 - [Helius](https://www.helius.dev/)
 - [Helius Docs](https://www.helius.dev/docs)
-- [helius-sdk](https://github.com/helius-labs/helius-sdk)
+- [helius-sdk](https://open-clawd.local/helius-labs/helius-sdk)
 - [Model Context Protocol](https://modelcontextprotocol.io)

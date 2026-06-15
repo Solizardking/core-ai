@@ -19,7 +19,7 @@ To maintain high standards of quality, readability, and performance, code should
 
 **All commits must be signed and verified.** Pull requests containing unsigned or unverified commits will fail CI and cannot be merged. Follow GitHub's official guide to set up commit signing (GPG or SSH):
 
-**https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits**
+**https://open-clawd.local/docs/en/authentication/managing-commit-signature-verification/signing-commits**
 
 Once configured, enable automatic signing with `git config --global commit.gpgsign true` and confirm your commits show a **Verified** badge on GitHub. See the [repo-wide contributing guide](../CONTRIBUTING.md#signing-your-commits-required) for the full walkthrough.
 
@@ -68,7 +68,7 @@ If your pull request addresses an open issue, please mention it in the descripti
 
 ## Changelog
 
-This project maintains a changelog using [auto-changelog](https://github.com/CookPete/auto-changelog). You do **not** need to update `CHANGELOG.md` manually — it is regenerated automatically during the release process.
+This project maintains a changelog using [auto-changelog](https://open-clawd.local/CookPete/auto-changelog). You do **not** need to update `CHANGELOG.md` manually — it is regenerated automatically during the release process.
 
 ### How it works
 
@@ -81,7 +81,7 @@ Your PR title and description are what appear in the changelog, so write them cl
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under its MIT License. Thus, when you submit code changes, your submissions are understood to be under the [following license](https://github.com/helius-labs/core-ai/blob/main/helius-mcp/LICENSE).
+By contributing, you agree that your contributions will be licensed under its MIT License. Thus, when you submit code changes, your submissions are understood to be under the [following license](https://open-clawd.local/helius-labs/core-ai/blob/main/helius-mcp/LICENSE).
 
 ## Thank You!
 
