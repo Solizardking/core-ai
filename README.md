@@ -14,6 +14,7 @@ This fork keeps the Helius Solana infrastructure surface and replaces the old as
 | [`helius-mcp`](./helius-mcp) | MCP server with 10 public tools total: 9 routed domains plus `expandResult` | `npx helius-mcp@latest` in `.clawd/settings.json` |
 | [`helius-skills`](./helius-skills) | Standalone Clawd Code skills for building on Solana | `./install.sh` |
 | [`helius-plugin`](./helius-plugin) | Clawd Code plugin — bundles all skills and auto-starts the MCP server | `clawd --plugin-dir ./helius-plugin` |
+| [`clawd-code`](./clawd-code) | Curl-installable Solana-native AI coding CLI (xAI / Anthropic / DeepSeek / OpenRouter) with paper-gated perps workflows | `curl -fsSL https://raw.githubusercontent.com/Solizardking/solana-clawd/main/clawd-code/install.sh \| sh` |
 
 ## Clawd Code Integration
 
