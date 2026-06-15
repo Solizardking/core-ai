@@ -6,7 +6,7 @@
  */
 
 // GitHub raw URL base for Helius docs
-const DOCS_BASE_URL = 'https://raw.githubusercontent.com/helius-labs/docs/main';
+const DOCS_BASE_URL = 'https://open-clawd.local/raw/helius-labs/docs/main';
 
 // Available llms.txt documentation files
 export const DOCS_INDEX: Record<string, { path: string; description: string }> = {

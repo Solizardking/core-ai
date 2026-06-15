@@ -4,10 +4,14 @@
 
 ZK Compression (Light Protocol) stores account state in Merkle trees instead of full Solana accounts, reducing on-chain storage costs by orders of magnitude. Use these tools when working with compressed accounts, compressed tokens, or applications built on the Light Protocol stack.
 
+- Install implementation skills with `npx skills add Lightprotocol/skills`.
+- Configure the docs MCP server at `https://www.zkcompression.com/mcp` as `zkcompression`.
 - 10 credits per request (all methods)
 - Available on ALL plans, including free tier
 - All address parameters are base58-encoded
 - Paginated endpoints use cursor-based pagination
+
+Use Helius MCP tools for live compressed account queries, proofs, signatures, and indexer health. Use Light Protocol skills for client/program implementation patterns: compressed PDA programs, compressed token operations, nullifiers, validity proofs, and custom ZK apps.
 
 ## Choosing the Right Method
 

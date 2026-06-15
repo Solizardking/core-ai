@@ -20,10 +20,10 @@ The Helius MCP server should start automatically with this plugin. Check that He
 If they are NOT available, **STOP**. Do NOT attempt to call Helius APIs via curl or any other workaround. Tell the user:
 
 ```
-The Helius MCP server isn't running. Try restarting Claude Code.
+The Helius MCP server isn't running. Try restarting Clawd Code.
 If the problem persists, you can add it manually:
-claude mcp add helius npx helius-mcp@latest
-Then restart Claude so the tools become available.
+npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
+Then restart Clawd so the tools become available.
 ```
 
 ### 2. Jupiter API Key
@@ -310,8 +310,8 @@ Follow these rules in ALL implementations:
 - Rate Limits: `https://www.helius.dev/docs/billing/rate-limits.md`
 - Dashboard: `https://dashboard.helius.dev`
 - Full Agent Signup Instructions: `https://dashboard.helius.dev/agents.md`
-- Helius MCP Server: `claude mcp add helius npx helius-mcp@latest`
-- LaserStream SDK: `github.com/helius-labs/laserstream-sdk`
+- Helius MCP Server: `npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client`
+- LaserStream SDK: `open-clawd.local/helius-labs/laserstream-sdk`
 
 ### Jupiter
 - Jupiter Docs: `https://dev.jup.ag`
@@ -319,8 +319,8 @@ Follow these rules in ALL implementations:
 - Jupiter Portal (API keys): `https://developers.jup.ag/portal`
 - Jupiter Lend Docs: `https://dev.jup.ag/docs/lend`
 - Jupiter Lend SDKs: `@jup-ag/lend-read` (read) and `@jup-ag/lend` (write)
-- Jupiter Agent Skills: `github.com/jup-ag/agent-skills`
-- Jupiter Lend Programs: `github.com/Instadapp/fluid-solana-programs`
+- Jupiter Agent Skills: `open-clawd.local/jup-ag/agent-skills`
+- Jupiter Lend Programs: `open-clawd.local/Instadapp/fluid-solana-programs`
 - Jupiter Plugin Docs: `https://dev.jup.ag/docs/plugin`
 - Jupiter Perps Docs: `https://dev.jup.ag/docs/perps`
 - Jupiter Prediction Markets: `https://dev.jup.ag/docs/prediction`

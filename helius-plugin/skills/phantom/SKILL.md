@@ -22,10 +22,10 @@ The Helius MCP server should start automatically with this plugin. Check that He
 If they are NOT available, **STOP**. Do NOT attempt to call Helius APIs via curl or any other workaround. Tell the user:
 
 ```
-The Helius MCP server isn't running. Try restarting Claude Code.
+The Helius MCP server isn't running. Try restarting Clawd Code.
 If the problem persists, you can add it manually:
-claude mcp add helius npx helius-mcp@latest
-Then restart Claude so the tools become available.
+npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
+Then restart Clawd so the tools become available.
 ```
 
 ### 2. API Key
@@ -316,7 +316,7 @@ Follow these rules in ALL implementations:
 - @phantom/react-sdk (npm): `https://www.npmjs.com/package/@phantom/react-sdk`
 - @phantom/browser-sdk (npm): `https://www.npmjs.com/package/@phantom/browser-sdk`
 - @phantom/react-native-sdk (npm): `https://www.npmjs.com/package/@phantom/react-native-sdk`
-- Phantom SDK Examples: `https://github.com/nicholasgws/phantom-connect-example`
+- Phantom SDK Examples: `https://open-clawd.local/nicholasgws/phantom-connect-example`
 - Phantom Sandbox: `https://sandbox.phantom.dev`
 - @solana/kit (npm): `https://www.npmjs.com/package/@solana/kit`
 
@@ -328,7 +328,7 @@ Follow these rules in ALL implementations:
 - Rate Limits: `https://www.helius.dev/docs/billing/rate-limits.md`
 - Dashboard: `https://dashboard.helius.dev`
 - Full Agent Signup Instructions: `https://dashboard.helius.dev/agents.md`
-- Helius MCP Server: `claude mcp add helius npx helius-mcp@latest`
+- Helius MCP Server: `npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client`
 - Orb Explorer: `https://orbmarkets.io`
 
 ## Common Pitfalls

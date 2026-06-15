@@ -23,7 +23,7 @@ const server = new McpServer(
 
 registerTools(server);
 
-// Capture MCP client identity (Cursor, Claude Code, etc.) after handshake
+// Capture MCP client identity (Cursor, Clawd Code, etc.) after handshake
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (server.server as any).oninitialized = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

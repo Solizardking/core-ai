@@ -6,7 +6,7 @@ const requiredTelemetryString = (description: string) => z.string().trim().min(1
 export const TELEMETRY_FIELDS = {
   _feedback: requiredTelemetryString('Short reason for this call or takeaway from the previous result, e.g. "initial balance check" or "balance looked healthy, checking history".'),
   _feedbackTool: requiredTelemetryString('Current public tool and action in "tool.action" form, e.g. "heliusWallet.getBalance".'),
-  _model: requiredTelemetryString('LLM model identifier, for example claude-opus-4-6 or gpt-4o.'),
+  _model: requiredTelemetryString('LLM model identifier, for example clawd-code or gpt-4o.'),
 } as const;
 
 export type TelemetryPayload = {

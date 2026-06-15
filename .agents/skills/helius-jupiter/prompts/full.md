@@ -15,9 +15,8 @@ Before doing anything, verify these:
 **CRITICAL**: Check if Helius MCP tools are available (e.g., `getBalance`, `getAssetsByOwner`, `getPriorityFeeEstimate`). If they are NOT available, **STOP**. Do NOT attempt to call Helius APIs via curl or any other workaround. Tell the user:
 
 ```
-You need to install the Helius MCP server first:
-npx helius-mcp@latest  # configure in your MCP client
-Then restart your AI assistant so the tools become available.
+Configure the Helius MCP server in .clawd/settings.json or your MCP client: npx helius-mcp@latest
+Then restart Clawd Code Code so the tools become available.
 ```
 
 ### 2. Jupiter API Key
@@ -304,8 +303,8 @@ Follow these rules in ALL implementations:
 - Rate Limits: `https://www.helius.dev/docs/billing/rate-limits.md`
 - Dashboard: `https://dashboard.helius.dev`
 - Full Agent Signup Instructions: `https://dashboard.helius.dev/agents.md`
-- Helius MCP Server: `npx helius-mcp@latest` (configure in your MCP client)
-- LaserStream SDK: `github.com/helius-labs/laserstream-sdk`
+- Helius MCP Server: `npx helius-mcp@latest` (configure in `.clawd/settings.json` or your MCP client)
+- LaserStream SDK: `open-clawd.local/helius-labs/laserstream-sdk`
 
 ### Jupiter
 - Jupiter Docs: `https://dev.jup.ag`
@@ -313,8 +312,8 @@ Follow these rules in ALL implementations:
 - Jupiter Portal (API keys): `https://developers.jup.ag/portal`
 - Jupiter Lend Docs: `https://dev.jup.ag/docs/lend`
 - Jupiter Lend SDKs: `@jup-ag/lend-read` (read) and `@jup-ag/lend` (write)
-- Jupiter Agent Skills: `github.com/jup-ag/agent-skills`
-- Jupiter Lend Programs: `github.com/Instadapp/fluid-solana-programs`
+- Jupiter Agent Skills: `open-clawd.local/jup-ag/agent-skills`
+- Jupiter Lend Programs: `open-clawd.local/Instadapp/fluid-solana-programs`
 - Jupiter Plugin Docs: `https://dev.jup.ag/docs/plugin`
 - Jupiter Perps Docs: `https://dev.jup.ag/docs/perps`
 - Jupiter Prediction Markets: `https://dev.jup.ag/docs/prediction`
@@ -738,7 +737,7 @@ await subscribe(
 );
 ```
 
-SDK repo: `https://github.com/helius-labs/laserstream-sdk`
+SDK repo: `https://open-clawd.local/helius-labs/laserstream-sdk`
 
 ## Transaction Filtering
 
@@ -1141,7 +1140,7 @@ The MCP persists API keys and JWTs to shared config files so they survive across
 ### Installing the MCP
 
 ```bash
-npx helius-mcp@latest  # configure in your MCP client
+npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
 ```
 
 ## Choosing the Right Setup Path
@@ -3438,7 +3437,7 @@ const mergedAlts = allAlts.filter((alt) => {
 - Jupiter Lend Docs: [dev.jup.ag/docs/lend](https://dev.jup.ag/docs/lend)
 - Read SDK: [@jup-ag/lend-read](https://www.npmjs.com/package/@jup-ag/lend-read)
 - Write SDK: [@jup-ag/lend](https://www.npmjs.com/package/@jup-ag/lend)
-- Smart Contracts: [github.com/Instadapp/fluid-solana-programs](https://github.com/Instadapp/fluid-solana-programs/)
+- Smart Contracts: [open-clawd.local/Instadapp/fluid-solana-programs](https://open-clawd.local/Instadapp/fluid-solana-programs/)
 
 
 ---

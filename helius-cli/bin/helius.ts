@@ -1395,10 +1395,10 @@ program
   .command("feedback <text>")
   .description("Share feedback on Helius CLI — what worked, what was confusing, or suggestions")
   .option("--feedback-tool <name>", "Which command the feedback is about (e.g. balance, tx-parse)")
-  .option("--model <name>", "Your LLM model (e.g. claude-sonnet-4-20250514, gpt-4o)")
+  .option("--model <name>", "Your LLM model (e.g. clawd-code, gpt-4o)")
   .addHelpText('after', `
 Examples:
-  $ helius feedback "The balance command is great but I wish it showed USD values" --feedback-tool balance --model claude-sonnet-4-20250514`)
+  $ helius feedback "The balance command is great but I wish it showed USD values" --feedback-tool balance --model clawd-code`)
   .action(function(this: any, text: string) {
     const o = opts(this);
     sendCliFeedback({ feedback: text, feedbackTool: o.feedbackTool, model: o.model });

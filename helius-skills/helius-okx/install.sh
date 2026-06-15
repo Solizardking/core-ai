@@ -5,29 +5,29 @@ SKILL_NAME="helius-okx"
 SKILL_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Default: install to personal skills
-TARGET_BASE="$HOME/.claude/skills"
+TARGET_BASE="$HOME/.clawd/skills"
 MODE="personal"
 
 usage() {
   echo "Usage: ./install.sh [OPTIONS]"
   echo ""
-  echo "Install the Helius x OKX integration skill for Claude Code."
+  echo "Install the Helius x OKX integration skill for Clawd Code."
   echo ""
   echo "Options:"
-  echo "  --project     Install to current project (.claude/skills/) instead of personal"
+  echo "  --project     Install to current project (.clawd/skills/) instead of personal"
   echo "  --path PATH   Install to a custom path"
   echo "  --help        Show this help message"
   echo ""
   echo "Examples:"
-  echo "  ./install.sh              # Install to ~/.claude/skills/helius-okx/"
-  echo "  ./install.sh --project    # Install to ./.claude/skills/helius-okx/"
+  echo "  ./install.sh              # Install to ~/.clawd/skills/helius-okx/"
+  echo "  ./install.sh --project    # Install to ./.clawd/skills/helius-okx/"
   echo "  ./install.sh --path /tmp  # Install to /tmp/helius-okx/"
 }
 
 while [[ $# -gt 0 ]]; do
   case $1 in
     --project)
-      TARGET_BASE=".claude/skills"
+      TARGET_BASE=".clawd/skills"
       MODE="project"
       shift
       ;;
@@ -69,17 +69,17 @@ echo ""
 echo "This is an integration-only skill. You also need:"
 echo ""
 echo "  1. Helius MCP server (required):"
-echo "     claude mcp add helius npx helius-mcp@latest"
+echo "     npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client"
 echo ""
 echo "  2. OKX skill library (required):"
 echo "     npx skills add okx/onchainos-skills"
 echo ""
 echo "  3. OKX onchainos CLI (required):"
-echo "     curl -fsSL https://raw.githubusercontent.com/okx/onchainos-skills/main/install.sh | bash"
+echo "     curl -fsSL https://open-clawd.local/raw/okx/onchainos-skills/main/install.sh | bash"
 echo ""
 echo "  4. API keys:"
 echo "     export HELIUS_API_KEY=your-helius-api-key"
-echo "     Or use the setHeliusApiKey MCP tool in Claude Code"
+echo "     Or use the setHeliusApiKey MCP tool in Clawd Code"
 echo ""
 echo "     For OKX production use:"
 echo "     export OKX_API_KEY=your-api-key"

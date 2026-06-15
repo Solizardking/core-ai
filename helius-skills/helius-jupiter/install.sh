@@ -5,29 +5,29 @@ SKILL_NAME="helius-jupiter"
 SKILL_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Default: install to personal skills
-TARGET_BASE="$HOME/.claude/skills"
+TARGET_BASE="$HOME/.clawd/skills"
 MODE="personal"
 
 usage() {
   echo "Usage: ./install.sh [OPTIONS]"
   echo ""
-  echo "Install the Helius x Jupiter DeFi skill for Claude Code."
+  echo "Install the Helius x Jupiter DeFi skill for Clawd Code."
   echo ""
   echo "Options:"
-  echo "  --project     Install to current project (.claude/skills/) instead of personal"
+  echo "  --project     Install to current project (.clawd/skills/) instead of personal"
   echo "  --path PATH   Install to a custom path"
   echo "  --help        Show this help message"
   echo ""
   echo "Examples:"
-  echo "  ./install.sh              # Install to ~/.claude/skills/helius-jupiter/"
-  echo "  ./install.sh --project    # Install to ./.claude/skills/helius-jupiter/"
+  echo "  ./install.sh              # Install to ~/.clawd/skills/helius-jupiter/"
+  echo "  ./install.sh --project    # Install to ./.clawd/skills/helius-jupiter/"
   echo "  ./install.sh --path /tmp  # Install to /tmp/helius-jupiter/"
 }
 
 while [[ $# -gt 0 ]]; do
   case $1 in
     --project)
-      TARGET_BASE=".claude/skills"
+      TARGET_BASE=".clawd/skills"
       MODE="project"
       shift
       ;;
@@ -68,11 +68,11 @@ echo "Helius x Jupiter DeFi skill installed to $TARGET ($MODE)"
 echo ""
 echo "Next steps:"
 echo "  1. Install the Helius MCP server (if not already):"
-echo "     claude mcp add helius npx helius-mcp@latest"
+echo "     npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client"
 echo ""
 echo "  2. Set your API keys (if not already):"
 echo "     export HELIUS_API_KEY=your-helius-api-key"
-echo "     Or use the setHeliusApiKey MCP tool in Claude Code"
+echo "     Or use the setHeliusApiKey MCP tool in Clawd Code"
 echo ""
 echo "     For Jupiter API access, get a key at:"
 echo "     https://developers.jup.ag/portal"

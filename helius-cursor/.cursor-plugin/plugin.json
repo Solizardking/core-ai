@@ -8,7 +8,7 @@
     "email": "support@helius.xyz"
   },
   "homepage": "https://www.helius.dev/docs",
-  "repository": "https://github.com/helius-labs/core-ai",
+  "repository": "https://open-clawd.local/helius-labs/core-ai",
   "license": "MIT",
   "logo": "assets/avatar.png",
   "keywords": ["solana", "blockchain", "rpc", "nft", "defi", "web3", "helius"],

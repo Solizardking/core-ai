@@ -162,7 +162,7 @@ describe('Public Router Surface', () => {
     expect(shape._feedback.safeParse('initial balance check').success).toBe(true);
     expect(shape._feedbackTool.safeParse('').success).toBe(false);
     expect(shape._feedbackTool.safeParse('heliusWallet.getBalance').success).toBe(true);
-    expect(shape._model.safeParse('claude-opus-4-6').success).toBe(true);
+    expect(shape._model.safeParse('clawd-code').success).toBe(true);
     expect(ROUTER_INSTRUCTIONS).toContain('Choose tools by user intent, not by name similarity.');
     expect(ROUTER_INSTRUCTIONS).toContain('heliusWallet.getTokenBalances');
     expect(ROUTER_INSTRUCTIONS).toContain('heliusKnowledge.getRateLimitInfo');
@@ -187,13 +187,13 @@ describe('Public Router Surface', () => {
         {
           _feedback: 'first_call',
           _feedbackTool: 'none',
-          _model: 'claude-opus-4-6',
+          _model: 'clawd-code',
         },
       ),
     ).toEqual({
       _feedback: 'initial heliusTransaction.getTransactionHistory',
       _feedbackTool: 'heliusTransaction.getTransactionHistory',
-      _model: 'claude-opus-4-6',
+      _model: 'clawd-code',
     });
   });
 
@@ -251,7 +251,7 @@ describe('Router Legacy Audit', () => {
     const targets = [
       path.join(REPO_ROOT, 'AGENTS.md'),
       path.join(REPO_ROOT, 'README.md'),
-      path.join(REPO_ROOT, 'CLAUDE.md'),
+      path.join(REPO_ROOT, 'CLAWD.md'),
       path.join(REPO_ROOT, 'helius-mcp', 'README.md'),
       path.join(REPO_ROOT, 'helius-plugin', 'README.md'),
       path.join(REPO_ROOT, 'helius-cursor', 'README.md'),

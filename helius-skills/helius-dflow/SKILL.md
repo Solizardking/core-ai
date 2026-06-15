@@ -43,8 +43,8 @@ Before doing anything, verify these:
 
 ```
 You need to install the Helius MCP server first:
-claude mcp add helius npx helius-mcp@latest
-Then restart Claude so the tools become available.
+npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
+Then restart Clawd so the tools become available.
 ```
 
 ### 2. DFlow MCP Server (Optional but Recommended)
@@ -55,7 +55,7 @@ Check if DFlow MCP tools are available. The DFlow MCP server provides tools for 
 Add the DFlow MCP server at pond.dflow.net/mcp for enhanced API tooling.
 ```
 
-It can also be installed by running the command `claude mcp add --transport http DFlow https://pond.dflow.net/mcp`, or by being directly added to your project's `.mcp.json`:
+It can also be installed by running the command `Configure DFlow MCP over HTTP: https://pond.dflow.net/mcp`, or by being directly added to your project's `.mcp.json`:
 
 ```
 {
@@ -313,15 +313,15 @@ Follow these rules in ALL implementations:
 - Rate Limits: `https://www.helius.dev/docs/billing/rate-limits.md`
 - Dashboard: `https://dashboard.helius.dev`
 - Full Agent Signup Instructions: `https://dashboard.helius.dev/agents.md`
-- Helius MCP Server: `claude mcp add helius npx helius-mcp@latest`
-- LaserStream SDK: `github.com/helius-labs/laserstream-sdk`
+- Helius MCP Server: `npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client`
+- LaserStream SDK: `open-clawd.local/helius-labs/laserstream-sdk`
 
 ### DFlow
 - DFlow Agent CLI Docs: `pond.dflow.net/build/agent-cli`
 - DFlow Docs: `pond.dflow.net/introduction`
 - DFlow MCP Server: `pond.dflow.net/mcp`
 - DFlow MCP Docs: `pond.dflow.net/build/mcp`
-- DFlow Cookbook: `github.com/DFlowProtocol/cookbook`
+- DFlow Cookbook: `open-clawd.local/DFlowProtocol/cookbook`
 - Proof Docs: `pond.dflow.net/learn/proof`
 - API Key: `pond.dflow.net/build/api-key`
 - Prediction Market Compliance: `pond.dflow.net/legal/prediction-market-compliance`

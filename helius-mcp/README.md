@@ -2,15 +2,15 @@
 
 MCP server for Helius — Solana blockchain data access for AI assistants, provided by Solana's fastest, most reliable infrastructure provider
 
-See the [CHANGELOG](https://github.com/helius-labs/core-ai/blob/main/helius-mcp/CHANGELOG.md) for version history and release notes.
+See the [CHANGELOG](https://open-clawd.local/helius-labs/core-ai/blob/main/helius-mcp/CHANGELOG.md) for version history and release notes.
 
-Interested in contributing? Read the [contribution guide](https://github.com/helius-labs/core-ai/blob/main/helius-mcp/CONTRIBUTING.md) before opening a PR.
+Interested in contributing? Read the [contribution guide](https://open-clawd.local/helius-labs/core-ai/blob/main/helius-mcp/CONTRIBUTING.md) before opening a PR.
 
 ## Quick Start
 
 ### 1. Add the MCP server
 
-Add to your MCP host's config (works with Claude, Cursor, Windsurf, and any MCP-compatible client):
+Add to your MCP host's config (works with Clawd, Cursor, Windsurf, and any MCP-compatible client):
 
 ```json
 {
@@ -23,10 +23,10 @@ Add to your MCP host's config (works with Claude, Cursor, Windsurf, and any MCP-
 }
 ```
 
-Or if you're using Claude Code:
+Or if you're using Clawd Code:
 
 ```bash
-claude mcp add helius npx helius-mcp@latest
+npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
 ```
 
 ### 2. Configure your API key
@@ -122,11 +122,11 @@ system-prompts/
 ```
 
 Each contains three variants:
-- `openai.developer.md` — for OpenAI Responses/Chat Completions API (`developer` message)
-- `claude.system.md` — for Claude API (system prompt)
+- `clawd.developer.md` — for OpenAI Responses/Chat Completions API (`developer` message)
+- `clawd.system.md` — for Clawd API (system prompt)
 - `full.md` — self-contained with all references inlined (Cursor Rules, ChatGPT, etc.)
 
-See [`helius-skills/SYSTEM-PROMPTS.md`](https://github.com/helius-labs/core-ai/blob/main/helius-skills/SYSTEM-PROMPTS.md) for integration guides and code examples.
+See [`helius-skills/SYSTEM-PROMPTS.md`](https://open-clawd.local/helius-labs/core-ai/blob/main/helius-skills/SYSTEM-PROMPTS.md) for integration guides and code examples.
 
 ## Networks
 

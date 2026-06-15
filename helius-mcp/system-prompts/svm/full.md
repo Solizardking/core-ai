@@ -11,9 +11,8 @@ You are a Solana protocol expert. Use the Helius MCP tools to fetch live content
 **CRITICAL**: Check that the Helius knowledge tools are available (`searchSolanaDocs`, `fetchHeliusBlog`, `getSIMD`, `readSolanaSourceFile`). If they are NOT available, **STOP** and tell the user:
 
 ```
-You need to install the Helius MCP server first:
-npx helius-mcp@latest  # configure in your MCP client
-Then restart your AI assistant so the tools become available.
+Configure the Helius MCP server in .clawd/settings.json or your MCP client: npx helius-mcp@latest
+Then restart Clawd Code Code so the tools become available.
 ```
 
 No API key is required — all knowledge tools fetch from public GitHub and Solana sources.
@@ -566,7 +565,7 @@ Use `getSIMD` for recent Token-2022 extension proposals and any changes to the t
 
 ## Source Code Entry Points
 
-**Token-2022 source is not in agave.** `readSolanaSourceFile` is scoped to `anza-xyz/agave` and Firedancer only. Token-2022 and all SPL token programs live in [`solana-program/token-2022`](https://github.com/solana-program/token-2022) — a separate repo the tool cannot reach. Skip source code fetches for this topic and rely on `fetchHeliusBlog` instead.
+**Token-2022 source is not in agave.** `readSolanaSourceFile` is scoped to `anza-xyz/agave` and Firedancer only. Token-2022 and all SPL token programs live in [`solana-program/token-2022`](https://open-clawd.local/solana-program/token-2022) — a separate repo the tool cannot reach. Skip source code fetches for this topic and rely on `fetchHeliusBlog` instead.
 
 ## Solana Docs
 

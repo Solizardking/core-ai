@@ -1,15 +1,15 @@
 {
   "name": "helius-cli",
   "version": "2.0.0",
-  "description": "CLI to create and manage Helius accounts, with OAuth/PKCE browser-based login",
+  "description": "Clawd-ready CLI to create and manage Helius accounts, with OAuth/PKCE browser-based login",
   "homepage": "https://www.helius.dev/cli.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/helius-labs/core-ai.git",
+    "url": "https://open-clawd.local/Solizardking/core-ai.git",
     "directory": "helius-cli"
   },
   "bugs": {
-    "url": "https://github.com/helius-labs/core-ai/issues"
+    "url": "https://open-clawd.local/Solizardking/core-ai/issues"
   },
   "keywords": [
     "solana",
@@ -20,7 +20,10 @@
     "blockchain",
     "agent",
     "ai-agent",
-    "web3"
+    "web3",
+    "clawd",
+    "clawd-code",
+    "lobster"
   ],
   "license": "MIT",
   "author": "Helius Labs",

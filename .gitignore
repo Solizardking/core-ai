@@ -28,6 +28,16 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 
+# Clawd Code runtime state and artifacts
+.clawd/
+.clawd-code/
+clawd-code/dist/
+clawd-code/outputs/
+clawd-code/node_modules/
+clawd-code/.clawd/
+clawd-code/*.tsbuildinfo
+clawd-code/coverage/
+
 # Package tarballs
 *.tgz
 

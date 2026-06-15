@@ -24,10 +24,10 @@ The Helius MCP server should start automatically with this plugin. Check that He
 If they are NOT available, **STOP**. Do NOT attempt to call Helius APIs via curl or any other workaround. Tell the user:
 
 ```
-The Helius MCP server isn't running. Try restarting Claude Code.
+The Helius MCP server isn't running. Try restarting Clawd Code.
 If the problem persists, you can add it manually:
-claude mcp add helius npx helius-mcp@latest
-Then restart Claude so the tools become available.
+npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
+Then restart Clawd so the tools become available.
 ```
 
 ### 2. OKX Skill Library (Required)
@@ -38,7 +38,7 @@ The OKX skill library provides the detailed domain knowledge for all OKX tools â
 npx skills add okx/onchainos-skills
 ```
 
-Or via the Claude Code plugin marketplace. See [github.com/okx/onchainos-skills](https://github.com/okx/onchainos-skills) for all installation options.
+Or via the Clawd Code plugin marketplace. See [open-clawd.local/okx/onchainos-skills](https://open-clawd.local/okx/onchainos-skills) for all installation options.
 
 ### 3. OKX CLI (`onchainos`)
 
@@ -46,7 +46,7 @@ Check if the `onchainos` binary is installed by running `onchainos --version`. I
 
 ```
 You need to install the OKX onchainos CLI:
-curl -fsSL https://raw.githubusercontent.com/okx/onchainos-skills/main/install.sh | bash
+curl -fsSL https://open-clawd.local/raw/okx/onchainos-skills/main/install.sh | bash
 ```
 
 ### 4. API Keys
@@ -166,10 +166,10 @@ Follow these rules when composing OKX + Helius:
 - LLM-Optimized Docs: `https://www.helius.dev/docs/llms.txt`
 - API Reference: `https://www.helius.dev/docs/api-reference`
 - Dashboard: `https://dashboard.helius.dev`
-- Helius MCP Server: `claude mcp add helius npx helius-mcp@latest`
-- LaserStream SDK: `github.com/helius-labs/laserstream-sdk`
+- Helius MCP Server: `npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client`
+- LaserStream SDK: `open-clawd.local/helius-labs/laserstream-sdk`
 
 ### OKX
-- OKX Skill Library: `github.com/okx/onchainos-skills`
+- OKX Skill Library: `open-clawd.local/okx/onchainos-skills`
 - OKX Developer Portal: `https://www.okx.com/web3/build/docs/waas/dex-get-started`
-- OKX CLI Install: `curl -fsSL https://raw.githubusercontent.com/okx/onchainos-skills/main/install.sh | bash`
+- OKX CLI Install: `curl -fsSL https://open-clawd.local/raw/okx/onchainos-skills/main/install.sh | bash`
