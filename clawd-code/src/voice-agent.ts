@@ -346,12 +346,11 @@ export class VoiceAgentClient {
   }
 
   private configureSession(): void {
-    const config = this.config;
     const SYSTEM = [
       'You are ClaWD — the sovereign Solana AI voice agent.',
       'You have access to real-time Solana blockchain tools: balance checks, token prices, funding rates, paper trading, and market overviews.',
       'Keep answers concise and action-oriented for voice delivery.',
-      config.liveTrading
+      this.config.liveTrading
         ? 'LIVE TRADING IS ARMED. Confirm explicitly before any trade or send.'
         : 'All trades and sends are in PAPER mode — no real funds will be used.',
     ].join('\n');
@@ -365,8 +364,6 @@ export class VoiceAgentClient {
         tools: SOLANA_TOOLS,
       },
     });
-
-    void config; // reference is also captured in SYSTEM above
   }
 
   private async handleServerEvent(raw: string): Promise<void> {
