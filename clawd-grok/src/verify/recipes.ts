@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import type { VerifyRecipe } from "../types/index";
-import { mergeSandboxSettings, type SandboxSettings } from "../utils/settings";
+import type { VerifyRecipe } from "../types/index.js";
+import { mergeSandboxSettings, type SandboxSettings } from "../utils/settings.js";
 
 export type VerifyAppKind =
   | "nextjs"

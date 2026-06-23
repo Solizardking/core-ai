@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, writeFile as writeFsFile } from "fs/promises";
 import os from "os";
 import path from "path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { editFile, writeFile } from "./file";
+import { editFile, writeFile } from "./file.js";
 
 const summarizeDiagnosticsMock = vi.fn<(diagnostics: unknown) => string>(() => "1 LSP issue · 1 error");
 const syncFileWithLspMock = vi.fn<

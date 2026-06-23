@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { SQLiteDatabase, SQLiteStatement } from "./db";
-import { applyMigrations } from "./migrations";
+import type { SQLiteDatabase, SQLiteStatement } from "./db.js";
+import { applyMigrations } from "./migrations.js";
 
 describe("applyMigrations", () => {
   it("repairs missing recap columns when the database version is already current", () => {

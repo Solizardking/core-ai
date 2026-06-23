@@ -2,8 +2,8 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { closeDatabase } from "./db";
-import { SessionStore } from "./sessions";
+import { closeDatabase } from "./db.js";
+import { SessionStore } from "./sessions.js";
 
 const originalHome = process.env.HOME;
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { BashTool } from "../tools/bash";
-import { createTools } from "./tools";
+import { BashTool } from "../tools/bash.js";
+import { createTools } from "./tools.js";
 
 function createScheduleToolSet(overrides?: {
   getDaemonStatus?: () => Promise<{ running: boolean; pid: number | null }>;

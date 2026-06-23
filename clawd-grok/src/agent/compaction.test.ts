@@ -1,6 +1,6 @@
 import type { ModelMessage } from "ai";
 import { describe, expect, it } from "vitest";
-import { buildEffectiveTranscript, type PersistedCompaction } from "../storage/transcript-view";
+import { buildEffectiveTranscript, type PersistedCompaction } from "../storage/transcript-view.js";
 import {
   COMPACTION_SUMMARY_HEADER,
   createCompactionSummaryMessage,
@@ -8,7 +8,7 @@ import {
   prepareCompaction,
   serializeConversation,
   shouldCompactContext,
-} from "./compaction";
+} from "./compaction.js";
 
 function user(text: string): ModelMessage {
   return { role: "user", content: text } as ModelMessage;

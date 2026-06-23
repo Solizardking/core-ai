@@ -1,5 +1,5 @@
-import type { Plan, PlanQuestion } from "../types/index";
-import type { Theme } from "./theme";
+import type { Plan, PlanQuestion } from "../types/index.js";
+import type { Theme } from "./theme.js";
 
 export type PlanAnswers = Record<string, string | string[]>;
 

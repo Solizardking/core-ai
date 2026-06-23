@@ -1,9 +1,9 @@
 import type { ScrollBoxRenderable, TextareaRenderable } from "@opentui/core";
 import { type RefObject, useEffect, useRef } from "react";
-import { MODELS } from "../grok/models";
-import type { CustomSubagentConfig } from "../utils/settings";
-import { formatSubagentName } from "../utils/subagent-display";
-import type { Theme } from "./theme";
+import { MODELS } from "../grok/models.js";
+import type { CustomSubagentConfig } from "../utils/settings.js";
+import { formatSubagentName } from "../utils/subagent-display.js";
+import type { Theme } from "./theme.js";
 
 const EDITOR_KEYBINDINGS = [{ name: "return", action: "submit" as const }];
 

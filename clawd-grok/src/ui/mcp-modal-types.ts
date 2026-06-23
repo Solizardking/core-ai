@@ -1,5 +1,5 @@
-import type { McpCatalogEntry } from "../mcp/catalog";
-import type { McpRemoteTransport, McpServerConfig } from "../utils/settings";
+import type { McpCatalogEntry } from "../mcp/catalog.js";
+import type { McpRemoteTransport, McpServerConfig } from "../utils/settings.js";
 
 export type McpBrowserRow =
   | { kind: "server"; server: McpServerConfig; description?: string }

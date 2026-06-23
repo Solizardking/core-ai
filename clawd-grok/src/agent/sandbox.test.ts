@@ -31,7 +31,7 @@ async function importAgentModule() {
     },
   }));
 
-  return import("./agent");
+  return import("./agent.js");
 }
 
 afterEach(() => {

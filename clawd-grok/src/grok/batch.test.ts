@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getBatchChatCompletion, pollBatchRequestResult } from "./batch";
+import { getBatchChatCompletion, pollBatchRequestResult } from "./batch.js";
 
 function jsonResponse(body: unknown, init?: ResponseInit): Response {
   return new Response(JSON.stringify(body), {

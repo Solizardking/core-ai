@@ -1,5 +1,5 @@
-import type { VerifyRetryStrategy } from "../types/index";
-import type { VerifyProjectProfile } from "./recipes";
+import type { VerifyRetryStrategy } from "../types/index.js";
+import type { VerifyProjectProfile } from "./recipes.js";
 
 const NODE_WEB_APP_KINDS = new Set(["nextjs", "vite", "astro", "sveltekit", "remix", "cra"]);
 

@@ -36,7 +36,7 @@ async function importScheduleModule(options: { home?: string; spawnMock?: Return
     });
   }
 
-  return import("./schedule");
+  return import("./schedule.js");
 }
 
 afterEach(() => {

@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import type { SandboxMode } from "./settings";
-import { getHomeDir } from "./settings";
+import type { SandboxMode } from "./settings.js";
+import { getHomeDir } from "./settings.js";
 
 interface WorkspaceTrustEntry {
   sandboxMode: SandboxMode;

@@ -1,7 +1,7 @@
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { base, baseSepolia } from "viem/chains";
-import type { PaymentChain } from "../utils/settings";
+import type { PaymentChain } from "../utils/settings.js";
 
 export async function createX402Fetch(
   privateKey: `0x${string}`,

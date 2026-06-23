@@ -1,9 +1,9 @@
-import { loadPaymentSettings } from "../utils/settings";
-import { WalletManager } from "../wallet/manager";
-import { createX402Fetch } from "./agentkit-loader";
-import { type BrinScanResult, scanUrl } from "./brin";
-import { PaymentHistory } from "./history";
-import type { PaymentInspectionResult, PaymentOption } from "./types";
+import { loadPaymentSettings } from "../utils/settings.js";
+import { WalletManager } from "../wallet/manager.js";
+import { createX402Fetch } from "./agentkit-loader.js";
+import { type BrinScanResult, scanUrl } from "./brin.js";
+import { PaymentHistory } from "./history.js";
+import type { PaymentInspectionResult, PaymentOption } from "./types.js";
 
 interface RequestArgs {
   url: string;

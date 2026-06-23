@@ -1,9 +1,9 @@
 import { readFile } from "fs/promises";
 import path from "path";
 import { pathToFileURL } from "url";
-import { createRuntimeLspDefinitions, type RuntimeLspServerDefinition } from "./builtins";
-import { createLspClientSession, type LspClientSession } from "./client";
-import type { LspDiagnosticFile, LspQueryInput, LspToolResponse, NormalizedLspSettings } from "./types";
+import { createRuntimeLspDefinitions, type RuntimeLspServerDefinition } from "./builtins.js";
+import { createLspClientSession, type LspClientSession } from "./client.js";
+import type { LspDiagnosticFile, LspQueryInput, LspToolResponse, NormalizedLspSettings } from "./types.js";
 
 interface ManagedClient {
   key: string;
@@ -45,7 +45,7 @@ export function createWorkspaceLspManager(
     options.createClient ??
     (async ({ serverId, root, definition, settings: normalizedSettings }) => {
       const launch = await definition.resolveLaunch(root, normalizedSettings);
-      if (!launch || !launch.command) return null;
+      if (!launch?.command) return null;
       return createLspClientSession({
         serverId,
         root,

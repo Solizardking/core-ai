@@ -4,8 +4,8 @@ import * as path from "path";
 import { createPublicClient, formatEther, formatUnits, http } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { base, baseSepolia } from "viem/chains";
-import type { PaymentChain } from "../utils/settings";
-import type { WalletBalance, WalletData } from "./types";
+import type { PaymentChain } from "../utils/settings.js";
+import type { WalletBalance, WalletData } from "./types.js";
 
 const WALLET_DIR = path.join(os.homedir(), ".clawd");
 const WALLET_PATH = path.join(WALLET_DIR, "wallet.json");

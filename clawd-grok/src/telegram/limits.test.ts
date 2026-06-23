@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { splitTelegramMessage, TELEGRAM_MAX_MESSAGE } from "./limits";
+import { splitTelegramMessage, TELEGRAM_MAX_MESSAGE } from "./limits.js";
 
 describe("splitTelegramMessage", () => {
   it("returns no chunks for empty input", () => {

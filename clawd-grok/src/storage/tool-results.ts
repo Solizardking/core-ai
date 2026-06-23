@@ -1,4 +1,4 @@
-import type { ToolResult } from "../types/index";
+import type { ToolResult } from "../types/index.js";
 
 export function extractToolResultFromOutput(output: unknown): ToolResult | null {
   if (!output || typeof output !== "object") return null;

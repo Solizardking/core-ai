@@ -1,7 +1,7 @@
 import { createXai, type XaiProvider } from "@ai-sdk/xai";
 import { generateText } from "ai";
-import { getReasoningEffortForModel } from "../utils/settings";
-import { getEffectiveReasoningEffort, getModelInfo, type ModelDefinition, normalizeModelId } from "./models";
+import { getReasoningEffortForModel } from "../utils/settings.js";
+import { getEffectiveReasoningEffort, getModelInfo, type ModelDefinition, normalizeModelId } from "./models.js";
 
 export type { XaiProvider };
 

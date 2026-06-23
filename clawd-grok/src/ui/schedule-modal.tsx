@@ -1,7 +1,7 @@
 import type { ScrollBoxRenderable } from "@opentui/core";
 import { useEffect, useRef } from "react";
-import type { StoredSchedule } from "../tools/schedule";
-import type { Theme } from "./theme";
+import type { StoredSchedule } from "../tools/schedule.js";
+import type { Theme } from "./theme.js";
 
 export type ScheduleBrowseRow = { kind: "schedule"; schedule: StoredSchedule };
 

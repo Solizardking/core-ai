@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "fs";
 import os from "os";
 import path from "path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { sendFileToTelegram, type TelegramFileContext } from "./send-file";
+import { sendFileToTelegram, type TelegramFileContext } from "./send-file.js";
 
 const tempDirs: string[] = [];
 

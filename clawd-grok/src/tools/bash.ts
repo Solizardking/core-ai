@@ -3,10 +3,10 @@ import { createReadStream, createWriteStream } from "fs";
 import { mkdtemp, rm, stat, unlink } from "fs/promises";
 import os from "os";
 import path from "path";
-import { executeEventHooks } from "../hooks/index";
-import type { CwdChangedHookInput } from "../hooks/types";
-import type { ToolResult } from "../types/index";
-import type { SandboxMode, SandboxSettings } from "../utils/settings";
+import { executeEventHooks } from "../hooks/index.js";
+import type { CwdChangedHookInput } from "../hooks/types.js";
+import type { ToolResult } from "../types/index.js";
+import type { SandboxMode, SandboxSettings } from "../utils/settings.js";
 
 const MAX_TAIL_BYTES = 8_192;
 const MAX_BACKGROUND_PROCESSES = 8;

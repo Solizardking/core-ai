@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
-import type { AgentMode, SessionInfo, SessionRecap, SessionStatus, WorkspaceInfo } from "../types/index";
-import { getDatabase } from "./db";
-import { ensureWorkspace } from "./workspaces";
+import type { AgentMode, SessionInfo, SessionRecap, SessionStatus, WorkspaceInfo } from "../types/index.js";
+import { getDatabase } from "./db.js";
+import { ensureWorkspace } from "./workspaces.js";
 
 interface SessionRow {
   id: string;

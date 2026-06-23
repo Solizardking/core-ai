@@ -12,18 +12,18 @@ import {
   createBatch,
   getBatchChatCompletion,
   pollBatchRequestResult,
-} from "../grok/batch";
+} from "../grok/batch.js";
 import {
   createProvider,
   generateRecap as genRecap,
   generateTitle as genTitle,
   resolveModelRuntime,
   type XaiProvider,
-} from "../grok/client";
-import { DEFAULT_MODEL, getModelInfo, normalizeModelId } from "../grok/models";
-import { toolSetToBatchTools } from "../grok/tool-schemas";
-import { createTools } from "../grok/tools";
-import { executeEventHooks } from "../hooks/index";
+} from "../grok/client.js";
+import { DEFAULT_MODEL, getModelInfo, normalizeModelId } from "../grok/models.js";
+import { toolSetToBatchTools } from "../grok/tool-schemas.js";
+import { createTools } from "../grok/tools.js";
+import { executeEventHooks } from "../hooks/index.js";
 import type {
   NotificationHookInput,
   PostCompactHookInput,
@@ -37,9 +37,9 @@ import type {
   TaskCompletedHookInput,
   TaskCreatedHookInput,
   UserPromptSubmitHookInput,
-} from "../hooks/types";
-import { shutdownWorkspaceLspManager } from "../lsp/runtime";
-import { buildMcpToolSet } from "../mcp/runtime";
+} from "../hooks/types.js";
+import { shutdownWorkspaceLspManager } from "../lsp/runtime.js";
+import { buildMcpToolSet } from "../mcp/runtime.js";
 import {
   appendCompaction,
   appendMessages,
@@ -51,9 +51,9 @@ import {
   loadTranscriptState,
   recordUsageEvent,
   SessionStore,
-} from "../storage/index";
-import { BashTool } from "../tools/bash";
-import { type ScheduleDaemonStatus, ScheduleManager, type StoredSchedule } from "../tools/schedule";
+} from "../storage/index.js";
+import { BashTool } from "../tools/bash.js";
+import { type ScheduleDaemonStatus, ScheduleManager, type StoredSchedule } from "../tools/schedule.js";
 import type {
   AgentMode,
   ChatEntry,
@@ -68,8 +68,8 @@ import type {
   UsageSource,
   VerifyRecipe,
   WorkspaceInfo,
-} from "../types/index";
-import { loadCustomInstructions } from "../utils/instructions";
+} from "../types/index.js";
+import { loadCustomInstructions } from "../utils/instructions.js";
 import {
   type CustomSubagentConfig,
   getCurrentModel,
@@ -79,11 +79,11 @@ import {
   loadValidSubAgents,
   type SandboxMode,
   type SandboxSettings,
-} from "../utils/settings";
-import { runSideQuestion, type SideQuestionResult } from "../utils/side-question";
-import { discoverSkills, formatSkillsForPrompt } from "../utils/skills";
-import { buildVerifyDetectPrompt, normalizeVerifyRecipe, prepareVerifySandbox } from "../verify/entrypoint";
-import { runVerifyOrchestration } from "../verify/orchestrator";
+} from "../utils/settings.js";
+import { runSideQuestion, type SideQuestionResult } from "../utils/side-question.js";
+import { discoverSkills, formatSkillsForPrompt } from "../utils/skills.js";
+import { buildVerifyDetectPrompt, normalizeVerifyRecipe, prepareVerifySandbox } from "../verify/entrypoint.js";
+import { runVerifyOrchestration } from "../verify/orchestrator.js";
 import {
   type CompactionSettings,
   createCompactionSummaryMessage,
@@ -94,10 +94,10 @@ import {
   prepareCompaction,
   relaxCompactionSettings,
   shouldCompactContext,
-} from "./compaction";
-import { DelegationManager } from "./delegations";
-import { containsEncryptedReasoning, sanitizeModelMessages } from "./reasoning";
-import { buildVisionUserMessages } from "./vision-input";
+} from "./compaction.js";
+import { DelegationManager } from "./delegations.js";
+import { containsEncryptedReasoning, sanitizeModelMessages } from "./reasoning.js";
+import { buildVisionUserMessages } from "./vision-input.js";
 
 const MAX_TOOL_ROUNDS = 400;
 const VISION_MODEL = "gpt-4o";
@@ -2039,13 +2039,13 @@ export class Agent {
                   },
                 };
 
-                let paymentPrecheck: import("../types/index").PaymentPrecheck | undefined;
+                let paymentPrecheck: import("../types/index.js").PaymentPrecheck | undefined;
                 if (approvalPart.toolCall?.toolName === "paid_request") {
                   try {
                     const input = approvalPart.toolCall.input as { url?: string; method?: string } | null;
                     const url = input?.url;
                     if (url) {
-                      const { scanUrl } = await import("../payments/brin");
+                      const { scanUrl } = await import("../payments/brin.js");
                       const brin = await scanUrl(url);
                       if (brin) {
                         const securityRaw = `${brin.score}/100 (${brin.verdict}, ${brin.confidence} confidence)`;

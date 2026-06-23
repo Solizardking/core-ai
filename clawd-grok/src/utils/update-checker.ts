@@ -1,6 +1,6 @@
 import semverGt from "semver/functions/gt.js";
 import semverValid from "semver/functions/valid.js";
-import { fetchLatestReleaseVersion, runScriptManagedUpdate } from "./install-manager";
+import { fetchLatestReleaseVersion, runScriptManagedUpdate } from "./install-manager.js";
 
 export interface UpdateCheckResult {
   currentVersion: string;

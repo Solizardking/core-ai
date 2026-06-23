@@ -7,7 +7,7 @@ vi.mock("./npm-cache", () => ({
   lspNpmWhich: vi.fn(async () => null),
 }));
 
-const { createRuntimeLspDefinitions } = await import("./builtins");
+const { createRuntimeLspDefinitions } = await import("./builtins.js");
 
 const tempDirs: string[] = [];
 

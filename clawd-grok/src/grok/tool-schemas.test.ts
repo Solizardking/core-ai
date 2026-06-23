@@ -1,7 +1,7 @@
 import { tool } from "ai";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { toolSetToBatchTools } from "./tool-schemas";
+import { toolSetToBatchTools } from "./tool-schemas.js";
 
 describe("toolSetToBatchTools", () => {
   it("converts AI SDK tools into batch function tools", async () => {

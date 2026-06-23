@@ -40,7 +40,7 @@ async function importDelegationsModule(options: { home?: string; spawnMock?: Ret
     });
   }
 
-  return import("./delegations");
+  return import("./delegations.js");
 }
 
 afterEach(() => {

@@ -2,7 +2,7 @@ import { spawn } from "child_process";
 import { closeSync, promises as fs, openSync } from "fs";
 import os from "os";
 import path from "path";
-import { getCurrentModel } from "../utils/settings";
+import { getCurrentModel } from "../utils/settings.js";
 
 function getSchedulesDirPath(): string {
   return path.join(getScheduleHomeBase(), ".grok", "schedules");

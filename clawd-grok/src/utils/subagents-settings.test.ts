@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { AgentMode } from "../types/index";
-import { getCurrentModel, parseSubAgentsRawList } from "./settings";
+import type { AgentMode } from "../types/index.js";
+import { getCurrentModel, parseSubAgentsRawList } from "./settings.js";
 
 describe("parseSubAgentsRawList", () => {
   it("returns empty for non-array or missing", () => {

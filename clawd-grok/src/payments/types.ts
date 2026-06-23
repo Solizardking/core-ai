@@ -1,5 +1,5 @@
-import type { PaymentChain } from "../utils/settings";
-import type { BrinScanResult } from "./brin";
+import type { PaymentChain } from "../utils/settings.js";
+import type { BrinScanResult } from "./brin.js";
 
 export interface PaymentOption {
   scheme: string;

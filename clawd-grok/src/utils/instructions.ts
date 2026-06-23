@@ -1,9 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
-import { executeEventHooks } from "../hooks/index";
-import type { InstructionsLoadedHookInput } from "../hooks/types";
-import { findGitRoot } from "./git-root";
-import { getHomeDir } from "./settings";
+import { executeEventHooks } from "../hooks/index.js";
+import type { InstructionsLoadedHookInput } from "../hooks/types.js";
+import { findGitRoot } from "./git-root.js";
+import { getHomeDir } from "./settings.js";
 
 const instructionsHookFiredFor = new Set<string>();
 

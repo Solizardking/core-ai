@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildTelegramAudioFileName, formatTelegramAudioTranscript, getTelegramAudioSource } from "./audio-input";
+import { buildTelegramAudioFileName, formatTelegramAudioTranscript, getTelegramAudioSource } from "./audio-input.js";
 
 describe("telegram audio input helpers", () => {
   it("extracts a voice source from a telegram message payload", () => {

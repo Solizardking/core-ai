@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseEnvLines, parseHeaderLines } from "./parse-headers";
+import { parseEnvLines, parseHeaderLines } from "./parse-headers.js";
 
 describe("parseHeaderLines", () => {
   it("parses colon-separated headers and trims whitespace", () => {

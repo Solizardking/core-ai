@@ -1,6 +1,6 @@
-import { getModelInfo } from "../grok/models";
-import type { UsageEvent, UsageSource } from "../types/index";
-import { getDatabase } from "./db";
+import { getModelInfo } from "../grok/models.js";
+import type { UsageEvent, UsageSource } from "../types/index.js";
+import { getDatabase } from "./db.js";
 
 interface UsageRow {
   id: number;

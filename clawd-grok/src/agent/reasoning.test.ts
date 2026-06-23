@@ -1,6 +1,6 @@
 import type { ModelMessage } from "ai";
 import { describe, expect, it } from "vitest";
-import { containsEncryptedReasoning, sanitizeModelMessages } from "./reasoning";
+import { containsEncryptedReasoning, sanitizeModelMessages } from "./reasoning.js";
 
 describe("reasoning helpers", () => {
   it("detects encrypted reasoning markers", () => {

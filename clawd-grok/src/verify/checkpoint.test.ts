@@ -29,8 +29,8 @@ vi.mock("child_process", async (importOriginal) => {
 });
 
 import { execFile, spawn } from "child_process";
-import { ensureVerifyCheckpoint, getVerifyCheckpointName } from "./checkpoint";
-import { inferVerifyProjectProfile } from "./entrypoint";
+import { ensureVerifyCheckpoint, getVerifyCheckpointName } from "./checkpoint.js";
+import { inferVerifyProjectProfile } from "./entrypoint.js";
 
 const execFileMock = vi.mocked(execFile);
 const spawnMock = vi.mocked(spawn);

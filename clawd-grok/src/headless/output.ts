@@ -1,5 +1,5 @@
-import type { ProcessMessageObserver, ProcessMessageStepFinish, ProcessMessageStepStart } from "../agent/agent";
-import type { MediaAsset, StreamChunk, ToolCall, ToolResult } from "../types";
+import type { ProcessMessageObserver, ProcessMessageStepFinish, ProcessMessageStepStart } from "../agent/agent.js";
+import type { MediaAsset, StreamChunk, ToolCall, ToolResult } from "../types/index.js";
 
 export type HeadlessOutputFormat = "text" | "json";
 

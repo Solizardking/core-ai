@@ -2,21 +2,21 @@
 import { InvalidArgumentError, program } from "commander";
 import * as dotenv from "dotenv";
 import readline from "readline";
-import packageJson from "../package.json";
-import { Agent } from "./agent/agent";
-import { completeDelegation, failDelegation, loadDelegation } from "./agent/delegations";
-import { MODELS, normalizeModelId } from "./grok/models";
+import packageJson from "../package.json" with { type: "json" };
+import { Agent } from "./agent/agent.js";
+import { completeDelegation, failDelegation, loadDelegation } from "./agent/delegations.js";
+import { MODELS, normalizeModelId } from "./grok/models.js";
 import {
   createHeadlessJsonlEmitter,
   type HeadlessOutputFormat,
   isHeadlessOutputFormat,
   renderHeadlessChunk,
   renderHeadlessPrelude,
-} from "./headless/output";
-import { runTelegramHeadlessBridge } from "./telegram/headless-bridge";
-import { startScheduleDaemon } from "./tools/schedule";
+} from "./headless/output.js";
+import { runTelegramHeadlessBridge } from "./telegram/headless-bridge.js";
+import { startScheduleDaemon } from "./tools/schedule.js";
 import { processAtMentions } from "./utils/at-mentions.js";
-import { runScriptManagedUninstall } from "./utils/install-manager";
+import { runScriptManagedUninstall } from "./utils/install-manager.js";
 import {
   getApiKey,
   getBaseURL,
@@ -27,15 +27,15 @@ import {
   type SandboxMode,
   type SandboxSettings,
   saveUserSettings,
-} from "./utils/settings";
-import { runUpdate } from "./utils/update-checker";
+} from "./utils/settings.js";
+import { runUpdate } from "./utils/update-checker.js";
 import {
   getWorkspaceTrustDecision,
   isShuruSandboxSupported,
   resolveWorkspaceTrustPromptAnswer,
   saveWorkspaceTrustDecision,
-} from "./utils/workspace-trust";
-import { buildVerifyPrompt, getVerifyCliError } from "./verify/entrypoint";
+} from "./utils/workspace-trust.js";
+import { buildVerifyPrompt, getVerifyCliError } from "./verify/entrypoint.js";
 
 dotenv.config();
 
@@ -70,7 +70,7 @@ async function startInteractive(
   const { createCliRenderer } = await import("@opentui/core");
   const { createRoot } = await import("@opentui/react");
   const { createElement } = await import("react");
-  const { App } = await import("./ui/app");
+  const { App } = await import("./ui/app.js");
 
   const renderer = await createCliRenderer({
     exitOnCtrlC: false,
@@ -572,7 +572,7 @@ walletCommand
   .description("Generate a new Solana keypair and store it encrypted")
   .option("--name <name>", "Wallet name")
   .action(async (options) => {
-    const { WalletManager } = await import("./wallet/manager");
+    const { WalletManager } = await import("./wallet/manager.js");
     const wallet = new WalletManager();
     const data = wallet.init("solana");
     console.log("\nWallet created.");
@@ -1187,7 +1187,7 @@ program
       return;
     }
     process.off("SIGTERM", exitCleanlyOnSigterm);
-    const { SchedulerDaemon } = await import("./daemon/scheduler");
+    const { SchedulerDaemon } = await import("./daemon/scheduler.js");
     const daemon = new SchedulerDaemon();
     await daemon.start();
   });

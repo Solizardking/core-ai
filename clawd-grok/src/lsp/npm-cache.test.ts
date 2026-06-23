@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "fs/promises";
 import os from "os";
 import path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { lspNpmWhich } from "./npm-cache";
+import { lspNpmWhich } from "./npm-cache.js";
 
 const tempDirs: string[] = [];
 let homeDir = "";

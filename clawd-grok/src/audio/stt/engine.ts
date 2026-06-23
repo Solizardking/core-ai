@@ -1,6 +1,6 @@
-import type { TelegramSettings } from "../../utils/settings";
-import { getApiKey, getBaseURL, resolveTelegramAudioInputSettings } from "../../utils/settings";
-import { GrokSttEngine, type GrokSttTranscriptionResult } from "./grok-stt";
+import type { TelegramSettings } from "../../utils/settings.js";
+import { getApiKey, getBaseURL, resolveTelegramAudioInputSettings } from "../../utils/settings.js";
+import { GrokSttEngine, type GrokSttTranscriptionResult } from "./grok-stt.js";
 
 export interface AudioTranscriptionInput {
   audioPath: string;

@@ -1,8 +1,8 @@
-import type { TaskRequest, VerifyRecipe } from "../types/index";
-import type { SandboxSettings } from "../utils/settings";
-import { ensureVerifyCheckpoint, type PreparedVerifyCheckpoint } from "./checkpoint";
-import { loadVerifyEnvironment } from "./environment";
-import { buildBrowserGuidance, buildEvidenceGuidance, buildReadinessGuidance } from "./evidence";
+import type { TaskRequest, VerifyRecipe } from "../types/index.js";
+import type { SandboxSettings } from "../utils/settings.js";
+import { ensureVerifyCheckpoint, type PreparedVerifyCheckpoint } from "./checkpoint.js";
+import { loadVerifyEnvironment } from "./environment.js";
+import { buildBrowserGuidance, buildEvidenceGuidance, buildReadinessGuidance } from "./evidence.js";
 import {
   defaultShellInit,
   detectPackageManager,
@@ -11,8 +11,8 @@ import {
   inferVerifyProjectProfile,
   normalizeVerifyAppKind,
   type VerifyProjectProfile,
-} from "./recipes";
-import { buildRetryGuidance } from "./retry";
+} from "./recipes.js";
+import { buildRetryGuidance } from "./retry.js";
 
 export const VERIFY_SUBAGENT_ID = "verify";
 export const VERIFY_TASK_DESCRIPTION = "Run local verification";
@@ -436,4 +436,4 @@ export {
   inferVerifySmokeUrl,
   normalizeVerifyRecipe,
   type VerifyProjectProfile,
-} from "./recipes";
+} from "./recipes.js";

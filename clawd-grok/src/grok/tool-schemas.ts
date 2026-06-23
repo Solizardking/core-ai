@@ -1,6 +1,6 @@
 import { asSchema } from "@ai-sdk/provider-utils";
 import type { ToolSet } from "ai";
-import type { BatchFunctionTool } from "./batch";
+import type { BatchFunctionTool } from "./batch.js";
 
 export async function toolSetToBatchTools(tools: ToolSet): Promise<BatchFunctionTool[]> {
   const entries = Object.entries(tools);

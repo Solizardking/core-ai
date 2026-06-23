@@ -11,7 +11,7 @@ import {
   loadScriptInstallMetadata,
   parseChecksumsFile,
   saveScriptInstallMetadata,
-} from "./install-manager";
+} from "./install-manager.js";
 
 let tempDirs: string[] = [];
 

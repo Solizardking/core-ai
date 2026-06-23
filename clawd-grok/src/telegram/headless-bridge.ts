@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import process from "node:process";
-import { Agent } from "../agent/agent";
+import { Agent } from "../agent/agent.js";
 import {
   getApiKey,
   getBaseURL,
@@ -14,15 +14,15 @@ import {
   type SandboxSettings,
   saveApprovedTelegramUserId,
   saveUserSettings,
-} from "../utils/settings";
-import { createTelegramBridge } from "./bridge";
+} from "../utils/settings.js";
+import { createTelegramBridge } from "./bridge.js";
 import {
   resolveTelegramHeadlessBridgePaths,
   type TelegramHeadlessBridgePathOptions,
   type TelegramHeadlessBridgePaths,
-} from "./headless-bridge-paths";
-import { approvePairingCode } from "./pairing";
-import { createTurnCoordinator } from "./turn-coordinator";
+} from "./headless-bridge-paths.js";
+import { approvePairingCode } from "./pairing.js";
+import { createTurnCoordinator } from "./turn-coordinator.js";
 
 export interface TelegramHeadlessBridgeOptions {
   apiKey?: string;

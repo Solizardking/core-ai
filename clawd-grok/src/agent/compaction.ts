@@ -1,6 +1,6 @@
 import { generateText, type ModelMessage } from "ai";
-import { resolveModelRuntime, type XaiProvider } from "../grok/client";
-import { containsEncryptedReasoning } from "./reasoning";
+import { resolveModelRuntime, type XaiProvider } from "../grok/client.js";
+import { containsEncryptedReasoning } from "./reasoning.js";
 
 export interface CompactionSettings {
   reserveTokens: number;

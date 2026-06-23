@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { StreamChunk, ToolCall } from "../types";
+import type { StreamChunk, ToolCall } from "../types/index.js";
 import {
   createHeadlessJsonlEmitter,
   isHeadlessOutputFormat,
   renderHeadlessChunk,
   renderHeadlessPrelude,
-} from "./output";
+} from "./output.js";
 
 function toolCall(name: string): ToolCall {
   return {

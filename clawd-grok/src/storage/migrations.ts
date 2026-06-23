@@ -1,4 +1,4 @@
-import type { SQLiteDatabase } from "./db";
+import type { SQLiteDatabase } from "./db.js";
 
 const LATEST_DB_VERSION = 3;
 
