@@ -8,7 +8,7 @@ import {
   type StoredSchedule,
   startDetachedHeadlessRun,
   writeScheduleDaemonPid,
-} from "../tools/schedule";
+} from "../tools/schedule.js";
 
 export class SchedulerDaemon {
   private readonly schedules = new ScheduleManager();

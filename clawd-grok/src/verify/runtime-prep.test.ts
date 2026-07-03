@@ -11,7 +11,7 @@ vi.mock("./checkpoint", () => ({
   })),
 }));
 
-import { prepareVerifySandbox } from "./entrypoint";
+import { prepareVerifySandbox } from "./entrypoint.js";
 
 const tempDirs: string[] = [];
 

@@ -12,7 +12,7 @@ afterEach(() => {
 });
 
 async function importModule() {
-  return import("./update-checker");
+  return import("./update-checker.js");
 }
 
 describe("checkForUpdate", () => {
@@ -150,7 +150,7 @@ describe("checkForUpdate", () => {
 describe("runUpdate", () => {
   it("returns success when the script-managed updater succeeds", async () => {
     vi.doMock("./install-manager", async () => {
-      const actual = await vi.importActual<typeof import("./install-manager")>("./install-manager");
+      const actual = await vi.importActual<typeof import("./install-manager.js")>("./install-manager");
       return {
         ...actual,
         runScriptManagedUpdate: vi.fn().mockResolvedValue({ success: true, output: "Updated to Grok 2.0.0." }),
@@ -166,7 +166,7 @@ describe("runUpdate", () => {
 
   it("returns failure when the script-managed updater fails", async () => {
     vi.doMock("./install-manager", async () => {
-      const actual = await vi.importActual<typeof import("./install-manager")>("./install-manager");
+      const actual = await vi.importActual<typeof import("./install-manager.js")>("./install-manager");
       return {
         ...actual,
         runScriptManagedUpdate: vi.fn().mockResolvedValue({ success: false, output: "permission denied" }),

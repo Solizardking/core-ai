@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { loadVerifyEnvironment, saveVerifyEnvironment } from "./environment";
+import { loadVerifyEnvironment, saveVerifyEnvironment } from "./environment.js";
 
 const tempDirs: string[] = [];
 

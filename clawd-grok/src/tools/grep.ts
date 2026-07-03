@@ -1,7 +1,7 @@
 import { stat } from "fs/promises";
 import path from "path";
 import { ripgrep } from "ripgrep";
-import type { ToolResult } from "../types/index";
+import type { ToolResult } from "../types/index.js";
 
 const MAX_MATCHES = 100;
 const MAX_LINE_LENGTH = 2000;

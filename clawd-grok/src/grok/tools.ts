@@ -1,9 +1,9 @@
 import { generateText, type ToolSet, tool } from "ai";
 import { z } from "zod";
-import { executePostToolFailureHooks, executePostToolHooks, executePreToolHooks } from "../hooks/index";
-import { isLspToolEnabled, queryLsp } from "../lsp/runtime";
-import { LSP_TOOL_OPERATIONS } from "../lsp/types";
-import type { BashTool } from "../tools/bash";
+import { executePostToolFailureHooks, executePostToolHooks, executePreToolHooks } from "../hooks/index.js";
+import { isLspToolEnabled, queryLsp } from "../lsp/runtime.js";
+import { LSP_TOOL_OPERATIONS } from "../lsp/types.js";
+import type { BashTool } from "../tools/bash.js";
 import {
   computerClick,
   computerFocusWindow,
@@ -17,13 +17,13 @@ import {
   computerSnapshot,
   computerType,
   computerWait,
-} from "../tools/computer";
-import { editFile, readFile, writeFile } from "../tools/file";
-import { executeGrep } from "../tools/grep";
-import type { ScheduleDaemonStatus, ScheduleManager, StoredSchedule } from "../tools/schedule";
-import type { AgentMode, TaskRequest, ToolResult } from "../types/index";
-import { type CustomSubagentConfig, loadPaymentSettings, loadValidSubAgents } from "../utils/settings";
-import type { XaiProvider } from "./client";
+} from "../tools/computer.js";
+import { editFile, readFile, writeFile } from "../tools/file.js";
+import { executeGrep } from "../tools/grep.js";
+import type { ScheduleDaemonStatus, ScheduleManager, StoredSchedule } from "../tools/schedule.js";
+import type { AgentMode, TaskRequest, ToolResult } from "../types/index.js";
+import { type CustomSubagentConfig, loadPaymentSettings, loadValidSubAgents } from "../utils/settings.js";
+import type { XaiProvider } from "./client.js";
 import {
   type GenerateImageToolInput,
   type GenerateVideoToolInput,
@@ -33,7 +33,7 @@ import {
   IMAGE_RESOLUTIONS,
   VIDEO_ASPECT_RATIOS,
   VIDEO_RESOLUTIONS,
-} from "./media";
+} from "./media.js";
 
 const RESPONSES_SEARCH_MODEL = process.env.GROK_MODEL || "grok-4.3";
 
@@ -810,7 +810,7 @@ export function createTools(
     inputSchema: z.object({}),
     execute: async () => {
       try {
-        const { WalletManager } = await import("../wallet/manager");
+        const { WalletManager } = await import("../wallet/manager.js");
         if (!WalletManager.exists()) {
           return { success: false, output: "No wallet found. Run `grok wallet init` to create one." };
         }
@@ -840,7 +840,7 @@ export function createTools(
     }),
     execute: async ({ limit }) => {
       try {
-        const { PaymentHistory } = await import("../payments/history");
+        const { PaymentHistory } = await import("../payments/history.js");
         const history = new PaymentHistory();
         const entries = history.list(limit ?? 10);
         if (entries.length === 0) {
@@ -874,7 +874,7 @@ export function createTools(
     }),
     execute: async ({ url, method, headers, body }) => {
       try {
-        const { X402Service, formatInspectionOutput } = await import("../payments/service");
+        const { X402Service, formatInspectionOutput } = await import("../payments/service.js");
         const service = new X402Service();
         const inspection = await service.fetchPaymentInfo({ url, method, headers, body });
         return {
@@ -910,7 +910,7 @@ export function createTools(
     },
     execute: async ({ url, method, headers, body }) => {
       try {
-        const { X402Service } = await import("../payments/service");
+        const { X402Service } = await import("../payments/service.js");
         const service = new X402Service();
         return await service.paidRequest({ url, method, headers, body }, options.sessionId);
       } catch (err: unknown) {

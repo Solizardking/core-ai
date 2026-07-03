@@ -28,7 +28,7 @@ This fork keeps the Helius Solana infrastructure surface and replaces the old as
 | [`helius-plugin`](./helius-plugin) | Clawd Code plugin — bundles all skills and auto-starts the MCP server | `clawd --plugin-dir ./helius-plugin` |
 | [`clawd-code`](./clawd-code) | Curl-installable Solana-native AI coding CLI (xAI / Anthropic / DeepSeek / OpenRouter) with paper-gated perps workflows | `curl -fsSL https://raw.githubusercontent.com/Solizardking/solana-clawd/main/clawd-code/install.sh \| sh` |
 | [`clawd-grok`](./clawd-grok) | Bun-native Clawd / Grok agent runtime — REPL, headless, audio, LSP, MCP, payments, wallet, verify | `bun install && bun run dev` |
-| [`clawd-agents`](./clawd-agents) | Specialized perps agent: Phoenix Rise, Vulcan, Imperial WS, on-chain MM, TWAMM, Telegram | `cd clawd-agents/clawd-perps-agent && npm install && npm run build` |
+| [`clawd-perps-agent`](./clawd-perps-agent) | Specialized perps agent: Phoenix Rise, Vulcan, Imperial WS, on-chain MM, TWAMM, Telegram | `cd clawd-perps-agent && npm install && npm run build` |
 | [`mcp-server`](./mcp-server) | Standalone MCP server for pump-sdk and related tooling | `npm install && npm run build` |
 | [`v3`](./v3) | v3 Clawd runtime — next-generation Clawd scaffolding | `npm install && npm run build` |
 | [`knowledge`](./knowledge) | Clawd knowledge base — facts, gotchas, patterns, anti-patterns, decisions, API behaviors | read-only reference |

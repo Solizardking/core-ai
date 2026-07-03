@@ -1,8 +1,8 @@
 import { createXai } from "@ai-sdk/xai";
 import type { generateText } from "ai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as settings from "../utils/settings";
-import { generateRecap, resolveModelRuntime } from "./client";
+import * as settings from "../utils/settings.js";
+import { generateRecap, resolveModelRuntime } from "./client.js";
 
 const mockGenerateText = vi.hoisted(() => vi.fn());
 

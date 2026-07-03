@@ -8,6 +8,7 @@ import { ClawdPerpsRuntime } from "./marketMaker.js";
 import { handleTelegramPerpsCommand } from "./telegram.js";
 import { ImperialClient } from "./imperialAgent.js";
 import { resolveClawdRepoRoot } from "./paths.js";
+import { redactSensitiveText, redactSensitiveValue } from "./redaction.js";
 
 loadClawdPerpsEnv(import.meta.url);
 
@@ -116,7 +117,7 @@ function parseSymbols(value: string | boolean | undefined): string[] | undefined
 }
 
 function printJson(data: unknown): void {
-  console.log(JSON.stringify(data, null, 2));
+  console.log(JSON.stringify(redactSensitiveValue(data), null, 2));
 }
 
 function printHelp(): void {
@@ -388,6 +389,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
+  console.error(redactSensitiveText(error instanceof Error ? error.message : String(error)));
   process.exit(1);
 });

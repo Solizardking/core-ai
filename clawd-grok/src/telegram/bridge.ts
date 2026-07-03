@@ -1,16 +1,16 @@
 import { Bot } from "grammy";
-import type { Agent } from "../agent/agent";
-import type { ToolCall, ToolResult } from "../types/index";
-import { loadUserSettings, resolveTelegramStreamSettings } from "../utils/settings";
-import { getTelegramAudioSource, transcribeTelegramAudioMessage } from "./audio-input";
-import { splitTelegramMessage, TELEGRAM_MAX_MESSAGE } from "./limits";
-import { registerPairingCode } from "./pairing";
-import { runTelegramPartialReply } from "./preview-stream";
-import { sendFileToTelegram } from "./send-file";
-import type { TurnCoordinator } from "./turn-coordinator";
-import { startTypingRefresh } from "./typing-refresh";
+import type { Agent } from "../agent/agent.js";
+import type { ToolCall, ToolResult } from "../types/index.js";
+import { loadUserSettings, resolveTelegramStreamSettings } from "../utils/settings.js";
+import { getTelegramAudioSource, transcribeTelegramAudioMessage } from "./audio-input.js";
+import { splitTelegramMessage, TELEGRAM_MAX_MESSAGE } from "./limits.js";
+import { registerPairingCode } from "./pairing.js";
+import { runTelegramPartialReply } from "./preview-stream.js";
+import { sendFileToTelegram } from "./send-file.js";
+import type { TurnCoordinator } from "./turn-coordinator.js";
+import { startTypingRefresh } from "./typing-refresh.js";
 
-export { splitTelegramMessage, TELEGRAM_MAX_MESSAGE } from "./limits";
+export { splitTelegramMessage, TELEGRAM_MAX_MESSAGE } from "./limits.js";
 
 export interface TelegramBridgeOptions {
   token: string;

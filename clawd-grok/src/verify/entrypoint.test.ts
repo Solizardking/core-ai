@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import type { VerifyRecipe } from "../types/index";
+import type { VerifyRecipe } from "../types/index.js";
 import {
   buildVerifyDetectPrompt,
   buildVerifyPrompt,
@@ -11,7 +11,7 @@ import {
   getVerifyCliError,
   inferVerifyProjectProfile,
   inferVerifySmokeUrl,
-} from "./entrypoint";
+} from "./entrypoint.js";
 
 const tempDirs: string[] = [];
 

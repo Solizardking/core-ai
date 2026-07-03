@@ -1,5 +1,5 @@
-export { getDatabasePath } from "./db";
-export { SessionStore } from "./sessions";
+export { getDatabasePath } from "./db.js";
+export { SessionStore } from "./sessions.js";
 export {
   appendCompaction,
   appendMessages,
@@ -10,6 +10,6 @@ export {
   loadRawTranscript,
   loadTranscript,
   loadTranscriptState,
-} from "./transcript";
-export { buildEffectiveTranscript, type LoadedTranscriptState, type PersistedCompaction } from "./transcript-view";
-export { getSessionTotalTokens, listSessionUsage, recordUsageEvent, type TokenUsageLike } from "./usage";
+} from "./transcript.js";
+export { buildEffectiveTranscript, type LoadedTranscriptState, type PersistedCompaction } from "./transcript-view.js";
+export { getSessionTotalTokens, listSessionUsage, recordUsageEvent, type TokenUsageLike } from "./usage.js";

@@ -1,10 +1,10 @@
 import type { ScrollBoxRenderable, TextareaRenderable } from "@opentui/core";
 import { type RefObject, useEffect, useRef } from "react";
-import type { McpCatalogEntry } from "../mcp/catalog";
-import { toMcpServerId } from "../mcp/validate";
-import type { McpServerConfig } from "../utils/settings";
-import type { McpBrowserRow, McpEditorDraft, McpEditorField } from "./mcp-modal-types";
-import type { Theme } from "./theme";
+import type { McpCatalogEntry } from "../mcp/catalog.js";
+import { toMcpServerId } from "../mcp/validate.js";
+import type { McpServerConfig } from "../utils/settings.js";
+import type { McpBrowserRow, McpEditorDraft, McpEditorField } from "./mcp-modal-types.js";
+import type { Theme } from "./theme.js";
 
 const EDITOR_KEYBINDINGS = [{ name: "return", action: "submit" as const }];
 

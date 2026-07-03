@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatSubagentName } from "./subagent-display";
+import { formatSubagentName } from "./subagent-display.js";
 
 describe("formatSubagentName", () => {
   it("formats built-in sub-agents with leading uppercase labels", () => {

@@ -2,7 +2,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { GrokSttEngine, inferMimeTypeFromFileName } from "./grok-stt";
+import { GrokSttEngine, inferMimeTypeFromFileName } from "./grok-stt.js";
 
 describe("GrokSttEngine", () => {
   let tempDir: string;

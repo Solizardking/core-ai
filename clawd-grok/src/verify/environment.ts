@@ -1,8 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
-import type { VerifyEnvironmentManifest, VerifyRecipe } from "../types/index";
-import { mergeSandboxSettings, normalizeSandboxSettings, type SandboxSettings } from "../utils/settings";
-import { normalizeVerifyRecipe } from "./recipes";
+import type { VerifyEnvironmentManifest, VerifyRecipe } from "../types/index.js";
+import { mergeSandboxSettings, normalizeSandboxSettings, type SandboxSettings } from "../utils/settings.js";
+import { normalizeVerifyRecipe } from "./recipes.js";
 
 export interface LoadedVerifyEnvironment {
   path: string;

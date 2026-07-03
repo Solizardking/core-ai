@@ -5,9 +5,9 @@ import {
   type MessageConnection,
   StreamMessageReader,
   StreamMessageWriter,
-} from "vscode-jsonrpc/node";
+} from "vscode-jsonrpc/node.js";
 import type { Diagnostic } from "vscode-languageserver-types";
-import type { LspDiagnostic, LspLaunchSpec } from "./types";
+import type { LspDiagnostic, LspLaunchSpec } from "./types.js";
 
 export interface LspClientOptions {
   serverId: string;

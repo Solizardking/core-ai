@@ -1,8 +1,8 @@
 import type { Api } from "grammy";
 import { GrammyError } from "grammy";
-import type { StreamChunk } from "../types/index";
-import { splitTelegramMessage, TELEGRAM_MAX_MESSAGE } from "./limits";
-import { startTypingRefresh } from "./typing-refresh";
+import type { StreamChunk } from "../types/index.js";
+import { splitTelegramMessage, TELEGRAM_MAX_MESSAGE } from "./limits.js";
+import { startTypingRefresh } from "./typing-refresh.js";
 
 const EDIT_THROTTLE_MS = 350;
 const EDIT_MIN_CHARS = 48;

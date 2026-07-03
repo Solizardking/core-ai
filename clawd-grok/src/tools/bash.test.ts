@@ -8,7 +8,7 @@ import {
   shouldRunOnHostInSandboxMode,
   wrapCommandForShuru,
   wrapHostBrowserCommand,
-} from "./bash";
+} from "./bash.js";
 
 const tempDirs: string[] = [];
 

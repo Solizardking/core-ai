@@ -1,6 +1,6 @@
 import { RGBA, SyntaxStyle } from "@opentui/core";
 import { useMemo } from "react";
-import type { Theme } from "./theme";
+import type { Theme } from "./theme.js";
 
 function buildSyntaxStyle(t: Theme): SyntaxStyle {
   return SyntaxStyle.fromStyles({

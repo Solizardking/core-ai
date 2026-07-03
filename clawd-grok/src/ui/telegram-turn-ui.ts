@@ -1,4 +1,4 @@
-import type { ChatEntry, ToolCall, ToolResult } from "../types/index";
+import type { ChatEntry, ToolCall, ToolResult } from "../types/index.js";
 
 export interface EntryDecoration {
   modeColor?: string;

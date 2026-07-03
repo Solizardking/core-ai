@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
-import { resolveTelegramHeadlessBridgePaths } from "./headless-bridge-paths";
+import { resolveTelegramHeadlessBridgePaths } from "./headless-bridge-paths.js";
 
 describe("resolveTelegramHeadlessBridgePaths", () => {
   it("uses default files in the provided cwd", () => {

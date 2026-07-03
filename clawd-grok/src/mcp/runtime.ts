@@ -1,8 +1,8 @@
 import { createMCPClient, type MCPClient } from "@ai-sdk/mcp";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import type { ToolSet } from "ai";
-import type { McpServerConfig } from "../utils/settings";
-import { validateMcpServerConfig } from "./validate";
+import type { McpServerConfig } from "../utils/settings.js";
+import { validateMcpServerConfig } from "./validate.js";
 
 function mcpToolPrefix(server: McpServerConfig): string {
   return `mcp_${server.id.replace(/[^a-zA-Z0-9_-]/g, "_")}`;

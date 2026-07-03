@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveTelegramAudioInputSettings } from "./settings";
+import { resolveTelegramAudioInputSettings } from "./settings.js";
 
 describe("resolveTelegramAudioInputSettings", () => {
   it("returns Grok STT defaults when audio input is unset", () => {

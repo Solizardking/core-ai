@@ -1,7 +1,7 @@
 import { Bot } from "grammy";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createTelegramBridge } from "./bridge";
-import type { TurnCoordinator } from "./turn-coordinator";
+import { createTelegramBridge } from "./bridge.js";
+import type { TurnCoordinator } from "./turn-coordinator.js";
 
 let mockSendMessage: ReturnType<typeof vi.fn>;
 

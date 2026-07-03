@@ -11,7 +11,7 @@ import {
   computerScreenshot,
   computerSnapshot,
   computerType,
-} from "./computer";
+} from "./computer.js";
 
 describe("computer tools", () => {
   const tempDirs: string[] = [];

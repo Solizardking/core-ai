@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterSlashMenuItems, SLASH_MENU_ITEMS } from "./slash-menu";
+import { filterSlashMenuItems, SLASH_MENU_ITEMS } from "./slash-menu.js";
 
 describe("filterSlashMenuItems", () => {
   it("finds the models command when searching with the full slash command", () => {

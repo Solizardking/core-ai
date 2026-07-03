@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ToolResult } from "../types/index";
-import { extractToolResultFromOutput } from "./tool-results";
+import type { ToolResult } from "../types/index.js";
+import { extractToolResultFromOutput } from "./tool-results.js";
 
 describe("transcript media tool results", () => {
   it("preserves media metadata when stored tool output is normalized", () => {

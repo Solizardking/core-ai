@@ -1,7 +1,7 @@
 import { existsSync, statSync } from "fs";
 import { InputFile } from "grammy";
 import path from "path";
-import type { ToolResult } from "../types/index";
+import type { ToolResult } from "../types/index.js";
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;

@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import { mkdirSync } from "fs";
 import { createRequire } from "module";
 import { dirname, isAbsolute, join, resolve } from "path";
-import type { ComputerToolMetadata, ToolResult } from "../types/index";
+import type { ComputerToolMetadata, ToolResult } from "../types/index.js";
 
 const COMPUTER_ARTIFACT_DIR = ".grok/computer";
 const DEFAULT_SCREENSHOT_NAME = "computer-shot";

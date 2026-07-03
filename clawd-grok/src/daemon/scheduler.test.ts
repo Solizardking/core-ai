@@ -30,7 +30,7 @@ async function importSchedulerModule(mocks: {
     writeScheduleDaemonPid,
   }));
 
-  const mod = await import("./scheduler");
+  const mod = await import("./scheduler.js");
   return {
     SchedulerDaemon: mod.SchedulerDaemon,
     startDetachedHeadlessRun,

@@ -207,7 +207,7 @@ function aggregateResults(results: HookResult[]): AggregatedHookResult {
 
 function parseHookOutput(stdout: string): HookOutput | undefined {
   const trimmed = stdout.trim();
-  if (!trimmed || !trimmed.startsWith("{")) return undefined;
+  if (!trimmed?.startsWith("{")) return undefined;
 
   try {
     const parsed = JSON.parse(trimmed);

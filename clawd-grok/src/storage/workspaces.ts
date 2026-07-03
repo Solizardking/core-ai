@@ -1,9 +1,9 @@
 import { createHash } from "crypto";
 import fs from "fs";
 import path from "path";
-import type { WorkspaceInfo } from "../types/index";
-import { findGitRoot } from "../utils/git-root";
-import { getDatabase } from "./db";
+import type { WorkspaceInfo } from "../types/index.js";
+import { findGitRoot } from "../utils/git-root.js";
+import { getDatabase } from "./db.js";
 
 interface WorkspaceRow {
   id: string;

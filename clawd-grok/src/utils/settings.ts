@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { NormalizedLspSettings } from "../lsp/types";
+import type { NormalizedLspSettings } from "../lsp/types.js";
 import type { AgentMode, ClawdSettings, McpServerConfig, SolanaConfig, SubAgentConfig } from "../types/index.js";
 
 export type { McpServerConfig } from "../types/index.js";

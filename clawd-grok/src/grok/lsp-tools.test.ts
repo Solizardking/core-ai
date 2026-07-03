@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { BashTool } from "../tools/bash";
-import { toolSetToBatchTools } from "./tool-schemas";
-import { createTools } from "./tools";
+import { BashTool } from "../tools/bash.js";
+import { toolSetToBatchTools } from "./tool-schemas.js";
+import { createTools } from "./tools.js";
 
 const queryLspMock = vi.fn<(cwd: string, input: unknown) => Promise<{ success: boolean; output: string }>>(
   async () => ({

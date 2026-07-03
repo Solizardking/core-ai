@@ -2,9 +2,9 @@ import { mkdir, mkdtemp, rm, writeFile } from "fs/promises";
 import os from "os";
 import path from "path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { LspClientSession } from "./client";
-import { createWorkspaceLspManager } from "./manager";
-import type { NormalizedLspSettings } from "./types";
+import type { LspClientSession } from "./client.js";
+import { createWorkspaceLspManager } from "./manager.js";
+import type { NormalizedLspSettings } from "./types.js";
 
 const BASE_SETTINGS: NormalizedLspSettings = {
   enabled: true,

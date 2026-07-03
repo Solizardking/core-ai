@@ -27,7 +27,7 @@ async function importLoadCustomInstructions(mockedHome?: string) {
     });
   }
 
-  const mod = await import("./instructions");
+  const mod = await import("./instructions.js");
   return mod.loadCustomInstructions;
 }
 

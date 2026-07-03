@@ -7,8 +7,8 @@ vi.mock("./checkpoint", () => ({
   ensureVerifyCheckpoint: vi.fn(async () => ({ created: false })),
 }));
 
-import { ensureVerifyCheckpoint } from "./checkpoint";
-import { prepareVerifyRun, runVerifyOrchestration } from "./orchestrator";
+import { ensureVerifyCheckpoint } from "./checkpoint.js";
+import { prepareVerifyRun, runVerifyOrchestration } from "./orchestrator.js";
 
 const ensureVerifyCheckpointMock = vi.mocked(ensureVerifyCheckpoint);
 const tempDirs: string[] = [];

@@ -1,5 +1,5 @@
 import type { ModelMessage } from "ai";
-import { createCompactionSummaryMessage } from "../agent/compaction";
+import { createCompactionSummaryMessage } from "../agent/compaction.js";
 
 export interface PersistedCompaction {
   firstKeptSeq: number;

@@ -1,9 +1,9 @@
 import { mkdtemp, rm, writeFile } from "fs/promises";
 import os from "os";
 import path from "path";
-import { createTelegramAudioInputEngine } from "../audio/stt/engine";
-import type { TelegramSettings } from "../utils/settings";
-import { resolveTelegramAudioInputSettings } from "../utils/settings";
+import { createTelegramAudioInputEngine } from "../audio/stt/engine.js";
+import type { TelegramSettings } from "../utils/settings.js";
+import { resolveTelegramAudioInputSettings } from "../utils/settings.js";
 
 export interface TelegramAudioSource {
   kind: "voice" | "audio";

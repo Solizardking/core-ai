@@ -11,7 +11,7 @@ import {
   resolveWorkspaceTrustPromptAnswer,
   saveWorkspaceTrustDecision,
   WORKSPACE_TRUST_FILENAME,
-} from "./workspace-trust";
+} from "./workspace-trust.js";
 
 let tempDirs: string[] = [];
 

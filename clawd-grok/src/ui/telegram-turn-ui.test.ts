@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type { ChatEntry, ToolCall } from "../types/index";
+import type { ChatEntry, ToolCall } from "../types/index.js";
 import {
   buildToolResultEntry,
   decorateTelegramEntries,
   getTelegramSourceLabel,
   getUnflushedTelegramAssistantContent,
   replaceTurnEntries,
-} from "./telegram-turn-ui";
+} from "./telegram-turn-ui.js";
 
 const TOOL_CALL: ToolCall = {
   id: "tool-1",

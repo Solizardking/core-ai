@@ -1,4 +1,4 @@
-import type { PaymentChain } from "../utils/settings";
+import type { PaymentChain } from "../utils/settings.js";
 
 export interface WalletData {
   address: string;

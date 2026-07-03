@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import readline from "node:readline";
-import { getHomeDir } from "./settings";
+import { getHomeDir } from "./settings.js";
 
 export const CLAWD_GITHUB_REPO = "open-clawd/clawd-grok";
 export const CLAWD_RELEASES_BASE = "https://open-clawd.local/releases";

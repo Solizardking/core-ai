@@ -3,7 +3,7 @@ import { decodePasteBytes, type PasteEvent, parseKeypress } from "@opentui/core"
 import { useKeyboard, useRenderer, useTerminalDimensions } from "@opentui/react";
 import os from "os";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Agent } from "../agent/agent";
+import { Agent } from "../agent/agent.js";
 import {
   DEFAULT_MODEL,
   getEffectiveReasoningEffort,
@@ -12,15 +12,15 @@ import {
   getSupportedReasoningEfforts,
   MODELS,
   normalizeModelId,
-} from "../grok/models";
-import type { LspDiagnostic } from "../lsp/types";
-import { POPULAR_MCP_CATALOG } from "../mcp/catalog";
-import { parseEnvLines, parseHeaderLines } from "../mcp/parse-headers";
-import { toMcpServerId, validateMcpServerConfig } from "../mcp/validate";
-import { createTelegramBridge, type TelegramBridgeHandle } from "../telegram/bridge";
-import { approvePairingCode } from "../telegram/pairing";
-import { createTurnCoordinator } from "../telegram/turn-coordinator";
-import type { ScheduleDaemonStatus, StoredSchedule } from "../tools/schedule";
+} from "../grok/models.js";
+import type { LspDiagnostic } from "../lsp/types.js";
+import { POPULAR_MCP_CATALOG } from "../mcp/catalog.js";
+import { parseEnvLines, parseHeaderLines } from "../mcp/parse-headers.js";
+import { toMcpServerId, validateMcpServerConfig } from "../mcp/validate.js";
+import { createTelegramBridge, type TelegramBridgeHandle } from "../telegram/bridge.js";
+import { approvePairingCode } from "../telegram/pairing.js";
+import { createTurnCoordinator } from "../telegram/turn-coordinator.js";
+import type { ScheduleDaemonStatus, StoredSchedule } from "../tools/schedule.js";
 import type {
   AgentMode,
   ChatEntry,
@@ -32,11 +32,11 @@ import type {
   SubagentStatus,
   ToolCall,
   ToolResult,
-} from "../types/index";
-import { MODES } from "../types/index";
+} from "../types/index.js";
+import { MODES } from "../types/index.js";
 import { processAtMentions } from "../utils/at-mentions.js";
 import { FileIndex } from "../utils/file-index.js";
-import { copyTextToHostClipboard } from "../utils/host-clipboard";
+import { copyTextToHostClipboard } from "../utils/host-clipboard.js";
 import {
   type CustomSubagentConfig,
   getApiKey,
@@ -58,33 +58,33 @@ import {
   saveProjectSettings,
   saveRecapsEnabled,
   saveUserSettings,
-} from "../utils/settings";
-import { discoverSkills, formatSkillsForChat } from "../utils/skills";
-import { formatSubagentName } from "../utils/subagent-display";
-import { checkForUpdate, runUpdate, type UpdateCheckResult } from "../utils/update-checker";
-import { buildVerifyPrompt } from "../verify/entrypoint";
+} from "../utils/settings.js";
+import { discoverSkills, formatSkillsForChat } from "../utils/skills.js";
+import { formatSubagentName } from "../utils/subagent-display.js";
+import { checkForUpdate, runUpdate, type UpdateCheckResult } from "../utils/update-checker.js";
+import { buildVerifyPrompt } from "../verify/entrypoint.js";
 import {
   buildSubagentBrowseRows,
   SUBAGENT_EDITOR_FIELDS,
   type SubagentEditorField,
   SubagentEditorModal,
   SubagentsBrowserModal,
-} from "./agents-modal";
+} from "./agents-modal.js";
 import { BtwOverlay, type BtwState } from "./components/btw-overlay.js";
 import { SuggestionOverlay } from "./components/SuggestionOverlay.js";
 import { type TypeaheadState, useTypeahead } from "./hooks/useTypeahead.js";
-import { Markdown } from "./markdown";
-import { buildMcpBrowseRows, McpBrowserModal, McpEditorModal } from "./mcp-modal";
-import { createEmptyMcpEditorDraft, type McpEditorDraft, type McpEditorField } from "./mcp-modal-types";
+import { Markdown } from "./markdown.js";
+import { buildMcpBrowseRows, McpBrowserModal, McpEditorModal } from "./mcp-modal.js";
+import { createEmptyMcpEditorDraft, type McpEditorDraft, type McpEditorField } from "./mcp-modal-types.js";
 import {
   formatPlanAnswers,
   initialPlanQuestionsState,
   PlanQuestionsPanel,
   type PlanQuestionsState,
   PlanView,
-} from "./plan";
-import { buildScheduleBrowseRows, ScheduleBrowserModal } from "./schedule-modal";
-import { filterSlashMenuItems, SLASH_MENU_ITEMS, type SlashMenuItem } from "./slash-menu";
+} from "./plan.js";
+import { buildScheduleBrowseRows, ScheduleBrowserModal } from "./schedule-modal.js";
+import { filterSlashMenuItems, SLASH_MENU_ITEMS, type SlashMenuItem } from "./slash-menu.js";
 import {
   buildAssistantEntry,
   buildToolResultEntry,
@@ -93,9 +93,9 @@ import {
   getTelegramSourceLabel,
   getUnflushedTelegramAssistantContent,
   replaceTurnEntries,
-} from "./telegram-turn-ui";
-import { getCompactTuiSelectionText } from "./terminal-selection-text";
-import { dark, type Theme } from "./theme";
+} from "./telegram-turn-ui.js";
+import { getCompactTuiSelectionText } from "./terminal-selection-text.js";
+import { dark, type Theme } from "./theme.js";
 
 const STAR_PALETTE = ["#5c9cf5", "#66d9c2", "#888888", "#666666", "#4a4a4a", "#333333", "#444466", "#336699"];
 const LOADING_SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
@@ -912,7 +912,7 @@ export function App({ agent, startupConfig, initialMessage, onExit }: AppProps) 
     setWalletSettings(loadPaymentSettings());
     setShowWalletPicker(true);
     setWalletDisplayInfo({ address: null, ethBalance: null, usdcBalance: null });
-    import("../wallet/manager")
+    import("../wallet/manager.js")
       .then(async ({ WalletManager }) => {
         if (!WalletManager.exists()) {
           setWalletDisplayInfo({ address: null, ethBalance: null, usdcBalance: null });
@@ -1483,7 +1483,7 @@ export function App({ agent, startupConfig, initialMessage, onExit }: AppProps) 
   const applyTelegramAssistantPreview = useCallback(
     (fullContent: string) => {
       const activeTurn = activeTurnRef.current;
-      if (!activeTurn || activeTurn.kind !== "telegram") return;
+      if (activeTurn?.kind !== "telegram") return;
 
       activeTurn.latestAssistantText = fullContent;
       contentAccRef.current = getUnflushedTelegramAssistantContent(fullContent, activeTurn.flushedAssistantChars);

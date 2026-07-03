@@ -5,7 +5,7 @@ import {
   getModelInfo,
   getSupportedReasoningEfforts,
   normalizeModelId,
-} from "./models";
+} from "./models.js";
 
 describe("models", () => {
   it("keeps the default model on a canonical reasoning id", () => {

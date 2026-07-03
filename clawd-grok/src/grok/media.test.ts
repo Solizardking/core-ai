@@ -2,7 +2,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { generateImageTool, generateVideoTool } from "./media";
+import { generateImageTool, generateVideoTool } from "./media.js";
 
 const { generateImageMock, generateVideoMock } = vi.hoisted(() => ({
   generateImageMock: vi.fn(),

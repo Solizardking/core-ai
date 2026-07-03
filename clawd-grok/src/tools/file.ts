@@ -1,8 +1,8 @@
 import { createTwoFilesPatch } from "diff";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, isAbsolute, resolve } from "path";
-import { summarizeDiagnostics, syncFileWithLsp } from "../lsp/runtime";
-import type { LspDiagnosticFile } from "../lsp/types";
+import { summarizeDiagnostics, syncFileWithLsp } from "../lsp/runtime.js";
+import type { LspDiagnosticFile } from "../lsp/types.js";
 
 export interface FileDiff {
   filePath: string;

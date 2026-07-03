@@ -1,9 +1,9 @@
-import type { TaskRequest, ToolResult, VerifyRecipe } from "../types/index";
-import type { SandboxSettings } from "../utils/settings";
-import { ensureVerifyCheckpoint, type PreparedVerifyCheckpoint } from "./checkpoint";
-import { buildVerifyTaskPrompt } from "./entrypoint";
-import { loadVerifyEnvironment, saveVerifyEnvironment } from "./environment";
-import { inferVerifyProjectProfile, type VerifyProjectProfile } from "./recipes";
+import type { TaskRequest, ToolResult, VerifyRecipe } from "../types/index.js";
+import type { SandboxSettings } from "../utils/settings.js";
+import { ensureVerifyCheckpoint, type PreparedVerifyCheckpoint } from "./checkpoint.js";
+import { buildVerifyTaskPrompt } from "./entrypoint.js";
+import { loadVerifyEnvironment, saveVerifyEnvironment } from "./environment.js";
+import { inferVerifyProjectProfile, type VerifyProjectProfile } from "./recipes.js";
 
 export interface VerifyAgentLike {
   getCwd(): string;

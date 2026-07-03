@@ -14,7 +14,7 @@ async function importAgentModuleWithRecapMocks() {
   }));
 
   vi.doMock("../grok/client", async () => {
-    const actual = await vi.importActual<typeof import("../grok/client")>("../grok/client");
+    const actual = await vi.importActual<typeof import("../grok/client.js")>("../grok/client");
     return {
       ...actual,
       generateRecap,
@@ -56,7 +56,7 @@ async function importAgentModuleWithRecapMocks() {
     },
   }));
 
-  const mod = await import("./agent");
+  const mod = await import("./agent.js");
   return {
     ...mod,
     mocks: {

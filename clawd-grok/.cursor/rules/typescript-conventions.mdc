@@ -18,7 +18,7 @@ alwaysApply: false
 ## TypeScript Configuration
 
 - Target: ES2022, Module: ESNext, JSX: react
-- `strict: false` and `noImplicitAny: false` — the codebase does not enforce strict mode.
+- `strict: true` — keep public boundaries typed and avoid widening unless integration code requires it.
 - `moduleResolution: "Bundler"` is used.
 - Source files live in `src/`, compiled output goes to `dist/`.
 
@@ -29,7 +29,7 @@ alwaysApply: false
   ```typescript
   import type { ChatCompletionMessageParam } from "openai/resources/chat";
   ```
-- `any` is acceptable where strict typing would add friction, but prefer narrower types when practical.
+- `any` is allowed only at integration boundaries where narrower types add more noise than safety.
 - Shared types belong in `src/types/index.ts`.
 
 ## Naming Conventions
@@ -46,9 +46,10 @@ alwaysApply: false
 - Tool execution methods return `ToolResult` objects (`{ success, output?, error? }`) rather than throwing.
 - Use `process.exit(1)` for fatal CLI errors.
 
-## ESLint Rules
+## Biome Rules
 
-- `@typescript-eslint/no-unused-vars`: error
-- `@typescript-eslint/no-explicit-any`: warn
+- `suspicious.noExplicitAny`: error
+- `suspicious.noArrayIndexKey`: warn
+- `correctness.noUnusedFunctionParameters`: warn
 
 Run `bun run lint` to check and `bun run typecheck` to verify types.

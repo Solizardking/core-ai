@@ -2,8 +2,8 @@ import { spawn } from "child_process";
 import { createHash } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
-import type { DelegationRun, DelegationStatus, TaskRequest, ToolResult } from "../types/index";
-import { getHomeDir, type SandboxMode, type SandboxSettings } from "../utils/settings";
+import type { DelegationRun, DelegationStatus, TaskRequest, ToolResult } from "../types/index.js";
+import { getHomeDir, type SandboxMode, type SandboxSettings } from "../utils/settings.js";
 
 const ID_ADJECTIVES = ["brisk", "calm", "clever", "eager", "gentle", "keen", "lively", "nimble", "quiet", "steady"];
 

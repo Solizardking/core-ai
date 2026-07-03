@@ -49,7 +49,7 @@ async function importAgentModuleWithBatchMocks() {
   }));
 
   vi.doMock("../grok/batch", async () => {
-    const actual = await vi.importActual<typeof import("../grok/batch")>("../grok/batch");
+    const actual = await vi.importActual<typeof import("../grok/batch.js")>("../grok/batch");
     return {
       ...actual,
       createBatch,
@@ -59,7 +59,7 @@ async function importAgentModuleWithBatchMocks() {
     };
   });
 
-  const mod = await import("./agent");
+  const mod = await import("./agent.js");
   return {
     ...mod,
     mocks: {

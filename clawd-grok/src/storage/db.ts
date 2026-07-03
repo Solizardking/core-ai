@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as os from "node:os";
 import * as path from "node:path";
-import { applyMigrations } from "./migrations";
+import { applyMigrations } from "./migrations.js";
 
 type Row = Record<string, unknown>;
 
