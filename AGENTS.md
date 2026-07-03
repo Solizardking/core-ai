@@ -105,6 +105,11 @@ Set the appropriate API key env var and pass `--model`:
 - For `@solana/kit` integration, use `helius.raw` for the underlying `Rpc` client.
 - For Clawd Code workflows, use `clawd-code <mode> "<prompt>"`.
 
+## Documentation Maintenance
+
+- Always update `README.md` in the same change when adding or changing packages, MCP servers/tools, root scripts, setup steps, ports, transports, MCP client configuration, environment variables, generated files, or verification workflows.
+- Keep package-specific implementation details in the package README, but keep the root README complete enough for a fresh checkout.
+
 ## Environment Variables
 
 - Never commit API keys to git.

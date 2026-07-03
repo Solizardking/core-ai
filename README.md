@@ -35,12 +35,52 @@ This fork keeps the Helius Solana infrastructure surface and replaces the old as
 | [`knowledge`](./knowledge) | Clawd knowledge base — facts, gotchas, patterns, anti-patterns, decisions, API behaviors | read-only reference |
 | [`docs`](./docs) | Architecture decision records (ADRs) for the open-clawd stack | read-only reference |
 
+## Quick Start
+
+Install dependencies per package instead of running one repo-wide install. The package managers differ by package.
+
+```bash
+git clone <repo-url>
+cd core-ai
+```
+
+Common setup paths:
+
+```bash
+cd helius-mcp && pnpm install && pnpm build
+cd ../helius-cli && pnpm install && pnpm build
+cd ../mcp-server && npm install && npm run build
+cd ../solana-mcp && pnpm install && pnpm build
+```
+
 ## Clawd Code Integration
 
 Use this repository with Clawd Code:
 
 ```bash
 clawd --plugin-dir ./helius-plugin
+```
+
+## MCP Servers
+
+This repo ships three local MCP surfaces plus optional external documentation MCPs:
+
+| Server | Path / package | Purpose | Transport | Main command |
+|---|---|---|---|---|
+| Helius MCP | [`helius-mcp`](./helius-mcp) / `helius-mcp@latest` | Routed Helius account, wallet, asset, transaction, chain, streaming, write, compression, and knowledge tools | stdio | `npx helius-mcp@latest` |
+| Pump MCP | [`mcp-server`](./mcp-server) / `@pump-fun/mcp-server` | Pump SDK transaction builders, quotes, analytics, AMM, fee, incentive, metadata, and wallet utilities | stdio or HTTP | `npm run mcp:pump:start` |
+| Solana Docs MCP | [`solana-mcp`](./solana-mcp) / `solana-mcp` | Official Solana documentation search, source listing, and canonical docs retrieval | HTTP | `npm run mcp:solana:dev` |
+| ZK Compression MCP | external | ZK Compression and Light Protocol documentation | HTTP | `https://www.zkcompression.com/mcp` |
+
+Root helper scripts:
+
+```bash
+npm run mcp:pump:build
+npm run mcp:pump:start
+npm run mcp:pump:start:http
+npm run mcp:solana:build
+npm run mcp:solana:dev
+npm run mcp:solana:start
 ```
 
 For MCP-only setup, add Helius to `.clawd/settings.json`:
@@ -51,6 +91,29 @@ For MCP-only setup, add Helius to `.clawd/settings.json`:
     "helius": {
       "command": "npx",
       "args": ["helius-mcp@latest"]
+    }
+  }
+}
+```
+
+For the Pump SDK MCP server, build first and then configure stdio or HTTP:
+
+```bash
+cd mcp-server
+npm install
+npm run build
+npm run start:http
+```
+
+```json
+{
+  "mcpServers": {
+    "solana-clawd-pump": {
+      "command": "node",
+      "args": ["/Users/8bit/Downloads/open-clawd-code-main/core-ai/mcp-server/dist/index.js"],
+      "env": {
+        "SOLANA_RPC_URL": "https://api.mainnet-beta.solana.com"
+      }
     }
   }
 }
@@ -76,6 +139,8 @@ Then point an MCP client at `http://localhost:8080/mcp`:
   }
 }
 ```
+
+`solana-mcp` defaults to port `8080`. For local development, copy `solana-mcp/.env.example` to `solana-mcp/.env` and set Databricks credentials when using live RAG-backed search. `list_sections` and generated source catalog tests are available without committing any secrets.
 
 For ZK Compression and Light Protocol work, also install the Light Protocol skills and enable the documentation MCP:
 
@@ -123,6 +188,26 @@ The server exposes 10 public tools total:
 - `expandResult`
 
 The routed domain tools take a Helius action name in `action`, for example `heliusWallet` + `getBalance` or `heliusStreaming` + `createWebhook`. Heavy responses are summary-first; use `expandResult` to fetch a full section, range, page, or continuation on demand.
+
+## Environment Variables
+
+| Variable | Used by | Purpose |
+|---|---|---|
+| `HELIUS_API_KEY` | `helius-cli`, `helius-mcp`, Helius skills | Authenticated Helius API access |
+| `SOLANA_RPC_URL` | `mcp-server`, Clawd Code | Single Solana RPC endpoint |
+| `SOLANA_RPC_URLS` | `mcp-server` | Comma-separated RPC failover endpoints |
+| `XAI_API_KEY` | `clawd-code`, `clawd-grok` | xAI model access |
+| `ANTHROPIC_API_KEY` | `clawd-code` | Anthropic model access |
+| `DEEPSEEK_API_KEY` | `clawd-code` | DeepSeek model access |
+| `OPENROUTER_API_KEY` | `clawd-code` | OpenRouter model access |
+| `WANDB_API_KEY` | `ai-training` | W&B training and eval tracking |
+| `HONCHO_API_KEY` | `ai-training` | Persistent cross-session agent memory |
+| `DATABRICKS_HOST` | `solana-mcp` | Databricks workspace for official Solana docs retrieval |
+| `DATABRICKS_TOKEN` | `solana-mcp` | Local Databricks auth token; Databricks Apps can inject client credentials instead |
+| `DATABRICKS_VS_INDEX` | `solana-mcp` | Vector Search index for Solana docs chunks |
+| `DATABRICKS_WAREHOUSE_ID` | `solana-mcp` | SQL warehouse for docs fallback and analytics |
+| `DATABRICKS_ANALYTICS_SCHEMA` | `solana-mcp` | Schema for Solana MCP analytics events |
+| `REDIS_URL` | `solana-mcp` | Optional SSE/session backing |
 
 ## helius-skills
 
@@ -182,7 +267,40 @@ pnpm build
 pnpm test
 ```
 
-Requirements: Node.js 20+, pnpm, and a Helius API key from https://dashboard.helius.dev.
+For MCP package work:
+
+```bash
+cd mcp-server
+npm install
+npm run build
+npm test
+
+cd ../solana-mcp
+pnpm install
+pnpm build
+pnpm test
+pnpm audit:security
+```
+
+Requirements vary by package:
+
+| Package | Runtime | Package manager | Notes |
+|---|---|---|---|
+| `helius-cli`, `helius-mcp` | Node.js 20+ | pnpm | Set a Helius API key from https://dashboard.helius.dev for authenticated Helius calls |
+| `mcp-server` | Node.js 18+ | npm | Uses `SOLANA_RPC_URL` or `SOLANA_RPC_URLS`; transaction tools build instructions and do not submit them |
+| `solana-mcp` | Node.js 24.x | pnpm 10.30.0 | Uses Databricks env vars for live retrieval; `REDIS_URL` enables SSE/session backing |
+
+## Documentation Maintenance
+
+Update this README in the same change whenever you add or change:
+
+- a package, MCP server, CLI mode, or root script
+- setup steps, ports, transports, or MCP client configuration
+- required environment variables or secrets handling
+- generated files or canonical source locations
+- build, test, deploy, or audit commands
+
+Keep package-specific details in each package README, but keep this root README complete enough for a new agent or developer to find the right package and run the right verification commands from a fresh checkout.
 
 ## Resources
 
