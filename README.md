@@ -30,6 +30,7 @@ This fork keeps the Helius Solana infrastructure surface and replaces the old as
 | [`clawd-grok`](./clawd-grok) | Bun-native Clawd / Grok agent runtime — REPL, headless, audio, LSP, MCP, payments, wallet, verify | `bun install && bun run dev` |
 | [`clawd-perps-agent`](./clawd-perps-agent) | Specialized perps agent: Phoenix Rise, Vulcan, Imperial WS, on-chain MM, TWAMM, Telegram | `cd clawd-perps-agent && npm install && npm run build` |
 | [`mcp-server`](./mcp-server) | Standalone MCP server for pump-sdk and related tooling | `npm install && npm run build` |
+| [`solana-mcp`](./solana-mcp) | Official Solana documentation MCP server with RAG search, section listing, and canonical documentation retrieval | `pnpm install && pnpm build` |
 | [`v3`](./v3) | v3 Clawd runtime — next-generation Clawd scaffolding | `npm install && npm run build` |
 | [`knowledge`](./knowledge) | Clawd knowledge base — facts, gotchas, patterns, anti-patterns, decisions, API behaviors | read-only reference |
 | [`docs`](./docs) | Architecture decision records (ADRs) for the open-clawd stack | read-only reference |
@@ -50,6 +51,27 @@ For MCP-only setup, add Helius to `.clawd/settings.json`:
     "helius": {
       "command": "npx",
       "args": ["helius-mcp@latest"]
+    }
+  }
+}
+```
+
+To run the local Solana documentation MCP server from this repo:
+
+```bash
+cd solana-mcp
+pnpm install
+pnpm dev:local
+```
+
+Then point an MCP client at `http://localhost:8080/mcp`:
+
+```json
+{
+  "mcpServers": {
+    "solana-docs": {
+      "type": "http",
+      "url": "http://localhost:8080/mcp"
     }
   }
 }

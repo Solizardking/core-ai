@@ -70,6 +70,7 @@ v3/*.tsbuildinfo
 
 # Lockfiles (not needed for published packages)
 pnpm-lock.yaml
+!solana-mcp/pnpm-lock.yaml
 
 # Project docs - keep in git now (was: docs/)
 TG.md

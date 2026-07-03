@@ -1,6 +1,12 @@
 {
   "private": true,
   "scripts": {
-    "compile-skills": "npx tsx scripts/compile-skills.ts"
+    "compile-skills": "npx tsx scripts/compile-skills.ts",
+    "mcp:pump:build": "npm --prefix mcp-server run build",
+    "mcp:pump:start": "npm --prefix mcp-server run start",
+    "mcp:pump:start:http": "npm --prefix mcp-server run start:http",
+    "mcp:solana:build": "pnpm --dir solana-mcp build",
+    "mcp:solana:dev": "pnpm --dir solana-mcp dev:local",
+    "mcp:solana:start": "pnpm --dir solana-mcp start"
   }
 }

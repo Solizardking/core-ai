@@ -10,6 +10,7 @@ This monorepo contains Helius developer tools wrapped for Clawd Code:
 | Package | What it does |
 |---|---|
 | `helius-mcp/` | MCP server (`npx helius-mcp@latest`) — exposes 10 public tools total |
+| `solana-mcp/` | Official Solana documentation MCP server — RAG search + canonical docs retrieval |
 | `helius-skills/` | Canonical skill source — `SKILL.md` + reference files for each domain |
 | `helius-plugin/` | Clawd Code plugin — bundles skills + auto-starts MCP server |
 | `helius-cli/` | CLI for account setup, blockchain queries, and staking |
