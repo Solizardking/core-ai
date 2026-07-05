@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -88,6 +88,10 @@ const ROUTER_LEGACY_ALLOWLIST = [
 ];
 
 function collectAuditFiles(target: string): string[] {
+  if (!existsSync(target)) {
+    return [];
+  }
+
   const stats = statSync(target);
   if (!stats.isDirectory()) {
     return target.endsWith('.md') || target.endsWith('.ts') ? [target] : [];
