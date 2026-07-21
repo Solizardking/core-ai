@@ -50,13 +50,13 @@
     "tsx": "^4.21.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.57.2",
-    "vite": "7.3.5",
+    "vite": "8.1.5",
     "vitest": "^4.1.9"
   },
   "pnpm": {
     "overrides": {
       "hono": "4.12.25",
-      "vite": "7.3.5"
+      "vite": "8.1.5"
     }
   }
 }
