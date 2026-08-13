@@ -2,7 +2,7 @@
   "name": "clawd-cli",
   "version": "2.0.0",
   "description": "Clawd CLI — manage Helius accounts, query Solana, and automate agent workflows",
-  "homepage": "https://www.helius.dev/cli.md",
+  "homepage": "https://github.com/Solizardking/core-ai/tree/main/clawd-cli",
   "repository": {
     "type": "git",
     "url": "https://github.com/Solizardking/core-ai.git",
@@ -12,6 +12,7 @@
     "url": "https://github.com/Solizardking/core-ai/issues"
   },
   "keywords": [
+    "clawd",
     "solana",
     "helius",
     "cli",

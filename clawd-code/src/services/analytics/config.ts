@@ -17,6 +17,9 @@ import { isTelemetryDisabled } from '../../utils/privacyLevel.js'
  * - Privacy level is no-telemetry or essential-traffic
  */
 export function isAnalyticsDisabled(): boolean {
+  if (!isEnvTruthy(process.env.CLAWD_ENABLE_ANALYTICS)) {
+    return true
+  }
   return (
     process.env.NODE_ENV === 'test' ||
     isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) ||

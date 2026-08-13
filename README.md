@@ -39,7 +39,7 @@ flowchart TB
   subgraph AGENTS["01  AGENTS"]
     CC["clawd-code"]
     CG["clawd-grok"]
-    CA["clawd-agents"]
+    CA["clawd-perps-agent"]
     V3["v3"]
     TR["ai-training"]
   end
@@ -78,6 +78,7 @@ Chain I/O still rides Helius RPC, DAS, Sender, Laserstream, and the Wallet API (
 
 | Package | What it is | How to run |
 |---|---|---|
+| [`clawd-core`](./clawd-core) | Identity / umbrella for the Clawd Core stack | see [`clawd-core/README.md`](./clawd-core/README.md) |
 | [`clawd-cli`](./clawd-cli) | CLI for Helius account setup, DAS/RPC queries, staking, ZK compression | `npm install -g clawd-cli` then `clawd-cli config set-api-key <key>` |
 | [`clawd-mcp`](./clawd-mcp) | MCP server — 9 routed domain tools plus `expandResult` | `npx clawd-mcp@latest` in `.clawd/settings.json` |
 | [`clawd-skills`](./clawd-skills) | Canonical skill source (`SKILL.md` + references) | `./clawd-skills/clawd/install.sh` |
@@ -86,7 +87,7 @@ Chain I/O still rides Helius RPC, DAS, Sender, Laserstream, and the Wallet API (
 | [`clawd-code`](./clawd-code) | Solana-native AI CLI — xAI / Anthropic / DeepSeek / OpenRouter, paper-gated perps | `cd clawd-code && npm install && npm run build` |
 | [`clawd-grok`](./clawd-grok) | Bun-native Grok runtime — default `grok-4.6` Responses API, REPL, audio, LSP, MCP, wallet | `cd clawd-grok && bun install && bun run dev` |
 | [`membrain`](./membrain) | Selective memory daemon — gRPC `:9090`, SQLite / pgvector | `cd membrain && make build && ./bin/membraned` |
-| [`clawd-agents`](./clawd-agents) | Perps agents: Phoenix Rise, Vulcan, Imperial, TWAMM, on-chain MM, Telegram | `cd clawd-agents/clawd-perps-agent && npm install && npm run build` |
+| [`clawd-perps-agent`](./clawd-perps-agent) | Perps agents: Phoenix Rise, Vulcan, Imperial, TWAMM, on-chain MM, Telegram | `cd clawd-perps-agent && npm install && npm run build` |
 | [`mcp-server`](./mcp-server) | Pump SDK MCP — quotes, AMM, fees, metadata (builds txs, does not submit) | `npm run mcp:pump:start` |
 | [`solana-mcp`](./solana-mcp) | Official Solana docs MCP — RAG search + canonical retrieval | `npm run mcp:solana:dev` → `http://localhost:8080/mcp` |
 | [`v3`](./v3) | Next-gen Clawd runtime scaffold | `cd v3 && npm install && npm run build` |
@@ -99,7 +100,7 @@ Chain I/O still rides Helius RPC, DAS, Sender, Laserstream, and the Wallet API (
 Install per package. There is no repo-wide `npm install`.
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/Solizardking/core-ai.git
 cd core-ai
 
 cd clawd-mcp && pnpm install && pnpm build
@@ -127,7 +128,7 @@ Or MCP-only in `.clawd/settings.json`:
 }
 ```
 
-Set `HELIUS_API_KEY` (or run `clawd-cli config set-api-key` / `clawd-cli signup`). Keys live in `~/.clawd/config.json` because that is still the Helius account store.
+Set `HELIUS_API_KEY` (or run `clawd-cli config set-api-key` / `clawd-cli signup`). Keys live in `~/.clawd/config.json`. Existing `~/.helius/` installs are still read.
 
 ## MCP servers
 
@@ -244,7 +245,7 @@ clawd-cli balance <wallet-address>
 clawd-cli tx parse <signature>
 ```
 
-Binary is `clawd-cli`. OAuth against the Helius dashboard still uses client id `helius-cli`. Config stays in `~/.clawd/`.
+Binary is `clawd-cli`. OAuth against the Helius dashboard still uses client id `helius-cli`. Config lives in `~/.clawd/` (legacy `~/.helius/` is still read).
 
 ## Skills
 
@@ -286,7 +287,7 @@ Bundles the skills above and auto-starts Clawd MCP, DFlow MCP, and ZK Compressio
 
 ## Environment variables
 
-Never commit keys.
+Never commit keys. Telemetry is off unless you opt in (`CLAWD_ENABLE_ANALYTICS`, `CLAWD_POSTHOG_API_KEY`). No third-party analytics keys are shipped.
 
 | Variable | Used by | Purpose |
 |---|---|---|

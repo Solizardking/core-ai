@@ -17,7 +17,7 @@ jobs:
       - name: Compare reference files
         run: |
           SKILLS_DIR="clawd-skills/clawd/references"
-          PLUGIN_DIR="clawd-plugin/skills/build/references"
+          PLUGIN_DIR="clawd-plugin/skills/clawd/references"
 
           if [ ! -d "$SKILLS_DIR" ] || [ ! -d "$PLUGIN_DIR" ]; then
             echo "One or both reference directories are missing."
@@ -56,7 +56,7 @@ jobs:
             echo ""
             echo "Reference files are out of sync!"
             echo "The canonical source is clawd-skills/clawd/references/."
-            echo "Copy changes to clawd-plugin/skills/build/references/ to fix."
+            echo "Copy changes to clawd-plugin/skills/clawd/references/ to fix."
             exit 1
           fi
 
@@ -305,7 +305,7 @@ jobs:
       - name: Compare build reference files (clawd-cursor)
         run: |
           SKILLS_DIR="clawd-skills/clawd/references"
-          CURSOR_DIR="clawd-cursor/skills/build/references"
+          CURSOR_DIR="clawd-cursor/skills/clawd/references"
 
           if [ ! -d "$SKILLS_DIR" ] || [ ! -d "$CURSOR_DIR" ]; then
             echo "One or both reference directories are missing."
@@ -339,7 +339,7 @@ jobs:
           if [ "$DIFF_FOUND" -eq 1 ]; then
             echo "Build reference files are out of sync!"
             echo "The canonical source is clawd-skills/clawd/references/."
-            echo "Copy changes to clawd-cursor/skills/build/references/ to fix."
+            echo "Copy changes to clawd-cursor/skills/clawd/references/ to fix."
             exit 1
           fi
 

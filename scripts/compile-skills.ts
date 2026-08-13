@@ -45,7 +45,7 @@ const VERSIONS: Record<string, string> = JSON.parse(
 const SKILLS: SkillConfig[] = [
   {
     dir: "clawd",
-    pluginDir: "build",
+    pluginDir: "clawd",
     enhancedDescription: `Build Solana applications with Helius infrastructure. Use this skill when:
   sending transactions (SOL, SPL tokens, swaps), querying assets/NFTs (DAS API),
   streaming real-time data (WebSockets, Laserstream), setting up webhooks for

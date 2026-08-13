@@ -2,20 +2,19 @@
 set -e
 
 # ── Validate required env vars ────────────────────────────────
-if [ -z "$ANTHROPIC_API_KEY" ]; then
-  echo "ERROR: ANTHROPIC_API_KEY is not set." >&2
+if [ -z "$ANTHROPIC_API_KEY" ] && [ -z "$XAI_API_KEY" ]; then
+  echo "ERROR: Set XAI_API_KEY or ANTHROPIC_API_KEY." >&2
   echo "" >&2
-  echo "  docker run -p 3000:3000 -e ANTHROPIC_API_KEY=sk-ant-... claude-web" >&2
+  echo "  docker run -p 3000:3000 -e XAI_API_KEY=... clawd-code-web" >&2
   echo "" >&2
   echo "  Or via docker-compose with a .env file:" >&2
-  echo "    ANTHROPIC_API_KEY=sk-ant-... docker-compose up" >&2
+  echo "    XAI_API_KEY=... docker-compose up" >&2
   exit 1
 fi
 
-# The API key is forwarded to child PTY processes via process.env,
-# so the claude CLI will pick it up automatically — no config file needed.
+# The API key is forwarded to child PTY processes via process.env.
 
-echo "Claude Web Terminal starting on port ${PORT:-3000}..."
+echo "Clawd Code web terminal starting on port ${PORT:-3000}..."
 if [ -n "$AUTH_TOKEN" ]; then
   echo "  Auth token protection: enabled"
 fi

@@ -43,4 +43,4 @@ Agent state, training records, and leaderboard entries are stored in Convex tabl
 
 ---
 
-> See also: [src/App.tsx](../src/App.tsx) for the frontend integration · MIT
+> See the [root README](../README.md) for the rest of the Clawd Core stack. MIT.

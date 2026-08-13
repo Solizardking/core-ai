@@ -82,7 +82,7 @@ API keys are resolved in this order:
 
 1. `--api-key <key>` flag
 2. `HELIUS_API_KEY` environment variable
-3. `~/.clawd/config.json`
+3. `~/.clawd/config.json` (legacy `~/.helius/config.json` is still read)
 
 ```bash
 clawd-cli config show                # View current config

@@ -23,10 +23,16 @@ Thumbs.db
 npm-debug.log*
 pnpm-debug.log*
 
-# Environment
+# Environment and secrets
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+*.pem
+id_rsa
+id_ed25519
+credentials.json
+secrets.json
+auth.json
 
 # Clawd Code runtime state and artifacts
 .clawd/
@@ -50,6 +56,10 @@ clawd-agents/clawd-perps-agent/dist/
 clawd-agents/clawd-perps-agent/node_modules/
 clawd-agents/clawd-perps-agent/.clawd/
 clawd-agents/clawd-perps-agent/*.tsbuildinfo
+clawd-perps-agent/dist/
+clawd-perps-agent/node_modules/
+clawd-perps-agent/.clawd/
+clawd-perps-agent/*.tsbuildinfo
 
 # MCP server runtime state and artifacts
 mcp-server/dist/

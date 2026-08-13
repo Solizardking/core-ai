@@ -9,6 +9,7 @@ This monorepo contains Clawd Core — Solana agent tooling that talks to Helius 
 
 | Package | What it does |
 |---|---|
+| `clawd-core/` | Identity / umbrella for the Clawd Core stack |
 | `clawd-mcp/` | MCP server (`npx clawd-mcp@latest`) — exposes 10 public tools total |
 | `solana-mcp/` | Official Solana documentation MCP server — RAG search + canonical docs retrieval |
 | `clawd-skills/` | Canonical skill source — `SKILL.md` + reference files for each domain |
@@ -18,7 +19,7 @@ This monorepo contains Clawd Core — Solana agent tooling that talks to Helius 
 | `clawd-code/` | Full Solana-native AI CLI — xAI/Anthropic/DeepSeek/OpenRouter, voice, web, arena |
 | `clawd-grok/` | Bun-native REPL + audio + LSP + MCP + wallet runtime |
 | `membrain/` | Core AI selective memory — `membraned` gRPC daemon, SQLite/pgvector, TS/Python/OpenClawd clients |
-| `clawd-agents/` | Perps agents: Phoenix Rise, Vulcan, Imperial, TWAMM, on-chain MM, Telegram |
+| `clawd-perps-agent/` | Perps agents: Phoenix Rise, Vulcan, Imperial, TWAMM, on-chain MM, Telegram |
 | `ai-training/` | LoRA fine-tuning platform, HF Jobs, W&B, wiki ingest, Solana benchmark |
 
 ## Clawd Code Setup

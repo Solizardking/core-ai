@@ -902,9 +902,9 @@ stakeCmd
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
-  $ clawd-cli stake create 1.5 -k ~/.helius/keypair.json
-  $ clawd-cli stake create --amount 1.5 -k ~/.helius/keypair.json
-  $ clawd-cli stake create --raw-amount 1500000000 -k ~/.helius/keypair.json --json`)
+  $ clawd-cli stake create 1.5 -k ~/.clawd/keypair.json
+  $ clawd-cli stake create --amount 1.5 -k ~/.clawd/keypair.json
+  $ clawd-cli stake create --raw-amount 1500000000 -k ~/.clawd/keypair.json --json`)
   .action(function(this: any, amount: string | undefined) { stakeCreateCommand(amount, opts(this)); });
 
 stakeCmd
@@ -914,7 +914,7 @@ stakeCmd
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
-  $ clawd-cli stake unstake <stake-account> -k ~/.helius/keypair.json --json`)
+  $ clawd-cli stake unstake <stake-account> -k ~/.clawd/keypair.json --json`)
   .action(function(this: any, stakeAccount: string) { stakeUnstakeCommand(stakeAccount, opts(this)); });
 
 stakeCmd
@@ -924,7 +924,7 @@ stakeCmd
   .option("--json", "Output in JSON format")
   .addHelpText('after', `
 Examples:
-  $ clawd-cli stake withdraw <stake-account> -k ~/.helius/keypair.json --json`)
+  $ clawd-cli stake withdraw <stake-account> -k ~/.clawd/keypair.json --json`)
   .action(function(this: any, stakeAccount: string) { stakeWithdrawCommand(stakeAccount, opts(this)); });
 
 stakeCmd

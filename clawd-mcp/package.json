@@ -18,7 +18,7 @@
     "prepublishOnly": "pnpm build"
   },
   "keywords": [
-    "helius",
+    "clawd",
     "solana",
     "blockchain",
     "mcp",

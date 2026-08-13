@@ -31,7 +31,7 @@ clawd --plugin-dir ./clawd-plugin
 npx skills add Lightprotocol/skills
 ```
 
-**Build skill** (`/clawd:build`) — makes Clawd an expert Solana developer. Includes routing logic, correct SDK patterns, reference files for every Helius product, and rules that prevent common mistakes (hardcoded fees, wrong endpoints, missing Jito tips).
+**Clawd Core skill** (`/clawd:build`) — makes Clawd an expert Solana developer. Includes routing logic, correct SDK patterns, reference files for every Helius product, and rules that prevent common mistakes (hardcoded fees, wrong endpoints, missing Jito tips).
 
 **DFlow trading skill** (`/clawd:dflow`) — makes Clawd an expert at building Solana trading applications. Combines DFlow's trading APIs (spot swaps, prediction markets, real-time streaming, Proof KYC) with Helius infrastructure (Sender, priority fees, DAS, WebSockets, LaserStream, Wallet API).
 

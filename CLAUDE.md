@@ -1,6 +1,6 @@
 # Core AI — Clawd Compatibility Instructions
 
-This file is kept only for runtimes that still auto-load `CLAWD.md`.
+This file is kept only for runtimes that still auto-load `CLAUDE.md`.
 The effective agent harness is Clawd-native; prefer [`AGENTS.md`](./AGENTS.md) and Clawd Code.
 
 When this file is loaded:

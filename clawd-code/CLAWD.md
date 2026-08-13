@@ -54,7 +54,7 @@ Skills are in `clawd-plugin/skills/`. Each provides expert routing, rules, and r
 | --- | --- | --- |
 | **Clawd Code** | `skills/clawd-code/` | Using Clawd Code CLI — code generation, trading, research, image, voice, REPL modes |
 | **Agent Arena** | `skills/agent-arena/` | Registering agents on Cheshire Terminal, discovering and hiring agents, ATOM reputation |
-| **Build** | `skills/build/` | Building Solana apps with Helius infrastructure |
+| **Clawd Core** | `skills/clawd/` | Building Solana apps with Helius infrastructure |
 | **DFlow** | `skills/dflow/` | Trading apps combining DFlow with Helius |
 | **Phantom** | `skills/phantom/` | Frontend Solana apps with Phantom wallet |
 | **Jupiter** | `skills/jupiter/` | DeFi apps with Jupiter APIs |

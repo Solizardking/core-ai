@@ -495,6 +495,9 @@ const getGrowthBookClient = memoize(
 
     const attributes = getUserAttributes()
     const clientKey = getGrowthBookClientKey()
+    if (!clientKey) {
+      return null
+    }
     if (process.env.USER_TYPE === 'ant') {
       logForDebugging(
         `GrowthBook: Creating client with clientKey=${clientKey}, attributes: ${jsonStringify(attributes)}`,

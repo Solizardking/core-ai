@@ -6,8 +6,8 @@
     "name": "Clawd",
     "url": "https://github.com/Solizardking/core-ai"
   },
-  "homepage": "https://www.helius.dev/docs",
+  "homepage": "https://github.com/Solizardking/core-ai",
   "repository": "https://github.com/Solizardking/core-ai",
   "license": "MIT",
-  "keywords": ["solana", "blockchain", "rpc", "nft", "defi", "web3", "helius", "clawd", "clawd-code", "lobster"]
+  "keywords": ["solana", "blockchain", "rpc", "nft", "defi", "web3", "clawd", "clawd-code", "lobster"]
 }

@@ -121,7 +121,7 @@ export async function loginCommand(options: LoginOptions): Promise<void> {
         expires_at: new Date(Date.now() + result.expires_in * 1000).toISOString(),
       });
     } else {
-      console.log(chalk.gray("JWT saved to ~/.helius/config.json"));
+      console.log(chalk.gray("JWT saved to ~/.clawd/config.json"));
     }
   } catch (error) {
     handleCommandError(error, options, spinner, "AUTH_FAILED");

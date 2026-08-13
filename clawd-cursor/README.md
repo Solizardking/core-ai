@@ -12,7 +12,7 @@ Search **"Clawd Core"** in the Cursor Marketplace, or run `/add-plugin` in Curso
 
 **DFlow MCP Server** — auto-starts with the plugin. Tools for querying DFlow API details, response schemas, and code examples for trading integrations.
 
-**Build skill** — makes the agent an expert Solana developer. Includes routing logic, correct SDK patterns, reference files for every Helius product, and rules that prevent common mistakes (hardcoded fees, wrong endpoints, missing Jito tips).
+**Clawd Core skill** — makes the agent an expert Solana developer. Includes routing logic, correct SDK patterns, reference files for every Helius product, and rules that prevent common mistakes (hardcoded fees, wrong endpoints, missing Jito tips).
 
 **DFlow trading skill** — makes the agent an expert at building Solana trading applications. Combines DFlow's trading APIs (spot swaps, prediction markets, real-time streaming, Proof KYC) with Helius infrastructure (Sender, priority fees, DAS, WebSockets, LaserStream, Wallet API).
 

@@ -124,7 +124,7 @@ export function registerAuthTools(server: McpServer) {
         'npx clawd-cli@latest login',
         '```',
         '',
-        'This opens your default browser to authenticate via OAuth/PKCE and writes a session token to `~/.helius/config.json`. This MCP picks it up automatically — no further setup. Then call `setHeliusApiKey` with one of your keys (visible via `clawd-cli apikeys`), or just call `getAccountStatus` to confirm the session.',
+        'This opens your default browser to authenticate via OAuth/PKCE and writes a session token to `~/.clawd/config.json`. This MCP picks it up automatically — no further setup. Then call `setHeliusApiKey` with one of your keys (visible via `clawd-cli apikeys`), or just call `getAccountStatus` to confirm the session.',
         '',
         '## Path C — Create a new account via crypto checkout',
         '',
