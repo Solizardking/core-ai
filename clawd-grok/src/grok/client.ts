@@ -1,9 +1,11 @@
+import type { SharedV3ProviderOptions } from "@ai-sdk/provider";
 import { createXai, type XaiProvider } from "@ai-sdk/xai";
 import { generateText } from "ai";
 import { getReasoningEffortForModel, getServiceTier } from "../utils/settings.js";
 import {
   getEffectiveReasoningEffort,
   getModelInfo,
+  isReasoningEffortLevel,
   type ModelDefinition,
   normalizeModelId,
   usesResponsesApi,
@@ -14,6 +16,7 @@ export type { XaiProvider };
 const DEFAULT_TITLE_MODEL = "grok-4.20-non-reasoning";
 const DEFAULT_RECAP_MODEL = "grok-4.20-non-reasoning";
 export const REASONING_REQUEST_TIMEOUT_MS = 3_600_000;
+const ENCRYPTED_REASONING_INCLUDE = "reasoning.encrypted_content";
 const RETIRED_MODEL_MAP: Record<string, string> = {
   "grok-4-0709": "grok-4.6",
   "grok-code-fast-1": "grok-4.6",
@@ -23,15 +26,7 @@ const RETIRED_MODEL_MAP: Record<string, string> = {
 
 export type ProviderReasoningEffort = "low" | "medium" | "high" | "xhigh";
 export type XaiServiceTier = "default" | "priority";
-
-export interface XaiRuntimeProviderOptions {
-  xai?: {
-    reasoningEffort?: ProviderReasoningEffort;
-    previousResponseId?: string;
-    serviceTier?: XaiServiceTier;
-    store?: boolean;
-  };
-}
+export type XaiRuntimeProviderOptions = SharedV3ProviderOptions;
 
 export interface ResolveModelRuntimeOptions {
   previousResponseId?: string;
@@ -60,13 +55,13 @@ export function resolveModelRuntime(
   modelId: string,
   options: ResolveModelRuntimeOptions = {},
 ): ResolvedModelRuntime {
+  const retired = Object.hasOwn(RETIRED_MODEL_MAP, modelId);
   const normalizedModelId = RETIRED_MODEL_MAP[modelId] ?? normalizeModelId(modelId);
   const info = getModelInfo(normalizedModelId);
   const responses = usesResponsesApi(info);
   const model = responses ? provider.responses(normalizedModelId) : provider.chat(normalizedModelId);
-  const normalizedFromAlias = normalizedModelId !== modelId;
   const configuredEffort = getReasoningEffortForModel(normalizedModelId);
-  const reasoningEffort = normalizedFromAlias
+  const reasoningEffort = retired
     ? undefined
     : (getEffectiveReasoningEffort(normalizedModelId, configuredEffort) as ProviderReasoningEffort | undefined);
   const serviceTier = options.serviceTier ?? getServiceTier();
@@ -91,6 +86,13 @@ export function extractResponseId(response: unknown): string | undefined {
   if (!response || typeof response !== "object") return undefined;
   const id = (response as { id?: unknown }).id;
   return typeof id === "string" && id.length > 0 ? id : undefined;
+}
+
+export function getProviderReasoningEffort(
+  providerOptions?: XaiRuntimeProviderOptions,
+): ProviderReasoningEffort | undefined {
+  const effort = providerOptions?.xai?.reasoningEffort;
+  return typeof effort === "string" && isReasoningEffortLevel(effort) ? effort : undefined;
 }
 
 export function isPreviousResponseNotFoundError(error: unknown): boolean {
@@ -193,7 +195,7 @@ function buildXaiProviderOptions(args: {
 }
 
 function wrapXaiFetch(baseFetch: typeof fetch = fetch): typeof fetch {
-  return (async (input: RequestInfo | URL, init?: RequestInit) => {
+  return async (input, init) => {
     const url = requestUrl(input);
     const timeoutSignal = AbortSignal.timeout(REASONING_REQUEST_TIMEOUT_MS);
     const signal =
@@ -202,29 +204,55 @@ function wrapXaiFetch(baseFetch: typeof fetch = fetch): typeof fetch {
         : (init?.signal ?? timeoutSignal);
 
     let nextInit: RequestInit = { ...init, signal };
-    if (shouldInjectServiceTier(url) && typeof init?.body === "string") {
+    if (isXaiInferenceUrl(url) && typeof init?.body === "string") {
       try {
-        const payload = JSON.parse(init.body) as Record<string, unknown>;
-        const tier = getServiceTier();
-        if (tier === "priority" && payload.service_tier == null) {
-          payload.service_tier = "priority";
-          nextInit = { ...nextInit, body: JSON.stringify(payload) };
-        }
+        nextInit = { ...nextInit, body: applyXaiRequestOverrides(url, init.body) };
       } catch {
         // Leave non-JSON bodies unchanged.
       }
     }
 
     return baseFetch(input, nextInit);
-  }) as typeof fetch;
+  };
 }
 
-function requestUrl(input: RequestInfo | URL): string {
+export function applyXaiRequestOverrides(url: string, body: string): string {
+  const payload = JSON.parse(body) as Record<string, unknown>;
+  const modelId = typeof payload.model === "string" ? payload.model : "";
+  const effort = getEffectiveReasoningEffort(modelId, getReasoningEffortForModel(modelId));
+
+  if (url.includes("/v1/responses")) {
+    if (effort) {
+      const existing = isPlainObject(payload.reasoning) ? payload.reasoning : {};
+      payload.reasoning = { ...existing, effort };
+    }
+    const include = Array.isArray(payload.include) ? payload.include.filter((item) => typeof item === "string") : [];
+    if (!include.includes(ENCRYPTED_REASONING_INCLUDE)) {
+      include.push(ENCRYPTED_REASONING_INCLUDE);
+    }
+    payload.include = include;
+  } else if (url.includes("/v1/chat/completions") && effort && payload.reasoning_effort == null) {
+    payload.reasoning_effort = effort;
+  }
+
+  const tier = getServiceTier();
+  if (tier === "priority" && payload.service_tier == null) {
+    payload.service_tier = "priority";
+  }
+
+  return JSON.stringify(payload);
+}
+
+function requestUrl(input: Parameters<typeof fetch>[0]): string {
   if (typeof input === "string") return input;
   if (input instanceof URL) return input.href;
   return input.url;
 }
 
-function shouldInjectServiceTier(url: string): boolean {
+function isXaiInferenceUrl(url: string): boolean {
   return url.includes("/v1/responses") || url.includes("/v1/chat/completions");
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

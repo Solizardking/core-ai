@@ -6,7 +6,6 @@ export const REASONING_EFFORTS = ["low", "medium", "high", "xhigh"] as const;
 export type ReasoningEffortLevel = (typeof REASONING_EFFORTS)[number];
 
 export const GROK_46_REASONING_EFFORTS: ReasoningEffortLevel[] = ["low", "medium", "high", "xhigh"];
-export const GROK_45_REASONING_EFFORTS: ReasoningEffortLevel[] = ["low", "medium", "high"];
 export const MULTI_AGENT_REASONING_EFFORTS: ReasoningEffortLevel[] = ["low", "medium", "high", "xhigh"];
 export const GROK_3_MINI_REASONING_EFFORTS: ReasoningEffortLevel[] = ["low", "high"];
 

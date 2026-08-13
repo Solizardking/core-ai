@@ -1,4 +1,4 @@
-import { beforeEach, afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { AgentMode } from "../types/index.js";
 import { getCurrentModel, getReasoningEffortForModel, getServiceTier, parseSubAgentsRawList } from "./settings.js";
 

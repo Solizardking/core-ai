@@ -261,7 +261,9 @@ describe("schedule daemon tools", () => {
 
 describe("grok-4.6 tools", () => {
   it("exposes execute_code and domain-filtered web search", () => {
-    const tools = createTools(new BashTool("/tmp"), { tools: { webSearch: vi.fn(), xSearch: vi.fn(), codeExecution: vi.fn() } } as never);
+    const tools = createTools(new BashTool("/tmp"), {
+      tools: { webSearch: vi.fn(), xSearch: vi.fn(), codeExecution: vi.fn() },
+    } as never);
     expect(tools.execute_code).toBeDefined();
     expect(tools.search_web).toBeDefined();
     expect(tools.generate_image).toBeDefined();

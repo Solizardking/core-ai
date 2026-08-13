@@ -261,7 +261,9 @@ export function createTools(
       inputSchema: z.object({
         prompt: z
           .string()
-          .describe("What to compute or analyze. Include any data inline; the sandbox has no external network or files."),
+          .describe(
+            "What to compute or analyze. Include any data inline; the sandbox has no external network or files.",
+          ),
       }),
       execute: async ({ prompt }, { abortSignal }) => {
         try {

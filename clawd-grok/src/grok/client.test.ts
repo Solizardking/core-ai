@@ -2,7 +2,13 @@ import { createXai } from "@ai-sdk/xai";
 import type { generateText } from "ai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as settings from "../utils/settings.js";
-import { extractResponseId, generateRecap, isPreviousResponseNotFoundError, resolveModelRuntime } from "./client.js";
+import {
+  applyXaiRequestOverrides,
+  extractResponseId,
+  generateRecap,
+  isPreviousResponseNotFoundError,
+  resolveModelRuntime,
+} from "./client.js";
 
 const mockGenerateText = vi.hoisted(() => vi.fn());
 
@@ -148,6 +154,17 @@ describe("client", () => {
         });
       });
 
+      it("keeps reasoning effort when resolving grok-4.6 aliases", () => {
+        vi.spyOn(settings, "getReasoningEffortForModel").mockReturnValue("medium");
+        const runtime = resolveModelRuntime(mockProvider, "grok");
+        expect(runtime.modelId).toBe("grok-4.6");
+        expect(runtime.providerOptions).toEqual({
+          xai: {
+            reasoningEffort: "medium",
+          },
+        });
+      });
+
       it("chains previousResponseId on grok-4.6 Responses API turns", () => {
         const runtime = resolveModelRuntime(mockProvider, "grok-4.6", {
           previousResponseId: "resp_abc",
@@ -214,4 +231,39 @@ describe("client", () => {
       });
     });
   });
+
+  describe("applyXaiRequestOverrides", () => {
+    const originalEffort = process.env.GROK_REASONING_EFFORT;
+    const originalXaiEffort = process.env.XAI_REASONING_EFFORT;
+    const originalTier = process.env.GROK_SERVICE_TIER;
+    const originalXaiTier = process.env.XAI_SERVICE_TIER;
+
+    afterEach(() => {
+      restoreEnv("GROK_REASONING_EFFORT", originalEffort);
+      restoreEnv("XAI_REASONING_EFFORT", originalXaiEffort);
+      restoreEnv("GROK_SERVICE_TIER", originalTier);
+      restoreEnv("XAI_SERVICE_TIER", originalXaiTier);
+    });
+
+    it("injects xhigh reasoning, encrypted thinking, and priority on Responses requests", () => {
+      process.env.GROK_REASONING_EFFORT = "xhigh";
+      process.env.GROK_SERVICE_TIER = "priority";
+      const body = applyXaiRequestOverrides(
+        "https://api.x.ai/v1/responses",
+        JSON.stringify({ model: "grok-4.6", input: [] }),
+      );
+      expect(JSON.parse(body)).toEqual({
+        model: "grok-4.6",
+        input: [],
+        reasoning: { effort: "xhigh" },
+        include: ["reasoning.encrypted_content"],
+        service_tier: "priority",
+      });
+    });
+  });
 });
+
+function restoreEnv(name: string, value: string | undefined): void {
+  if (value === undefined) delete process.env[name];
+  else process.env[name] = value;
+}

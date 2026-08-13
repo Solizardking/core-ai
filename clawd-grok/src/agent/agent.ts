@@ -18,6 +18,7 @@ import {
   extractResponseId,
   generateRecap as genRecap,
   generateTitle as genTitle,
+  getProviderReasoningEffort,
   isPreviousResponseNotFoundError,
   resolveModelRuntime,
   type XaiProvider,
@@ -1092,7 +1093,7 @@ export class Agent {
                   childRuntime.modelInfo?.supportsMaxOutputTokens === false
                     ? undefined
                     : Math.min(this.maxTokens, 8_192),
-                reasoningEffort: childRuntime.providerOptions?.xai?.reasoningEffort,
+                reasoningEffort: getProviderReasoningEffort(childRuntime.providerOptions),
                 tools: batchTools,
               }),
             },
@@ -1671,7 +1672,7 @@ export class Agent {
                     messages: [...this.messages, ...turnMessages],
                     temperature: 0.7,
                     maxOutputTokens: runtime.modelInfo?.supportsMaxOutputTokens === false ? undefined : this.maxTokens,
-                    reasoningEffort: runtime.providerOptions?.xai?.reasoningEffort,
+                    reasoningEffort: getProviderReasoningEffort(runtime.providerOptions),
                     tools: batchTools,
                   }),
                 },

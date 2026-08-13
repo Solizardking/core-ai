@@ -36,7 +36,9 @@ bun run start
 |----|----|----|
 | `GROK_API_KEY` | Yes | API key for xAI Grok |
 | `GROK_BASE_URL` | No | Custom API endpoint (default: `https://api.x.ai/v1`) |
-| `GROK_MODEL` | No | Model override (default: `grok-4.3`) |
+| `GROK_MODEL` | No | Model override (default: `grok-4.6`) |
+| `GROK_REASONING_EFFORT` | No | `low` / `medium` / `high` / `xhigh` |
+| `GROK_SERVICE_TIER` | No | Set `priority` for lower-latency xAI scheduling |
 | `GROK_MAX_TOKENS` | No | Max tokens per response (default: 16384) |
 | `SOLANA_RPC_URL` | Yes | Solana RPC endpoint (mainnet-beta) |
 | `PHOENIX_API_URL` | No | Phoenix perps API (default: `https://perp-api.phoenix.trade`) |
