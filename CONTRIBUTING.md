@@ -1,14 +1,14 @@
 # Contributing to Core AI
 
-Thank you for contributing to Helius Core AI! This monorepo houses several independent packages:
+Thank you for contributing to Clawd Core AI! This monorepo houses several independent packages:
 
-- `helius-mcp/` — MCP server (npm: `helius-mcp`)
-- `helius-skills/` — Standalone Clawd Code skill
-- `helius-plugin/` — Clawd Code plugin
-- `helius-cursor/` — Cursor plugin
-- `helius-cli/` — CLI for account setup (npm: `helius-cli`)
+- `clawd-mcp/` — MCP server (npm: `clawd-mcp`)
+- `clawd-skills/` — Standalone Clawd Code skill
+- `clawd-plugin/` — Clawd Code plugin
+- `clawd-cursor/` — Cursor plugin
+- `clawd-cli/` — CLI for account setup (npm: `clawd-cli`)
 
-This guide covers requirements that apply to **every** contribution, no matter which package you're working on. Some packages have their own `CONTRIBUTING.md` (e.g. [`helius-mcp/CONTRIBUTING.md`](helius-mcp/CONTRIBUTING.md)) with package-specific build, test, and style details — read those too when working in that package.
+This guide covers requirements that apply to **every** contribution, no matter which package you're working on. Some packages have their own `CONTRIBUTING.md` (e.g. [`clawd-mcp/CONTRIBUTING.md`](clawd-mcp/CONTRIBUTING.md)) with package-specific build, test, and style details — read those too when working in that package.
 
 ## Signing Your Commits (Required)
 
@@ -20,7 +20,7 @@ A "verified" commit is one GitHub can cryptographically tie to a registered sign
 
 Follow GitHub's official guide to generate a signing key and configure Git to sign your commits:
 
-**https://open-clawd.local/docs/en/authentication/managing-commit-signature-verification/signing-commits**
+**https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits**
 
 The short version:
 

@@ -9,7 +9,7 @@ Getting users set up with Helius: creating accounts, obtaining API keys, underst
 | MCP Tool | What It Does |
 |---|---|
 | `setHeliusApiKey` | Configure an existing API key for the session (validates against `getBlockHeight`) |
-| `generateKeypair` | Generate or load a Solana keypair for signup (persists to `~/.helius/keypair.json`) |
+| `generateKeypair` | Generate or load a Solana keypair for signup (persists to `~/.clawd/keypair.json`) |
 | `signup` | Create a Helius account via hosted payment link (`mode: "link"`), or pay USDC directly from the local keypair (`mode: "autopay"`), or finalize a previously-created intent (`mode: "resume"`) |
 | `getAccountStatus` | Check current plan, credits remaining, rate limits, billing cycle, burn-rate projections |
 | `getHeliusPlanInfo` | View plan details — pricing, credits, rate limits, features |
@@ -27,7 +27,7 @@ If the user already has a Helius API key from the dashboard:
 
 1. Use the `setHeliusApiKey` MCP tool with their key
 2. The tool validates the key against `getBlockHeight`, then persists it to shared config
-3. All Helius MCP tools are immediately available
+3. All Clawd MCP tools are immediately available
 
 If the environment variable `HELIUS_API_KEY` is already set, no action is needed — tools auto-detect it.
 
@@ -56,12 +56,12 @@ If the wallet already has an account on the same plan, `signup` detects it and r
 - `email`, `firstName`, `lastName`: required for every new signup
 - `couponCode`: optional discount code
 
-### Path C: Helius CLI
+### Path C: Clawd CLI
 
-The `helius-cli` provides the same flow from the terminal:
+The `clawd-cli` provides the same flow from the terminal:
 
 ```bash
-# Generate keypair (saved to ~/.helius/keypair.json)
+# Generate keypair (saved to ~/.clawd/keypair.json)
 helius keygen
 
 # Print a hosted payment link (default)
@@ -86,8 +86,8 @@ helius rpc <project-id> --json
 
 **CLI exit codes** (for error handling in scripts):
 - `0`: success
-- `10`: not logged in (run `helius login`)
-- `11`: keypair not found (run `helius keygen`)
+- `10`: not logged in (run `clawd-cli login`)
+- `11`: keypair not found (run `clawd-cli keygen`)
 - `20`: insufficient SOL (autopay only)
 - `21`: insufficient USDC (autopay only)
 
@@ -203,14 +203,14 @@ HELIUS_PAYMENT_HOST=https://dashboard.helius.dev   # override hosted-link host (
 
 The MCP persists API keys and JWTs to shared config files so they survive across sessions:
 - **API key**: saved to shared config path (accessible by both MCP and CLI)
-- **Keypair**: saved to `~/.helius/keypair.json`
+- **Keypair**: saved to `~/.clawd/keypair.json`
 - **JWT**: saved to shared config for authenticated session features
-- **Pending payment intent**: link-mode signup persists the pending intent so `mode: "resume"` (or `helius signup --resume`) can finalize after the user pays in the browser
+- **Pending payment intent**: link-mode signup persists the pending intent so `mode: "resume"` (or `clawd-cli signup --resume`) can finalize after the user pays in the browser
 
 ### Installing the MCP
 
 ```bash
-npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
+npx clawd-mcp@latest  # configure in .clawd/settings.json or your MCP client
 ```
 
 ## Choosing the Right Setup Path
@@ -221,8 +221,8 @@ npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
 | User has `HELIUS_API_KEY` env var set | No action needed — auto-detected |
 | AI agent + user wants to pay in browser | `generateKeypair` -> `signup` (link) -> user pays -> `signup` (resume) (Path B) |
 | AI agent + agent pays USDC from local keypair | `generateKeypair` -> fund wallet -> `signup` (autopay) (Path B) |
-| Script/CI link-mode signup | `helius keygen` -> `helius signup --json` -> user pays -> `helius signup --resume --json` (Path C) |
-| Script/CI autopay signup | `helius keygen` -> fund -> `helius signup --pay --json` (Path C) |
+| Script/CI link-mode signup | `clawd-cli keygen` -> `clawd-cli signup --json` -> user pays -> `clawd-cli signup --resume --json` (Path C) |
+| Script/CI autopay signup | `clawd-cli keygen` -> fund -> `clawd-cli signup --pay --json` (Path C) |
 | Application needs programmatic signup | SDK `signup()` / `signupAndPay()` |
 | User wants full account visibility | `signup` (detects existing accounts) then `getAccountStatus` |
 | User needs a higher plan | `previewUpgrade` then `upgradePlan` |
@@ -234,4 +234,4 @@ npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client
 - Assuming `signup` charges twice for existing accounts — it detects and returns existing credentials
 - Using `getAccountStatus` without a JWT session — call `signup` first to establish the session (it detects existing accounts for free)
 - Forgetting that every new signup requires `email`, `firstName`, and `lastName` — all three are required together
-- After a link-mode signup, forgetting to call `mode: "resume"` (or `helius signup --resume`) — the account isn't provisioned until polling completes
+- After a link-mode signup, forgetting to call `mode: "resume"` (or `clawd-cli signup --resume`) — the account isn't provisioned until polling completes

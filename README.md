@@ -1,79 +1,145 @@
-# Clawd Core AI
+<div align="center">
 
-The Clawd-wrapped Helius AI tooling repository — live Solana infrastructure, Helius skills, MCP tooling, and Clawd Code integration for lobster-native agents.
+<img src="docs/assets/clawd-core-header.svg" alt="Clawd Core — lobster-native Solana agent stack" width="100%">
 
-[![Buy $CLAWD](https://img.shields.io/badge/Buy_%24CLAWD-Phantom-blueviolet?style=flat-square)](https://phantom.com/tokens/solana/8cHzQHUS2s2h8TzCmfqPKYiM4dSt4roa3n7MyRLApump)
-[![Dexscreener](https://img.shields.io/badge/Chart-Dexscreener-green?style=flat-square)](https://dexscreener.com/solana/8cHzQHUS2s2h8TzCmfqPKYiM4dSt4roa3n7MyRLApump)
-[![Birdeye](https://img.shields.io/badge/Chart-Birdeye-orange?style=flat-square)](https://birdeye.so/token/8cHzQHUS2s2h8TzCmfqPKYiM4dSt4roa3n7MyRLApump)
-[![Jupiter](https://img.shields.io/badge/Swap-Jupiter-blue?style=flat-square)](https://jup.ag/swap/SOL-8cHzQHUS2s2h8TzCmfqPKYiM4dSt4roa3n7MyRLApump)
-[![Model](https://img.shields.io/badge/Model-DeepSolanaZKr--1-yellow?style=flat-square)](https://huggingface.co/ordlibrary/DeepSolanaZKr-1)
-[![Dataset](https://img.shields.io/badge/Dataset-solana--clawd--instruct-blue?style=flat-square)](https://huggingface.co/datasets/solanaclawd/solana-clawd-instruct)
+<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&size=20&pause=1200&color=14F195&center=true&vCenter=true&width=880&lines=clawd+--plugin-dir+./clawd-plugin;npx+clawd-mcp%40latest;clawd-cli+config+set-api-key+%3Ckey%3E;Clawd+is+the+identity.+Helius+is+the+pipe.;grok-4.6+%C2%B7+membrain+:9090+%C2%B7+$CLAWD" alt="Clawd Core typing banner">
+
+<p>
+  <a href="https://phantom.com/tokens/solana/8cHzQHUS2s2h8TzCmfqPKYiM4dSt4roa3n7MyRLApump"><img src="https://img.shields.io/badge/Buy_%24CLAWD-Phantom-9945FF?style=for-the-badge&logo=solana&logoColor=14F195" alt="Buy $CLAWD"></a>
+  <a href="https://dexscreener.com/solana/8cHzQHUS2s2h8TzCmfqPKYiM4dSt4roa3n7MyRLApump"><img src="https://img.shields.io/badge/Chart-Dexscreener-14F195?style=for-the-badge" alt="Dexscreener"></a>
+  <a href="https://jup.ag/swap/SOL-8cHzQHUS2s2h8TzCmfqPKYiM4dSt4roa3n7MyRLApump"><img src="https://img.shields.io/badge/Swap-Jupiter-blue?style=for-the-badge" alt="Jupiter"></a>
+  <a href="https://huggingface.co/ordlibrary/DeepSolanaZKr-1"><img src="https://img.shields.io/badge/Model-DeepSolanaZKr--1-yellow?style=for-the-badge" alt="Model"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-0d1117?style=for-the-badge" alt="MIT"></a>
+</p>
 
 ```text
-Token:  $CLAWD · 8cHzQHUS2s2h8TzCmfqPKYiM4dSt4roa3n7MyRLApump
-Model:  ordlibrary/DeepSolanaZKr-1 · solanaclawd/solana-clawd-1.5b-lora
+Token   $CLAWD · 8cHzQHUS2s2h8TzCmfqPKYiM4dSt4roa3n7MyRLApump
+Model   ordlibrary/DeepSolanaZKr-1 · solanaclawd/solana-clawd-1.5b-lora
 ```
 
-## Clawd Fork Note
+</div>
 
-This fork keeps the Helius Solana infrastructure surface and replaces the old assistant/plugin identity with Clawd and Clawd Code. The intent is direct: show that the Helius agent tooling can run as a Clawd-native lobster stack while preserving the useful MCP, CLI, and skill machinery.
+# Clawd Core AI
+
+Lobster-native Solana agent stack. **Clawd Core is the identity. Helius is the pipe.**
+
+Clawd Code talks. Clawd MCP queries the chain. Clawd CLI signs you up. Membrain remembers. Grok 4.6 thinks. `$CLAWD` on the beach.
+
+## Live map
+
+Agents on top. Core in the middle. Chain, docs, and memory at the edge. Packets never stop.
+
+<div align="center">
+  <img src="docs/assets/clawd-core-map.svg" alt="Animated Clawd Core architecture map" width="100%">
+</div>
+
+```mermaid
+%%{init: {"theme":"dark","themeVariables":{"primaryColor":"#142033","primaryTextColor":"#14F195","lineColor":"#9945FF","secondaryColor":"#0d1117","tertiaryColor":"#1e2a44","fontFamily":"ui-monospace, Menlo, monospace"}}}%%
+flowchart TB
+  subgraph AGENTS["01  AGENTS"]
+    CC["clawd-code"]
+    CG["clawd-grok"]
+    CA["clawd-agents"]
+    V3["v3"]
+    TR["ai-training"]
+  end
+  subgraph CORE["02  CLAWD CORE"]
+    PL["clawd-plugin"]
+    SK["clawd-skills"]
+    MCP["clawd-mcp"]
+    CLI["clawd-cli"]
+    CUR["clawd-cursor"]
+    KB["knowledge"]
+  end
+  subgraph EDGE["03  CHAIN · DOCS · MEMORY"]
+    H["Helius RPC / DAS / Sender"]
+    PUMP["mcp-server Pump"]
+    SOL["solana-mcp :8080"]
+    ZK["ZK Compression MCP"]
+    MB["membrain :9090"]
+  end
+  CC --> PL
+  PL --> SK
+  PL --> MCP
+  CC --> MCP
+  CG --> MCP
+  CG --> MB
+  MCP --> H
+  CLI --> H
+  CC --> PUMP
+  CC --> SOL
+  CC --> ZK
+  SK -. compile-skills .-> MCP
+```
+
+Chain I/O still rides Helius RPC, DAS, Sender, Laserstream, and the Wallet API (`helius-sdk`, `HELIUS_API_KEY`). Everything an agent installs, invokes, or configures is named Clawd.
 
 ## Packages
 
-| Package | Description | Install |
+| Package | What it is | How to run |
 |---|---|---|
-| [`helius-cli`](./helius-cli) | CLI for managing Helius accounts and querying Solana data | `npm install -g helius-cli` |
-| [`helius-mcp`](./helius-mcp) | MCP server with 10 public tools total: 9 routed domains plus `expandResult` | `npx helius-mcp@latest` in `.clawd/settings.json` |
-| [`helius-skills`](./helius-skills) | Standalone Clawd Code skills for building on Solana | `./install.sh` |
-| [`helius-plugin`](./helius-plugin) | Clawd Code plugin — bundles all skills and auto-starts the MCP server | `clawd --plugin-dir ./helius-plugin` |
-| [`clawd-code`](./clawd-code) | Curl-installable Solana-native AI coding CLI (xAI / Anthropic / DeepSeek / OpenRouter) with paper-gated perps workflows | `curl -fsSL https://raw.githubusercontent.com/Solizardking/solana-clawd/main/clawd-code/install.sh \| sh` |
-| [`clawd-grok`](./clawd-grok) | Bun-native Clawd / Grok agent runtime — default `grok-4.6` Responses API, REPL, headless, audio, LSP, MCP, payments, wallet, verify | `bun install && bun run dev` |
-| [`membrain`](./membrain) | Core AI selective memory — Go `membraned` daemon, gRPC, SQLite/pgvector, TypeScript/Python/OpenClawd clients | `cd membrain && make build && ./bin/membraned` |
-| [`clawd-perps-agent`](./clawd-perps-agent) | Specialized perps agent: Phoenix Rise, Vulcan, Imperial WS, on-chain MM, TWAMM, Telegram | `cd clawd-perps-agent && npm install && npm run build` |
-| [`mcp-server`](./mcp-server) | Standalone MCP server for pump-sdk and related tooling | `npm install && npm run build` |
-| [`solana-mcp`](./solana-mcp) | Official Solana documentation MCP server with RAG search, section listing, and canonical documentation retrieval | `pnpm install && pnpm build` |
-| [`v3`](./v3) | v3 Clawd runtime — next-generation Clawd scaffolding | `npm install && npm run build` |
-| [`knowledge`](./knowledge) | Clawd knowledge base — facts, gotchas, patterns, anti-patterns, decisions, API behaviors | read-only reference |
-| [`docs`](./docs) | Architecture decision records (ADRs) for the open-clawd stack | read-only reference |
+| [`clawd-cli`](./clawd-cli) | CLI for Helius account setup, DAS/RPC queries, staking, ZK compression | `npm install -g clawd-cli` then `clawd-cli config set-api-key <key>` |
+| [`clawd-mcp`](./clawd-mcp) | MCP server — 9 routed domain tools plus `expandResult` | `npx clawd-mcp@latest` in `.clawd/settings.json` |
+| [`clawd-skills`](./clawd-skills) | Canonical skill source (`SKILL.md` + references) | `./clawd-skills/clawd/install.sh` |
+| [`clawd-plugin`](./clawd-plugin) | Clawd Code plugin — skills + auto-start MCP | `clawd --plugin-dir ./clawd-plugin` |
+| [`clawd-cursor`](./clawd-cursor) | Cursor skills, rules, and MCP config | Cursor marketplace / local plugin dir |
+| [`clawd-code`](./clawd-code) | Solana-native AI CLI — xAI / Anthropic / DeepSeek / OpenRouter, paper-gated perps | `cd clawd-code && npm install && npm run build` |
+| [`clawd-grok`](./clawd-grok) | Bun-native Grok runtime — default `grok-4.6` Responses API, REPL, audio, LSP, MCP, wallet | `cd clawd-grok && bun install && bun run dev` |
+| [`membrain`](./membrain) | Selective memory daemon — gRPC `:9090`, SQLite / pgvector | `cd membrain && make build && ./bin/membraned` |
+| [`clawd-agents`](./clawd-agents) | Perps agents: Phoenix Rise, Vulcan, Imperial, TWAMM, on-chain MM, Telegram | `cd clawd-agents/clawd-perps-agent && npm install && npm run build` |
+| [`mcp-server`](./mcp-server) | Pump SDK MCP — quotes, AMM, fees, metadata (builds txs, does not submit) | `npm run mcp:pump:start` |
+| [`solana-mcp`](./solana-mcp) | Official Solana docs MCP — RAG search + canonical retrieval | `npm run mcp:solana:dev` → `http://localhost:8080/mcp` |
+| [`v3`](./v3) | Next-gen Clawd runtime scaffold | `cd v3 && npm install && npm run build` |
+| [`knowledge`](./knowledge) | Facts, gotchas, patterns, decisions | read-only |
+| [`ai-training`](./ai-training) | LoRA / HF Jobs / W&B / Solana benchmark | see `AGENTS.md` |
+| [`docs`](./docs) | Architecture decision records + SVG maps | read-only |
 
-## Quick Start
+## Quick start
 
-Install dependencies per package instead of running one repo-wide install. The package managers differ by package.
+Install per package. There is no repo-wide `npm install`.
 
 ```bash
 git clone <repo-url>
 cd core-ai
-```
 
-Common setup paths:
-
-```bash
-cd helius-mcp && pnpm install && pnpm build
-cd ../helius-cli && pnpm install && pnpm build
+cd clawd-mcp && pnpm install && pnpm build
+cd ../clawd-cli && pnpm install && pnpm build
 cd ../mcp-server && npm install && npm run build
 cd ../solana-mcp && pnpm install && pnpm build
 ```
 
-## Clawd Code Integration
-
-Use this repository with Clawd Code:
+Agent loop:
 
 ```bash
-clawd --plugin-dir ./helius-plugin
+clawd --plugin-dir ./clawd-plugin
 ```
 
-## MCP Servers
+Or MCP-only in `.clawd/settings.json`:
 
-This repo ships three local MCP surfaces plus optional external documentation MCPs:
+```json
+{
+  "mcpServers": {
+    "clawd": {
+      "command": "npx",
+      "args": ["clawd-mcp@latest"]
+    }
+  }
+}
+```
 
-| Server | Path / package | Purpose | Transport | Main command |
-|---|---|---|---|---|
-| Helius MCP | [`helius-mcp`](./helius-mcp) / `helius-mcp@latest` | Routed Helius account, wallet, asset, transaction, chain, streaming, write, compression, and knowledge tools | stdio | `npx helius-mcp@latest` |
-| Pump MCP | [`mcp-server`](./mcp-server) / `@pump-fun/mcp-server` | Pump SDK transaction builders, quotes, analytics, AMM, fee, incentive, metadata, and wallet utilities | stdio or HTTP | `npm run mcp:pump:start` |
-| Solana Docs MCP | [`solana-mcp`](./solana-mcp) / `solana-mcp` | Official Solana documentation search, source listing, and canonical docs retrieval | HTTP | `npm run mcp:solana:dev` |
-| ZK Compression MCP | external | ZK Compression and Light Protocol documentation | HTTP | `https://www.zkcompression.com/mcp` |
+Set `HELIUS_API_KEY` (or run `clawd-cli config set-api-key` / `clawd-cli signup`). Keys live in `~/.clawd/config.json` because that is still the Helius account store.
 
-Root helper scripts:
+## MCP servers
+
+| Server | Path / package | Transport | Command / URL |
+|---|---|---|---|
+| Clawd MCP | [`clawd-mcp`](./clawd-mcp) / `clawd-mcp@latest` | stdio | `npx clawd-mcp@latest` |
+| Pump MCP | [`mcp-server`](./mcp-server) | stdio or HTTP | `npm run mcp:pump:start` / `npm run mcp:pump:start:http` |
+| Solana Docs MCP | [`solana-mcp`](./solana-mcp) | HTTP `:8080` | `npm run mcp:solana:dev` |
+| ZK Compression | external | HTTP | `https://www.zkcompression.com/mcp` |
+| DFlow | external | HTTP | `https://pond.dflow.net/mcp` |
+
+Root helpers:
 
 ```bash
 npm run mcp:pump:build
@@ -82,36 +148,20 @@ npm run mcp:pump:start:http
 npm run mcp:solana:build
 npm run mcp:solana:dev
 npm run mcp:solana:start
+npm run membrain:build
+npm run membrain:test
+npm run membrain:start
+npm run compile-skills
 ```
 
-For MCP-only setup, add Helius to `.clawd/settings.json`:
-
-```json
-{
-  "mcpServers": {
-    "helius": {
-      "command": "npx",
-      "args": ["helius-mcp@latest"]
-    }
-  }
-}
-```
-
-For the Pump SDK MCP server, build first and then configure stdio or HTTP:
-
-```bash
-cd mcp-server
-npm install
-npm run build
-npm run start:http
-```
+Pump MCP (after `cd mcp-server && npm install && npm run build`):
 
 ```json
 {
   "mcpServers": {
     "solana-clawd-pump": {
       "command": "node",
-      "args": ["/Users/8bit/Downloads/open-clawd-code-main/core-ai/mcp-server/dist/index.js"],
+      "args": ["./mcp-server/dist/index.js"],
       "env": {
         "SOLANA_RPC_URL": "https://api.mainnet-beta.solana.com"
       }
@@ -120,15 +170,7 @@ npm run start:http
 }
 ```
 
-To run the local Solana documentation MCP server from this repo:
-
-```bash
-cd solana-mcp
-pnpm install
-pnpm dev:local
-```
-
-Then point an MCP client at `http://localhost:8080/mcp`:
+Solana docs MCP:
 
 ```json
 {
@@ -141,9 +183,9 @@ Then point an MCP client at `http://localhost:8080/mcp`:
 }
 ```
 
-`solana-mcp` defaults to port `8080`. For local development, copy `solana-mcp/.env.example` to `solana-mcp/.env` and set Databricks credentials when using live RAG-backed search. `list_sections` and generated source catalog tests are available without committing any secrets.
+`solana-mcp` defaults to port `8080`. Copy `solana-mcp/.env.example` to `solana-mcp/.env` and set Databricks credentials for live RAG. `list_sections` works without secrets.
 
-For ZK Compression and Light Protocol work, also install the Light Protocol skills and enable the documentation MCP:
+ZK Compression:
 
 ```bash
 npx skills add Lightprotocol/skills
@@ -160,166 +202,168 @@ npx skills add Lightprotocol/skills
 }
 ```
 
-## helius-cli
+## Clawd MCP tools
 
-A CLI built for developers and Clawd agents to manage Helius accounts, query Solana blockchain data, and automate workflows.
+Ten public tools. Nine routed domains plus `expandResult`. Pass a Helius action name in `action`.
 
-```bash
-npm install -g helius-cli
-helius config set-api-key <your-api-key>
-helius balance <wallet-address>
-helius tx parse <signature>
+```mermaid
+%%{init: {"theme":"dark","themeVariables":{"primaryColor":"#10182a","primaryTextColor":"#14F195","lineColor":"#14F195"}}}%%
+flowchart LR
+  A[clawdAccount] --- W[clawdWallet]
+  W --- S[clawdAsset]
+  S --- T[clawdTransaction]
+  T --- C[clawdChain]
+  C --- R[clawdStreaming]
+  R --- K[clawdKnowledge]
+  K --- WR[clawdWrite]
+  WR --- Z[clawdCompression]
+  Z --- X[expandResult]
 ```
 
-## helius-mcp
+| Tool | Use for |
+|---|---|
+| `clawdAccount` | Signup, API keys, plans, billing |
+| `clawdWallet` | Balances, holdings, identity, wallet history |
+| `clawdAsset` | DAS assets, NFTs, collections, proofs |
+| `clawdTransaction` | Parsed txs and wallet activity |
+| `clawdChain` | Raw accounts, blocks, stake, priority fees |
+| `clawdStreaming` | Webhooks and live subscriptions |
+| `clawdKnowledge` | Docs, guides, rate limits, troubleshooting |
+| `clawdWrite` | SOL/token transfers and staking |
+| `clawdCompression` | ZK compression state and proofs |
+| `expandResult` | Expand summary-first payloads |
 
-A Model Context Protocol server that exposes Helius and Solana tools directly to Clawd Code and other MCP-compatible clients.
+Example: `clawdWallet` + `getBalance`, `clawdStreaming` + `createWebhook`.
 
-The server exposes 10 public tools total:
+## clawd-cli
 
-- `heliusAccount`
-- `heliusWallet`
-- `heliusAsset`
-- `heliusTransaction`
-- `heliusChain`
-- `heliusStreaming`
-- `heliusKnowledge`
-- `heliusWrite`
-- `heliusCompression`
-- `expandResult`
+```bash
+npm install -g clawd-cli
+clawd-cli config set-api-key <your-api-key>
+clawd-cli balance <wallet-address>
+clawd-cli tx parse <signature>
+```
 
-The routed domain tools take a Helius action name in `action`, for example `heliusWallet` + `getBalance` or `heliusStreaming` + `createWebhook`. Heavy responses are summary-first; use `expandResult` to fetch a full section, range, page, or continuation on demand.
+Binary is `clawd-cli`. OAuth against the Helius dashboard still uses client id `helius-cli`. Config stays in `~/.clawd/`.
 
-## Environment Variables
+## Skills
+
+Canonical source is [`clawd-skills/`](./clawd-skills). Compiler output lands in `.agents/skills/` and `clawd-mcp/system-prompts/`.
+
+```mermaid
+%%{init: {"theme":"dark","themeVariables":{"primaryTextColor":"#14F195","lineColor":"#9945FF"}}}%%
+flowchart LR
+  SRC["clawd-skills/"] -->|npx tsx scripts/compile-skills.ts| AG[".agents/skills/"]
+  SRC --> MCP["clawd-mcp/system-prompts/"]
+  SRC --> PL["clawd-plugin/skills/"]
+  SRC --> CUR["clawd-cursor/skills/"]
+```
+
+| Skill | Directory | Invoke |
+|---|---|---|
+| Clawd Core | [`clawd-skills/clawd`](./clawd-skills/clawd) | `/clawd:build` |
+| Clawd DFlow | [`clawd-skills/clawd-dflow`](./clawd-skills/clawd-dflow) | `/clawd:dflow` |
+| Clawd Jupiter | [`clawd-skills/clawd-jupiter`](./clawd-skills/clawd-jupiter) | `/clawd:jupiter` |
+| Clawd Phantom | [`clawd-skills/clawd-phantom`](./clawd-skills/clawd-phantom) | `/clawd:phantom` |
+| Clawd OKX | [`clawd-skills/clawd-okx`](./clawd-skills/clawd-okx) | `/clawd:okx` |
+| SVM | [`clawd-skills/svm`](./clawd-skills/svm) | `/clawd:svm` |
+
+Edit canonical files, then:
+
+```bash
+npx tsx scripts/compile-skills.ts
+```
+
+Installers default to `~/.clawd/skills/`. Pass `--project` for `.clawd/skills/`.
+
+## clawd-plugin
+
+```bash
+clawd --plugin-dir ./clawd-plugin
+```
+
+Bundles the skills above and auto-starts Clawd MCP, DFlow MCP, and ZK Compression MCP.
+
+## Environment variables
+
+Never commit keys.
 
 | Variable | Used by | Purpose |
 |---|---|---|
-| `HELIUS_API_KEY` | `helius-cli`, `helius-mcp`, Helius skills | Authenticated Helius API access |
-| `SOLANA_RPC_URL` | `mcp-server`, Clawd Code | Single Solana RPC endpoint |
-| `SOLANA_RPC_URLS` | `mcp-server` | Comma-separated RPC failover endpoints |
-| `XAI_API_KEY` | `clawd-code`, `clawd-grok` | xAI model access |
-| `GROK_MODEL` | `clawd-grok` | Model override (default: `grok-4.6`) |
-| `GROK_REASONING_EFFORT` | `clawd-grok` | Reasoning depth: `low` / `medium` / `high` / `xhigh` |
-| `GROK_SERVICE_TIER` | `clawd-grok` | Set `priority` for lower-latency xAI scheduling |
-| `ANTHROPIC_API_KEY` | `clawd-code` | Anthropic model access |
-| `DEEPSEEK_API_KEY` | `clawd-code` | DeepSeek model access |
-| `OPENROUTER_API_KEY` | `clawd-code` | OpenRouter model access |
-| `WANDB_API_KEY` | `ai-training` | W&B training and eval tracking |
-| `HONCHO_API_KEY` | `ai-training` | Persistent cross-session agent memory (training jobs only) |
-| `MEMBRANE_API_KEY` | `membrain` | Optional shared secret for `membraned` gRPC auth |
-| `MEMBRANE_ENCRYPTION_KEY` | `membrain` | Optional SQLCipher key for memory at rest |
-| `MEMBRAIN_GRPC_ENDPOINT` | `clawd-grok`, OpenClawd plugin | Membrain daemon address (default: `localhost:9090`) |
-| `DATABRICKS_HOST` | `solana-mcp` | Databricks workspace for official Solana docs retrieval |
-| `DATABRICKS_TOKEN` | `solana-mcp` | Local Databricks auth token; Databricks Apps can inject client credentials instead |
-| `DATABRICKS_VS_INDEX` | `solana-mcp` | Vector Search index for Solana docs chunks |
-| `DATABRICKS_WAREHOUSE_ID` | `solana-mcp` | SQL warehouse for docs fallback and analytics |
-| `DATABRICKS_ANALYTICS_SCHEMA` | `solana-mcp` | Schema for Solana MCP analytics events |
+| `HELIUS_API_KEY` | `clawd-cli`, `clawd-mcp`, skills | Helius cloud API |
+| `HELIUS_NETWORK` | `clawd-cli`, `clawd-mcp` | `mainnet` / `devnet` |
+| `SOLANA_RPC_URL` | `mcp-server`, Clawd Code | Single RPC endpoint |
+| `SOLANA_RPC_URLS` | `mcp-server` | Comma-separated failover |
+| `XAI_API_KEY` | `clawd-code`, `clawd-grok` | xAI / Grok |
+| `GROK_MODEL` | `clawd-grok` | Override (default `grok-4.6`) |
+| `GROK_REASONING_EFFORT` | `clawd-grok` | `low` / `medium` / `high` / `xhigh` |
+| `GROK_SERVICE_TIER` | `clawd-grok` | Set `priority` for lower-latency xAI |
+| `ANTHROPIC_API_KEY` | `clawd-code` | Anthropic |
+| `DEEPSEEK_API_KEY` | `clawd-code` | DeepSeek |
+| `OPENROUTER_API_KEY` | `clawd-code` | OpenRouter |
+| `WANDB_API_KEY` | `ai-training` | W&B |
+| `HONCHO_API_KEY` | `ai-training` only | Training-job memory — not Core AI runtime |
+| `MEMBRANE_API_KEY` | `membrain` | Optional gRPC auth |
+| `MEMBRANE_ENCRYPTION_KEY` | `membrain` | Optional SQLCipher |
+| `MEMBRAIN_GRPC_ENDPOINT` | agents | Default `localhost:9090` |
+| `DATABRICKS_HOST` | `solana-mcp` | Docs workspace |
+| `DATABRICKS_TOKEN` | `solana-mcp` | Local Databricks auth |
+| `DATABRICKS_VS_INDEX` | `solana-mcp` | Vector Search index |
+| `DATABRICKS_WAREHOUSE_ID` | `solana-mcp` | SQL warehouse |
+| `DATABRICKS_ANALYTICS_SCHEMA` | `solana-mcp` | Analytics schema |
 | `REDIS_URL` | `solana-mcp` | Optional SSE/session backing |
 
-## helius-skills
+Clawd Code also reads `~/.clawd-code/.env`.
 
-Standalone Clawd Code skills turn Clawd into a Solana domain expert. Each skill is a self-contained directory with a `SKILL.md` and reference files.
+## Generated content
 
-| Skill | Invoke | Description |
-|---|---|---|
-| [`helius`](./helius-skills/helius) | `/clawd:build` or the Helius skill | Build Solana apps with Helius infrastructure |
-| [`helius-dflow`](./helius-skills/helius-dflow) | `/clawd:dflow` | Build Solana trading apps with DFlow and Helius |
-| [`helius-jupiter`](./helius-skills/helius-jupiter) | `/clawd:jupiter` | Build DeFi apps with Jupiter and Helius |
-| [`helius-phantom`](./helius-skills/helius-phantom) | `/clawd:phantom` | Build frontend Solana apps with Phantom and Helius |
-| [`helius-okx`](./helius-skills/helius-okx) | `/clawd:okx` | Compose OKX DEX/intelligence tooling with Helius |
-| [`svm`](./helius-skills/svm) | `/clawd:svm` | Explore Solana architecture and protocol internals |
-
-For compressed PDA, compressed token, and custom ZK app development, install the upstream Light Protocol skills:
-
-```bash
-npx skills add Lightprotocol/skills
-```
-
-By default, skill installers now target `~/.clawd/skills/`. Use `--project` to install to `.clawd/skills/` in your current project.
-
-## helius-plugin
-
-An all-in-one Clawd Code plugin that bundles skills and auto-starts MCP servers.
-
-```bash
-clawd --plugin-dir ./helius-plugin
-```
-
-Included skills:
-
-| Skill | Invoke | Description |
-|---|---|---|
-| Build | `/clawd:build` | Expert Solana developer — Helius APIs, routing logic, SDK patterns |
-| DFlow | `/clawd:dflow` | Trading apps — DFlow swaps, prediction markets, KYC, Helius Sender |
-| Jupiter | `/clawd:jupiter` | DeFi apps — swaps, lending, limit orders, DCA, transaction submission |
-| Phantom | `/clawd:phantom` | Frontend Solana apps — Phantom wallet integration and secure proxying |
-| OKX | `/clawd:okx` | DEX aggregation and intelligence integrations |
-| SVM | `/clawd:svm` | Solana protocol architecture and internals |
-
-## Generated Content
-
-The following directories are generated by `npx tsx scripts/compile-skills.ts` from canonical sources in `helius-skills/`:
+`npx tsx scripts/compile-skills.ts` reads `clawd-skills/` and writes:
 
 - `.agents/skills/` — Clawd-native skills + prompt variants
-- `helius-mcp/system-prompts/` — npm-shipped prompt copies
+- `clawd-mcp/system-prompts/` — npm-shipped prompt copies
 
-Modify canonical sources in `helius-skills/` and re-run the compiler.
+Do not edit those outputs. Change canonical source and recompile. Versions live in [`versions.json`](./versions.json).
+
+Animated maps live in [`docs/assets/`](./docs/assets/):
+
+- [`clawd-core-header.svg`](./docs/assets/clawd-core-header.svg)
+- [`clawd-core-map.svg`](./docs/assets/clawd-core-map.svg)
 
 ## Development
 
 ```bash
-cd helius-cli   # or helius-mcp
+cd clawd-cli   # or clawd-mcp
 pnpm install
 pnpm build
 pnpm test
 ```
 
-For MCP package work:
-
 ```bash
-cd mcp-server
-npm install
-npm run build
-npm test
-
-cd ../solana-mcp
-pnpm install
-pnpm build
-pnpm test
-pnpm audit:security
-
-cd ../membrain
-make build
-make test
+cd mcp-server && npm install && npm run build && npm test
+cd ../solana-mcp && pnpm install && pnpm build && pnpm test && pnpm audit:security
+cd ../membrain && make build && make test
 # ./bin/membraned          # gRPC on :9090
 # npm run membrain:start   # from repo root
 ```
 
-Requirements vary by package:
-
 | Package | Runtime | Package manager | Notes |
 |---|---|---|---|
-| `helius-cli`, `helius-mcp` | Node.js 20+ | pnpm | Set a Helius API key from https://dashboard.helius.dev for authenticated Helius calls |
-| `mcp-server` | Node.js 18+ | npm | Uses `SOLANA_RPC_URL` or `SOLANA_RPC_URLS`; transaction tools build instructions and do not submit them |
-| `solana-mcp` | Node.js 24.x | pnpm 10.30.0 | Uses Databricks env vars for live retrieval; `REDIS_URL` enables SSE/session backing |
-| `membrain` | Go 1.24+ | Make | `make build` / `make test`; gRPC listen `:9090`; optional Postgres via `docker compose -f membrain/docker-compose.yml up` |
+| `clawd-cli`, `clawd-mcp` | Node.js 20+ | pnpm | `HELIUS_API_KEY` from https://dashboard.helius.dev |
+| `mcp-server` | Node.js 18+ | npm | `SOLANA_RPC_URL` / `SOLANA_RPC_URLS`; tools build instructions, they do not submit |
+| `solana-mcp` | Node.js 24.x | pnpm 10.30.0 | Databricks for live retrieval; `REDIS_URL` for SSE |
+| `clawd-grok` | Bun | bun | Default model `grok-4.6` |
+| `membrain` | Go 1.24+ | Make | gRPC `:9090`; optional Postgres via `membrain/docker-compose.yml` |
 
-## Documentation Maintenance
+Agent harness: [`AGENTS.md`](./AGENTS.md). Compatibility shim: [`CLAUDE.md`](./CLAUDE.md) / [`CLAWD.md`](./CLAWD.md). Contributing: [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
-Update this README in the same change whenever you add or change:
+## Documentation maintenance
 
-- a package, MCP server, CLI mode, or root script
-- setup steps, ports, transports, or MCP client configuration
-- required environment variables or secrets handling
-- generated files or canonical source locations
-- build, test, deploy, or audit commands
-
-Keep package-specific details in each package README, but keep this root README complete enough for a new agent or developer to find the right package and run the right verification commands from a fresh checkout.
+Update this README in the same change whenever you add or change a package, MCP server, CLI mode, root script, port, transport, MCP client config, env var, generated path, or verification workflow. If the package map changes, update [`docs/assets/clawd-core-map.svg`](./docs/assets/clawd-core-map.svg) in the same change.
 
 ## Resources
 
-- [Clawd Code](../clawd-code)
-- [Helius](https://www.helius.dev/)
+- [Clawd Code](./clawd-code)
+- [Helius](https://www.helius.dev/) — RPC / DAS / Sender / Laserstream
 - [Helius Docs](https://www.helius.dev/docs)
-- [helius-sdk](https://open-clawd.local/helius-labs/helius-sdk)
+- [helius-sdk](https://www.npmjs.com/package/helius-sdk)
 - [Model Context Protocol](https://modelcontextprotocol.io)

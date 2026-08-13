@@ -5,16 +5,16 @@
 
 ## Repository Overview
 
-This monorepo contains Helius developer tools wrapped for Clawd Code:
+This monorepo contains Clawd Core — Solana agent tooling that talks to Helius RPC/DAS/Sender:
 
 | Package | What it does |
 |---|---|
-| `helius-mcp/` | MCP server (`npx helius-mcp@latest`) — exposes 10 public tools total |
+| `clawd-mcp/` | MCP server (`npx clawd-mcp@latest`) — exposes 10 public tools total |
 | `solana-mcp/` | Official Solana documentation MCP server — RAG search + canonical docs retrieval |
-| `helius-skills/` | Canonical skill source — `SKILL.md` + reference files for each domain |
-| `helius-plugin/` | Clawd Code plugin — bundles skills + auto-starts MCP server |
-| `helius-cli/` | CLI for account setup, blockchain queries, and staking |
-| `helius-cursor/` | Cursor-compatible skill/rule package |
+| `clawd-skills/` | Canonical skill source — `SKILL.md` + reference files for each domain |
+| `clawd-plugin/` | Clawd Code plugin — bundles skills + auto-starts MCP server |
+| `clawd-cli/` | CLI for account setup, blockchain queries, and staking |
+| `clawd-cursor/` | Cursor-compatible skill/rule package |
 | `clawd-code/` | Full Solana-native AI CLI — xAI/Anthropic/DeepSeek/OpenRouter, voice, web, arena |
 | `clawd-grok/` | Bun-native REPL + audio + LSP + MCP + wallet runtime |
 | `membrain/` | Core AI selective memory — `membraned` gRPC daemon, SQLite/pgvector, TS/Python/OpenClawd clients |
@@ -26,17 +26,17 @@ This monorepo contains Helius developer tools wrapped for Clawd Code:
 Use the plugin directly:
 
 ```bash
-clawd --plugin-dir ./helius-plugin
+clawd --plugin-dir ./clawd-plugin
 ```
 
-Or configure Helius MCP in `.clawd/settings.json`:
+Or configure Clawd MCP in `.clawd/settings.json`:
 
 ```json
 {
   "mcpServers": {
-    "helius": {
+    "clawd": {
       "command": "npx",
-      "args": ["helius-mcp@latest"]
+      "args": ["clawd-mcp@latest"]
     }
   }
 }
@@ -65,11 +65,11 @@ Skills are in `.agents/skills/`. Each provides expert routing, rules, and refere
 
 | Skill | Directory | When to use |
 |---|---|---|
-| **Helius** | `.agents/skills/helius/` | Building Solana apps with Helius infrastructure |
-| **Helius DFlow** | `.agents/skills/helius-dflow/` | Trading apps combining DFlow with Helius |
-| **Helius Jupiter** | `.agents/skills/helius-jupiter/` | DeFi apps combining Jupiter with Helius |
-| **Helius Phantom** | `.agents/skills/helius-phantom/` | Frontend Solana apps with Phantom wallet + Helius |
-| **Helius OKX** | `.agents/skills/helius-okx/` | Trading/intelligence apps with OKX and Helius |
+| **Clawd Core** | `.agents/skills/clawd/` | Building Solana apps with Helius RPC, DAS, Sender, and streaming |
+| **Clawd DFlow** | `.agents/skills/clawd-dflow/` | Trading apps combining DFlow with Clawd Core |
+| **Clawd Jupiter** | `.agents/skills/clawd-jupiter/` | DeFi apps combining Jupiter with Clawd Core |
+| **Clawd Phantom** | `.agents/skills/clawd-phantom/` | Frontend Solana apps with Phantom wallet + Clawd Core |
+| **Clawd OKX** | `.agents/skills/clawd-okx/` | Trading/intelligence apps with OKX and Clawd Core |
 | **SVM** | `.agents/skills/svm/` | Solana protocol internals |
 
 For compressed PDAs, compressed tokens, nullifiers, validity proofs, or custom ZK apps, also load the Light Protocol skills installed via `npx skills add Lightprotocol/skills`.
@@ -114,7 +114,7 @@ Set the appropriate API key env var and pass `--model`:
 ## Environment Variables
 
 - Never commit API keys to git.
-- Use `HELIUS_API_KEY` for Helius tools.
+- Use `HELIUS_API_KEY` for Clawd CLI / Clawd MCP (Helius cloud credential).
 - Use `~/.clawd-code/.env` with `XAI_API_KEY`, `HELIUS_API_KEY`, and `SOLANA_RPC_URL` for Clawd Code.
 - Use `WANDB_API_KEY` for W&B training tracking (ai-training/ only).
 - Use `HONCHO_API_KEY` for persistent cross-session agent memory (ai-training/memory/honcho.py).
@@ -123,19 +123,19 @@ Set the appropriate API key env var and pass `--model`:
 ## MCP Tool Usage Rules
 
 - Use MCP tools for live blockchain data; do not hardcode or mock chain state.
-- Prefer specific routed actions, such as `heliusWallet` + `getBalance`, over broad expensive calls.
+- Prefer specific routed actions, such as `clawdWallet` + `getBalance`, over broad expensive calls.
 - Use batch endpoints when available.
-- Use `heliusTransaction` + `parseTransactions` for human-readable transaction data.
-- Use `heliusKnowledge` + `troubleshootError` before manual diagnosis.
-- Use `heliusKnowledge` + `getRateLimitInfo` or `getHeliusCreditsInfo`; do not guess credit costs.
-- For pricing questions, start with `heliusAccount` + `getHeliusPlanInfo`.
+- Use `clawdTransaction` + `parseTransactions` for human-readable transaction data.
+- Use `clawdKnowledge` + `troubleshootError` before manual diagnosis.
+- Use `clawdKnowledge` + `getRateLimitInfo` or `getHeliusCreditsInfo`; do not guess credit costs.
+- For pricing questions, start with `clawdAccount` + `getHeliusPlanInfo`.
 
 ## Transaction Sending
 
 - Use Helius Sender endpoints for low-latency sends.
 - Include `skipPreflight: true` and `maxRetries: 0` when using Sender.
 - Include a Jito tip and priority fee.
-- Use `heliusChain` + `getPriorityFeeEstimate`; do not hardcode fees.
+- Use `clawdChain` + `getPriorityFeeEstimate`; do not hardcode fees.
 
 ## AI Training Platform
 
@@ -151,9 +151,9 @@ When working in `ai-training/`:
 
 ## Generated Content
 
-The following directories are generated by `npx tsx scripts/compile-skills.ts` from canonical sources in `helius-skills/`:
+The following directories are generated by `npx tsx scripts/compile-skills.ts` from canonical sources in `clawd-skills/`:
 
 - `.agents/skills/`
-- `helius-mcp/system-prompts/`
+- `clawd-mcp/system-prompts/`
 
-Modify canonical source in `helius-skills/` and re-run the compiler.
+Modify canonical source in `clawd-skills/` and re-run the compiler.

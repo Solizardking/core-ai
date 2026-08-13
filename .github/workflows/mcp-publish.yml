@@ -6,11 +6,11 @@ on:
 
 jobs:
   publish:
-    if: startsWith(github.event.release.tag_name, 'helius-mcp@')
+    if: startsWith(github.event.release.tag_name, 'clawd-mcp@')
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./helius-mcp
+        working-directory: ./clawd-mcp
 
     steps:
       - uses: actions/checkout@v4

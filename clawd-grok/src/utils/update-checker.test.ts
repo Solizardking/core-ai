@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const RELEASE_URL = "https://open-clawd.local/releases/api/open-clawd/clawd-grok/latest";
+const RELEASE_URL = "https://github.com/releases/api/open-clawd/clawd-grok/latest";
 
 beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn());

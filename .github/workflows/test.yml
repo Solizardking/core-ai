@@ -8,11 +8,11 @@ on:
 
 jobs:
   test:
-    name: Test helius-mcp
+    name: Test clawd-mcp
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./helius-mcp
+        working-directory: ./clawd-mcp
 
     steps:
       - uses: actions/checkout@v4

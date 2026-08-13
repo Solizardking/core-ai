@@ -19,7 +19,7 @@ clawd --plugin-dir ./clawd-code/clawd-plugin
 
 ## What's Included
 
-**Helius MCP Server** — auto-starts with the plugin. 10 routed tools covering DAS API, RPC, webhooks, streaming, wallet analysis, and docs.
+**Clawd MCP Server** — auto-starts with the plugin. 10 routed tools covering DAS API, RPC, webhooks, streaming, wallet analysis, and docs.
 
 **Clawd Code MCP Server** — auto-starts the Clawd Code CLI as an MCP server for code generation, trading, research, images, and voice.
 

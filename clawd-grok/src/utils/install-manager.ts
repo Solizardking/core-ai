@@ -5,7 +5,7 @@ import readline from "node:readline";
 import { getHomeDir } from "./settings.js";
 
 export const CLAWD_GITHUB_REPO = "open-clawd/clawd-grok";
-export const CLAWD_RELEASES_BASE = "https://open-clawd.local/releases";
+export const CLAWD_RELEASES_BASE = "https://github.com/releases";
 export const CLAWD_RELEASES_API = `${CLAWD_RELEASES_BASE}/api/${CLAWD_GITHUB_REPO}`;
 export const SCRIPT_INSTALL_METHOD = "script";
 const INSTALL_SCHEMA_VERSION = 1;

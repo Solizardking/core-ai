@@ -41,7 +41,7 @@
 ## 📦 Install
 
 ```bash
-curl -fsSL https://open-clawd.local/raw/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/install.sh | bash
 ```
 
 **Prerequisites:** Bun 1.0+, a Solana wallet, and an RPC endpoint. For the AI agent, an **xAI Grok API key** (`XAI_API_KEY` or `GROK_API_KEY`).
@@ -325,7 +325,7 @@ export SOLANA_RPC_URL=https://your-provider.com/...
 ## 🛠️ Development
 
 ```bash
-git clone https://open-clawd.local/clawd-grok.git
+git clone https://github.com/clawd-grok.git
 cd clawd-grok
 bun install
 bun run build

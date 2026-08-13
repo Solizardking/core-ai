@@ -3,8 +3,8 @@ set -euo pipefail
 
 APP="clawd"
 REPO="open-clawd/clawd-grok"
-RELEASES_BASE="${CLAWD_RELEASES_BASE:-https://open-clawd.local/releases}"
-RAW_BASE="${CLAWD_RAW_BASE:-https://open-clawd.local/raw}"
+RELEASES_BASE="${CLAWD_RELEASES_BASE:-https://github.com/releases}"
+RAW_BASE="${CLAWD_RAW_BASE:-https://github.com/raw}"
 USER_DIR="${HOME}/.clawd"
 INSTALL_DIR="${CLAWD_INSTALL_DIR:-${HOME}/.local/bin}"
 INSTALL_METADATA="${USER_DIR}/install-metadata.json"

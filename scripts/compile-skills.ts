@@ -2,10 +2,10 @@
 /**
  * Skill Compiler — generates cross-platform skill variants from canonical sources.
  *
- * Reads canonical SKILL.md + references/ from helius-skills/<skill>/
+ * Reads canonical SKILL.md + references/ from clawd-skills/<skill>/
  * Outputs to:
  *   .agents/skills/<skill>/           (Clawd-native)
- *   helius-mcp/system-prompts/<skill>/ (npm-shipped)
+ *   clawd-mcp/system-prompts/<skill>/ (npm-shipped)
  *
  * Usage: npx tsx scripts/compile-skills.ts
  */
@@ -21,21 +21,21 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = join(__dirname, "..");
-const CANONICAL_DIR = join(ROOT, "helius-skills");
+const CANONICAL_DIR = join(ROOT, "clawd-skills");
 const AGENTS_OUT = join(ROOT, ".agents", "skills");
-const MCP_OUT = join(ROOT, "helius-mcp", "system-prompts");
+const MCP_OUT = join(ROOT, "clawd-mcp", "system-prompts");
 
 interface SkillConfig {
-  /** Directory name under helius-skills/ */
+  /** Directory name under clawd-skills/ */
   dir: string;
-  /** Directory name under helius-plugin/skills/ and helius-cursor/skills/ */
+  /** Directory name under clawd-plugin/skills/ and clawd-cursor/skills/ */
   pluginDir: string;
   /** Enhanced multi-line description for Clawd implicit invocation */
   enhancedDescription: string;
 }
 
-const PLUGIN_DIR = join(ROOT, "helius-plugin", "skills");
-const CURSOR_DIR = join(ROOT, "helius-cursor", "skills");
+const PLUGIN_DIR = join(ROOT, "clawd-plugin", "skills");
+const CURSOR_DIR = join(ROOT, "clawd-cursor", "skills");
 
 /** Load skill versions from versions.json (single source of truth). */
 const VERSIONS: Record<string, string> = JSON.parse(
@@ -44,54 +44,54 @@ const VERSIONS: Record<string, string> = JSON.parse(
 
 const SKILLS: SkillConfig[] = [
   {
-    dir: "helius",
+    dir: "clawd",
     pluginDir: "build",
     enhancedDescription: `Build Solana applications with Helius infrastructure. Use this skill when:
   sending transactions (SOL, SPL tokens, swaps), querying assets/NFTs (DAS API),
   streaming real-time data (WebSockets, Laserstream), setting up webhooks for
   event notifications, analyzing wallets (balances, history, identity), or
-  managing Helius API keys and plans. Requires helius-mcp MCP server.`,
+  managing Helius API keys and plans. Requires clawd-mcp MCP server.`,
   },
   {
-    dir: "helius-dflow",
+    dir: "clawd-dflow",
     pluginDir: "dflow",
     enhancedDescription: `Build Solana trading applications combining DFlow trading APIs with Helius
   infrastructure. Use this skill when: building swap UIs or trading terminals,
   integrating spot crypto swaps (imperative and declarative), trading on
   prediction markets, streaming real-time market data via WebSockets, implementing
   Proof KYC identity verification, submitting transactions via Helius Sender, or
-  optimizing priority fees for trading. Requires helius-mcp MCP server.`,
+  optimizing priority fees for trading. Requires clawd-mcp MCP server.`,
   },
   {
-    dir: "helius-jupiter",
+    dir: "clawd-jupiter",
     pluginDir: "jupiter",
     enhancedDescription: `Build Solana DeFi applications combining Jupiter APIs with Helius
   infrastructure. Use this skill when: building token swap UIs or trading terminals,
   integrating lending/borrowing via Jupiter Lend, setting up limit orders or DCA,
   querying token prices and metadata, checking token safety via Token Shield,
   embedding a drop-in swap widget, submitting transactions via Helius Sender, or
-  optimizing priority fees for DeFi operations. Requires helius-mcp MCP server.`,
+  optimizing priority fees for DeFi operations. Requires clawd-mcp MCP server.`,
   },
   {
-    dir: "helius-okx",
+    dir: "clawd-okx",
     pluginDir: "okx",
     enhancedDescription: `Build Solana trading and intelligence applications combining OKX DEX aggregation
   with Helius infrastructure. Use this skill when: executing swaps via OKX's 500+
   liquidity source aggregator, discovering trending tokens, tracking smart money
   signals, analyzing meme tokens (pump.fun scanning, dev reputation, bundle
   detection), fetching market data and charts, submitting transactions via Helius
-  Sender, or building trading bots with LaserStream signals. Requires helius-mcp
+  Sender, or building trading bots with LaserStream signals. Requires clawd-mcp
   MCP server and onchainos CLI.`,
   },
   {
-    dir: "helius-phantom",
+    dir: "clawd-phantom",
     pluginDir: "phantom",
     enhancedDescription: `Build frontend Solana applications with Phantom Connect SDK and Helius
   infrastructure. Use this skill when: connecting Phantom wallet in React,
   React Native, or vanilla JS apps, signing and submitting transactions via
   Helius Sender, building token-gated content, minting NFTs, accepting crypto
   payments, displaying portfolio data, streaming real-time updates, or setting
-  up secure API key proxying. Requires helius-mcp MCP server.`,
+  up secure API key proxying. Requires clawd-mcp MCP server.`,
   },
   {
     dir: "svm",
@@ -102,7 +102,7 @@ const SKILLS: SkillConfig[] = [
   transaction processing and local fee markets, studying validator economics,
   investigating the data layer (Geyser, shreds), reviewing program development
   frameworks, or analyzing token extensions and DeFi primitives. Requires
-  helius-mcp MCP server for knowledge tools.`,
+  clawd-mcp MCP server for knowledge tools.`,
   },
 ];
 
@@ -157,28 +157,28 @@ description: >
 function stripLegacyAssistantSpecific(body: string): string {
   let result = body;
 
-  // Replace "npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client" — inline backtick version
+  // Replace "npx clawd-mcp@latest  # configure in .clawd/settings.json or your MCP client" — inline backtick version
   result = result.replace(
-    /`npx helius-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client`/g,
-    "`npx helius-mcp@latest` (configure in `.clawd/settings.json` or your MCP client)"
+    /`npx clawd-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client`/g,
+    "`npx clawd-mcp@latest` (configure in `.clawd/settings.json` or your MCP client)"
   );
 
-  // Replace bare "npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client" (inside code blocks)
+  // Replace bare "npx clawd-mcp@latest  # configure in .clawd/settings.json or your MCP client" (inside code blocks)
   result = result.replace(
-    /^npx helius-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client$/gm,
-    "npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client"
+    /^npx clawd-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client$/gm,
+    "npx clawd-mcp@latest  # configure in .clawd/settings.json or your MCP client"
   );
 
   // Replace multi-line code blocks with old assistant-specific MCP setup.
   result = result.replace(
-    /```\n(?:You need to install the Helius MCP server first:\n)?npx helius-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client\nThen restart Clawd so the tools become available\.\n```/g,
-    "```\nConfigure the Helius MCP server in .clawd/settings.json or your MCP client: npx helius-mcp@latest\nThen restart Clawd Code so the tools become available.\n```"
+    /```\n(?:You need to install the Clawd MCP server first:\n)?npx clawd-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client\nThen restart Clawd so the tools become available\.\n```/g,
+    "```\nConfigure the Clawd MCP server in .clawd/settings.json or your MCP client: npx clawd-mcp@latest\nThen restart Clawd Code so the tools become available.\n```"
   );
 
   // Also handle the code block variant with leading text
   result = result.replace(
-    /```\nYou need to install the Helius MCP server first:\nnpx helius-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client\nThen restart Clawd so the tools become available\.\n```/g,
-    "```\nConfigure the Helius MCP server in .clawd/settings.json or your MCP client: npx helius-mcp@latest\nThen restart Clawd Code so the tools become available.\n```"
+    /```\nYou need to install the Clawd MCP server first:\nnpx clawd-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client\nThen restart Clawd so the tools become available\.\n```/g,
+    "```\nConfigure the Clawd MCP server in .clawd/settings.json or your MCP client: npx clawd-mcp@latest\nThen restart Clawd Code so the tools become available.\n```"
   );
 
   // Replace old assistant-specific DFlow MCP setup.
@@ -187,20 +187,21 @@ function stripLegacyAssistantSpecific(body: string): string {
     "It can also be configured in your MCP client at `https://pond.dflow.net/mcp`, or by being directly added to your project's `.mcp.json`:"
   );
 
-  // Replace /helius, /svm, /helius-dflow, /helius-phantom slash commands
-  result = result.replace(/`\/helius-dflow`/g, "the Helius DFlow skill");
-  result = result.replace(/`\/helius-phantom`/g, "the Helius Phantom skill");
-  result = result.replace(/`\/helius`/g, "the Helius skill");
+  // Replace /helius, /svm, /clawd-dflow, /clawd-phantom slash commands
+  result = result.replace(/`\/clawd-dflow`/g, "the Clawd DFlow skill");
+  result = result.replace(/`\/clawd-phantom`/g, "the Clawd Phantom skill");
+  result = result.replace(/`\/helius`/g, "the Clawd Core skill");
+  result = result.replace(/`\/clawd`/g, "the Clawd Core skill");
   result = result.replace(/`\/svm`/g, "the SVM skill");
 
   // Replace legacy assistant restart language with Clawd Code language.
   result = result.replace(/restart Clawd Code/g, "restart Clawd Code");
   result = result.replace(/restart Clawd/g, "restart Clawd Code");
 
-  // Replace "Helius MCP Server: `npx helius-mcp@latest  # configure in .clawd/settings.json or your MCP client`" in Resources
+  // Replace "Clawd MCP Server: `npx clawd-mcp@latest  # configure in .clawd/settings.json or your MCP client`" in Resources
   result = result.replace(
-    /Helius MCP Server: `npx helius-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client`/g,
-    "Helius MCP Server: `npx helius-mcp@latest`"
+    /Clawd MCP Server: `npx clawd-mcp@latest  # configure in \.clawd\/settings\.json or your MCP client`/g,
+    "Clawd MCP Server: `npx clawd-mcp@latest`"
   );
 
   // Strip internal notes: <!-- internal --> lines, <!-- internal-only --> lines
@@ -227,14 +228,14 @@ function renameHeadings(body: string): string {
 
 /** Build the Clawd developer preamble (Layer A harness for clawd.developer.md). */
 function buildClawdDeveloperPreamble(skillName: string, version: string): string {
-  return `<!-- Generated from helius-skills/${skillName}/SKILL.md — do not edit -->
+  return `<!-- Generated from clawd-skills/${skillName}/SKILL.md — do not edit -->
 <!-- Clawd Code developer prompt — use as a Clawd runtime developer message -->
 <!-- Version: ${version} -->
 
 ## Runtime Notes
 
 - This skill is designed for the Clawd Code developer layer
-- MCP tools referenced below are available when \`helius-mcp\` is configured in \`.clawd/settings.json\` or another MCP client
+- MCP tools referenced below are available when \`clawd-mcp\` is configured in \`.clawd/settings.json\` or another MCP client
 - Structured output JSON can be enforced for automation via response_format
 - Reference files mentioned below are available in the skill directory or can be inlined from \`full.md\`
 
@@ -243,7 +244,7 @@ function buildClawdDeveloperPreamble(skillName: string, version: string): string
 
 /** Build the Clawd system preamble (Layer A harness for clawd.system.md). */
 function buildClawdSystemPreamble(skillName: string, version: string): string {
-  return `<!-- Generated from helius-skills/${skillName}/SKILL.md — do not edit -->
+  return `<!-- Generated from clawd-skills/${skillName}/SKILL.md — do not edit -->
 <!-- Clawd Code system prompt block -->
 <!-- Version: ${version} -->
 
@@ -251,7 +252,7 @@ function buildClawdSystemPreamble(skillName: string, version: string): string {
 
 - This skill goes in the system prompt
 - MCP tools referenced below are available through Clawd Code MCP integration
-- Configure helius-mcp in \`.clawd/settings.json\` as an MCP tool source for live blockchain access
+- Configure clawd-mcp in \`.clawd/settings.json\` as an MCP tool source for live blockchain access
 - Reference files mentioned below are available in the skill directory or can be inlined from \`full.md\`
 
 `;
@@ -326,7 +327,7 @@ function compileSkill(config: SkillConfig): void {
     console.error(`  SKIP: no version in versions.json for "${config.dir}"`);
     return;
   }
-  const generationHeader = `<!-- Generated from helius-skills/${config.dir}/SKILL.md — do not edit -->\n\n`;
+  const generationHeader = `<!-- Generated from clawd-skills/${config.dir}/SKILL.md — do not edit -->\n\n`;
 
   // --- Update canonical SKILL.md version from versions.json ---
   const updatedFrontmatter = injectVersion(frontmatter, version);
@@ -359,7 +360,7 @@ function compileSkill(config: SkillConfig): void {
 
   // full.md (all references inlined, no frontmatter — targets Cursor Rules / ChatGPT)
   const fullBody = inlineReferences(transformed, refsDir);
-  const fullVersionHeader = `<!-- Generated from helius-skills/${config.dir}/SKILL.md — do not edit -->\n<!-- Version: ${version} -->\n\n`;
+  const fullVersionHeader = `<!-- Generated from clawd-skills/${config.dir}/SKILL.md — do not edit -->\n<!-- Version: ${version} -->\n\n`;
   const fullContent = fullVersionHeader + fullBody;
 
   // --- Write outputs ---

@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "clawd": {
+      "command": "npx",
+      "args": ["clawd-mcp@latest"]
+    },
+    "DFlow": {
+      "type": "http",
+      "url": "https://pond.dflow.net/mcp"
+    },
+    "zkcompression": {
+      "type": "http",
+      "url": "https://www.zkcompression.com/mcp"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-<!-- Generated from helius-skills/svm/SKILL.md — do not edit -->
+<!-- Generated from clawd-skills/svm/SKILL.md — do not edit -->
 
 ---
 name: svm
@@ -10,19 +10,19 @@ description: >
   transaction processing and local fee markets, studying validator economics,
   investigating the data layer (Geyser, shreds), reviewing program development
   frameworks, or analyzing token extensions and DeFi primitives. Requires
-  helius-mcp MCP server for knowledge tools.
+  clawd-mcp MCP server for knowledge tools.
 ---
 
 # SVM — Understand Solana's Architecture
 
-You are a Solana protocol expert. Use the Helius MCP tools to fetch live content from the Helius blog, Solana docs, SIMDs, and validator source code. Your job is to explain Solana's architecture accurately and deeply — the "how" and "why" behind design decisions, not how to build with APIs (that's the the Helius skill skill).
+You are a Solana protocol expert. Use the Clawd MCP tools to fetch live content from the Helius blog, Solana docs, SIMDs, and validator source code. Your job is to explain Solana's architecture accurately and deeply — the "how" and "why" behind design decisions, not how to build with APIs (that's the the Clawd Core skill skill).
 
 ## Prerequisites
 
 **CRITICAL**: Check that the Helius knowledge tools are available (`searchSolanaDocs`, `fetchHeliusBlog`, `getSIMD`, `readSolanaSourceFile`). If they are NOT available, **STOP** and tell the user:
 
 ```
-Configure the Helius MCP server in .clawd/settings.json or your MCP client: npx helius-mcp@latest
+Configure the Clawd MCP server in .clawd/settings.json or your MCP client: npx clawd-mcp@latest
 Then restart Clawd Code Code so the tools become available.
 ```
 
@@ -46,7 +46,7 @@ These topics appear in multiple files — route carefully:
 - **"program"** — writing/compiling: `compilation.md`; deploying/upgrading: `programs.md`; how it runs: `execution.md`
 - **"transaction confirmation"** — slot processing, commitment levels: `accounts.md`; consensus finalization: `consensus.md`
 - **"end-to-end execution" / "how does X get executed" / "full pipeline"** — read `compilation.md` + `programs.md` + `execution.md`; all three point to `solana-virtual-machine` — fetch it once, not three times
-- **"how do I implement X"** — redirect to the the Helius skill skill for API building questions
+- **"how do I implement X"** — redirect to the the Clawd Core skill skill for API building questions
 
 ### Compilation Pipeline
 
@@ -168,5 +168,5 @@ Use this when the user asks about:
 - **Never write files** — synthesize and respond in-conversation only; do not create local markdown or text files with fetched content
 - **Cite sources** in every substantive answer: blog URL (`https://helius.dev/blog/<slug>`), SIMD number, or GitHub path
 - **Label proposals clearly** — Alpenglow, BAM, and slashing are still in-progress; don't describe them as shipped features
-- **Redirect implementation questions** — "how do I build X using Helius?" belongs in the the Helius skill skill
+- **Redirect implementation questions** — "how do I build X using Helius?" belongs in the the Clawd Core skill skill
 - **No API key needed** — `fetchHeliusBlog`, `searchSolanaDocs`, `getSIMD`, and `readSolanaSourceFile` all work without authentication

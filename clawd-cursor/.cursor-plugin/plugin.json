@@ -1,0 +1,20 @@
+{
+  "name": "clawd",
+  "displayName": "Clawd Core",
+  "version": "1.0.0",
+  "description": "Build on Solana with Clawd Core — live blockchain tools, expert coding patterns, and autonomous account signup",
+  "author": {
+    "name": "Clawd",
+    "email": "support@helius.xyz"
+  },
+  "homepage": "https://www.helius.dev/docs",
+  "repository": "https://github.com/Solizardking/core-ai",
+  "license": "MIT",
+  "logo": "assets/avatar.png",
+  "keywords": ["solana", "blockchain", "rpc", "nft", "defi", "web3", "helius"],
+  "tags": ["developer-tools", "solana", "blockchain", "web3"],
+  "skills": "./skills/",
+  "rules": "./rules/",
+  "agents": "./agents/",
+  "mcpServers": ".mcp.json"
+}

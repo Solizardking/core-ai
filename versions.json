@@ -1,9 +1,9 @@
 {
-  "helius": "1.1.1",
-  "helius-dflow": "1.1.1",
-  "helius-jupiter": "1.0.1",
-  "helius-okx": "1.0.1",
-  "helius-phantom": "1.0.1",
+  "clawd": "1.1.1",
+  "clawd-dflow": "1.1.1",
+  "clawd-jupiter": "1.0.1",
+  "clawd-okx": "1.0.1",
+  "clawd-phantom": "1.0.1",
   "svm": "1.0.0",
   "clawd-code": "1.0.0",
   "ai-training": "1.0.0"

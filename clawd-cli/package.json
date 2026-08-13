@@ -1,0 +1,62 @@
+{
+  "name": "clawd-cli",
+  "version": "2.0.0",
+  "description": "Clawd CLI — manage Helius accounts, query Solana, and automate agent workflows",
+  "homepage": "https://www.helius.dev/cli.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Solizardking/core-ai.git",
+    "directory": "clawd-cli"
+  },
+  "bugs": {
+    "url": "https://github.com/Solizardking/core-ai/issues"
+  },
+  "keywords": [
+    "solana",
+    "helius",
+    "cli",
+    "rpc",
+    "das",
+    "blockchain",
+    "agent",
+    "ai-agent",
+    "web3",
+    "clawd",
+    "clawd-code",
+    "lobster"
+  ],
+  "license": "MIT",
+  "author": "Clawd",
+  "type": "module",
+  "bin": {
+    "clawd-cli": "./dist/bin/clawd-cli.js"
+  },
+  "files": [
+    "dist",
+    "llms.txt",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "prebuild": "node -p \"'export const version = \\'' + require('./package.json').version + '\\';'\" > src/version.ts",
+    "build": "tsc",
+    "dev": "tsx bin/clawd-cli.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@solana-program/token": "^0.9.0",
+    "@solana/kit": "^5.5.1",
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "helius-sdk": "^3.0.0",
+    "ora": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^4.1.5"
+  }
+}
