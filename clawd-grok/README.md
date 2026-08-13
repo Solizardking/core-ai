@@ -109,6 +109,8 @@ Configure via `XAI_API_KEY` or `GROK_API_KEY`, `GROK_BASE_URL`, and `GROK_MODEL`
 | `SOLANA_RPC_URL` | Yes | Solana RPC endpoint (mainnet-beta) |
 | `PHOENIX_API_URL` | No | Phoenix perps API (default: `https://perp-api.phoenix.trade`) |
 | `SOLANA_PRIVATE_KEY` | No | Base58-encoded Solana private key |
+| `MEMBRAIN_GRPC_ENDPOINT` | No | Core AI Membrain daemon (`localhost:9090`). Start with `npm run membrain:start` from the repo root |
+| `MEMBRANE_API_KEY` | No | Shared secret if `membraned` was started with auth |
 
 ### Config File
 

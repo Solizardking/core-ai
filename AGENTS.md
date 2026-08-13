@@ -17,6 +17,7 @@ This monorepo contains Helius developer tools wrapped for Clawd Code:
 | `helius-cursor/` | Cursor-compatible skill/rule package |
 | `clawd-code/` | Full Solana-native AI CLI — xAI/Anthropic/DeepSeek/OpenRouter, voice, web, arena |
 | `clawd-grok/` | Bun-native REPL + audio + LSP + MCP + wallet runtime |
+| `membrain/` | Core AI selective memory — `membraned` gRPC daemon, SQLite/pgvector, TS/Python/OpenClawd clients |
 | `clawd-agents/` | Perps agents: Phoenix Rise, Vulcan, Imperial, TWAMM, on-chain MM, Telegram |
 | `ai-training/` | LoRA fine-tuning platform, HF Jobs, W&B, wiki ingest, Solana benchmark |
 
@@ -117,6 +118,7 @@ Set the appropriate API key env var and pass `--model`:
 - Use `~/.clawd-code/.env` with `XAI_API_KEY`, `HELIUS_API_KEY`, and `SOLANA_RPC_URL` for Clawd Code.
 - Use `WANDB_API_KEY` for W&B training tracking (ai-training/ only).
 - Use `HONCHO_API_KEY` for persistent cross-session agent memory (ai-training/memory/honcho.py).
+- Use `membrain/` (`membraned` on `:9090`) for Core AI runtime memory. Optional `MEMBRANE_API_KEY` / `MEMBRANE_ENCRYPTION_KEY`. Connect agents with `MEMBRAIN_GRPC_ENDPOINT`.
 
 ## MCP Tool Usage Rules
 

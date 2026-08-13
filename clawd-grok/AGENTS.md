@@ -27,6 +27,7 @@
 - `GROK_API_KEY` environment variable is required for xAI Grok AI agent reasoning (`XAI_API_KEY` is also accepted).
 - `SOLANA_RPC_URL` environment variable is required for Solana blockchain connectivity.
 - `PHOENIX_API_URL` (optional) for Phoenix perpetuals API access.
+- Core AI memory is **Membrain** (`../membrain`). Start `membraned` from the repo root (`npm run membrain:start` or `cd ../membrain && make build && ./bin/membraned`). Optional `MEMBRAIN_GRPC_ENDPOINT` (default `localhost:9090`) and `MEMBRANE_API_KEY`.
 
 ### Project Structure Conventions
 

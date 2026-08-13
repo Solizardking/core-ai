@@ -10,3 +10,4 @@ When this file is loaded:
 - Configure MCP servers in `.clawd/settings.json`.
 - Read domain skills from `.agents/skills/` or canonical sources in `helius-skills/`.
 - Use `clawd-code` for code, trade, research, image, and voice workflows.
+- Use `membrain/` (`membraned`) as Core AI selective memory; do not treat Honcho as the runtime memory layer.

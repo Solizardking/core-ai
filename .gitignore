@@ -63,6 +63,13 @@ v3/node_modules/
 v3/.clawd/
 v3/*.tsbuildinfo
 
+# Membrain (Core AI memory daemon)
+membrain/bin/
+membrain/clients/**/node_modules/
+membrain/clients/**/dist/
+membrain/clients/python/**/__pycache__/
+membrain/clients/python/**/*.egg-info/
+
 # Knowledge base - keep in git (no ignores)
 
 # Package tarballs

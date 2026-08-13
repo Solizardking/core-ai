@@ -7,6 +7,9 @@
     "mcp:pump:start:http": "npm --prefix mcp-server run start:http",
     "mcp:solana:build": "pnpm --dir solana-mcp build",
     "mcp:solana:dev": "pnpm --dir solana-mcp dev:local",
-    "mcp:solana:start": "pnpm --dir solana-mcp start"
+    "mcp:solana:start": "pnpm --dir solana-mcp start",
+    "membrain:build": "make -C membrain build",
+    "membrain:test": "make -C membrain test",
+    "membrain:start": "make -C membrain build && membrain/bin/membraned"
   }
 }

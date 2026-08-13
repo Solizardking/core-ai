@@ -1,0 +1,12 @@
+bin/
+*.exe
+coverage/
+*.out
+*.test
+
+clients/**/node_modules/
+clients/**/dist/
+clients/**/*.tsbuildinfo
+clients/python/**/__pycache__/
+clients/python/**/*.egg-info/
+clients/python/.venv/

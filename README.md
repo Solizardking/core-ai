@@ -28,6 +28,7 @@ This fork keeps the Helius Solana infrastructure surface and replaces the old as
 | [`helius-plugin`](./helius-plugin) | Clawd Code plugin — bundles all skills and auto-starts the MCP server | `clawd --plugin-dir ./helius-plugin` |
 | [`clawd-code`](./clawd-code) | Curl-installable Solana-native AI coding CLI (xAI / Anthropic / DeepSeek / OpenRouter) with paper-gated perps workflows | `curl -fsSL https://raw.githubusercontent.com/Solizardking/solana-clawd/main/clawd-code/install.sh \| sh` |
 | [`clawd-grok`](./clawd-grok) | Bun-native Clawd / Grok agent runtime — default `grok-4.6` Responses API, REPL, headless, audio, LSP, MCP, payments, wallet, verify | `bun install && bun run dev` |
+| [`membrain`](./membrain) | Core AI selective memory — Go `membraned` daemon, gRPC, SQLite/pgvector, TypeScript/Python/OpenClawd clients | `cd membrain && make build && ./bin/membraned` |
 | [`clawd-perps-agent`](./clawd-perps-agent) | Specialized perps agent: Phoenix Rise, Vulcan, Imperial WS, on-chain MM, TWAMM, Telegram | `cd clawd-perps-agent && npm install && npm run build` |
 | [`mcp-server`](./mcp-server) | Standalone MCP server for pump-sdk and related tooling | `npm install && npm run build` |
 | [`solana-mcp`](./solana-mcp) | Official Solana documentation MCP server with RAG search, section listing, and canonical documentation retrieval | `pnpm install && pnpm build` |
@@ -204,7 +205,10 @@ The routed domain tools take a Helius action name in `action`, for example `heli
 | `DEEPSEEK_API_KEY` | `clawd-code` | DeepSeek model access |
 | `OPENROUTER_API_KEY` | `clawd-code` | OpenRouter model access |
 | `WANDB_API_KEY` | `ai-training` | W&B training and eval tracking |
-| `HONCHO_API_KEY` | `ai-training` | Persistent cross-session agent memory |
+| `HONCHO_API_KEY` | `ai-training` | Persistent cross-session agent memory (training jobs only) |
+| `MEMBRANE_API_KEY` | `membrain` | Optional shared secret for `membraned` gRPC auth |
+| `MEMBRANE_ENCRYPTION_KEY` | `membrain` | Optional SQLCipher key for memory at rest |
+| `MEMBRAIN_GRPC_ENDPOINT` | `clawd-grok`, OpenClawd plugin | Membrain daemon address (default: `localhost:9090`) |
 | `DATABRICKS_HOST` | `solana-mcp` | Databricks workspace for official Solana docs retrieval |
 | `DATABRICKS_TOKEN` | `solana-mcp` | Local Databricks auth token; Databricks Apps can inject client credentials instead |
 | `DATABRICKS_VS_INDEX` | `solana-mcp` | Vector Search index for Solana docs chunks |
@@ -283,6 +287,12 @@ pnpm install
 pnpm build
 pnpm test
 pnpm audit:security
+
+cd ../membrain
+make build
+make test
+# ./bin/membraned          # gRPC on :9090
+# npm run membrain:start   # from repo root
 ```
 
 Requirements vary by package:
@@ -292,6 +302,7 @@ Requirements vary by package:
 | `helius-cli`, `helius-mcp` | Node.js 20+ | pnpm | Set a Helius API key from https://dashboard.helius.dev for authenticated Helius calls |
 | `mcp-server` | Node.js 18+ | npm | Uses `SOLANA_RPC_URL` or `SOLANA_RPC_URLS`; transaction tools build instructions and do not submit them |
 | `solana-mcp` | Node.js 24.x | pnpm 10.30.0 | Uses Databricks env vars for live retrieval; `REDIS_URL` enables SSE/session backing |
+| `membrain` | Go 1.24+ | Make | `make build` / `make test`; gRPC listen `:9090`; optional Postgres via `docker compose -f membrain/docker-compose.yml up` |
 
 ## Documentation Maintenance
 
