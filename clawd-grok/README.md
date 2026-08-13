@@ -26,7 +26,7 @@
 
 | Feature | Clawd Grok | Other CLI tools |
 |---------|------------|----------------|
-| **AI Brain** | xAI Grok (4.3, 4.20, 3-mini) | GPT wrappers or no AI |
+| **AI Brain** | xAI Grok (4.6, 4.3, 4.20, 3-mini) | GPT wrappers or no AI |
 | **Chain** | Solana — fast, cheap, based | Multi-chain bloat |
 | **DEX** | Phoenix DEX perpetuals + Vulcan | Spot-only or CEX APIs |
 | **UI** | OpenTUI terminal (React, Ink) | Basic text output |
@@ -44,7 +44,7 @@
 curl -fsSL https://open-clawd.local/raw/install.sh | bash
 ```
 
-**Prerequisites:** Bun 1.0+, a Solana wallet, and an RPC endpoint. For the AI agent, an **xAI Grok API key** (`GROK_API_KEY`).
+**Prerequisites:** Bun 1.0+, a Solana wallet, and an RPC endpoint. For the AI agent, an **xAI Grok API key** (`XAI_API_KEY` or `GROK_API_KEY`).
 
 ---
 
@@ -68,6 +68,12 @@ clawd --session latest
 
 # JSON output for scripts, bots, and other agents
 clawd --prompt "get portfolio snapshot" --format json
+
+# Grok 4.6 with explicit reasoning depth
+clawd --model grok-4.6 --reasoning-effort high -p "prove the launch-angle independence of impact speed"
+
+# Priority processing for lower latency
+clawd --priority -p "scan SOL-PERP funding and recommend a paper entry"
 ```
 
 ---
@@ -78,12 +84,13 @@ Clawd Grok uses **xAI's Grok models** for reasoning, analysis, and trade decisio
 
 | Model | Best For |
 |-------|----------|
-| `grok-4.3` | Flagship reasoning — complex TA, multi-step strategies |
+| `grok-4.6` | **Default flagship** — Responses API, reasoning effort (`low`/`medium`/`high`/`xhigh`), encrypted thinking, agentic tools |
+| `grok-4.3` | Previous flagship reasoning — complex TA, multi-step strategies |
 | `grok-4.20-non-reasoning` | Fast execution, market scanning |
-| `grok-4.20-multi-agent` | Parallel sub-agent research, 2M context |
+| `grok-4.20-multi-agent` | Parallel sub-agent research; effort selects 4 or 16 agents |
 | `grok-3-mini` | Quick TA checks, signal evaluation |
 
-Configure via `GROK_API_KEY`, `GROK_BASE_URL`, and `GROK_MODEL` in your `.env` or `~/.clawd/user-settings.json`.
+Configure via `XAI_API_KEY` or `GROK_API_KEY`, `GROK_BASE_URL`, and `GROK_MODEL` in your `.env` or `~/.clawd/user-settings.json`.
 
 ---
 
@@ -93,9 +100,11 @@ Configure via `GROK_API_KEY`, `GROK_BASE_URL`, and `GROK_MODEL` in your `.env` o
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `GROK_API_KEY` | Yes | xAI Grok API key (`xai-...`) |
+| `XAI_API_KEY` / `GROK_API_KEY` | Yes | xAI Grok API key (`xai-...`) |
 | `GROK_BASE_URL` | No | Custom endpoint (default: `https://api.x.ai/v1`) |
-| `GROK_MODEL` | No | Model override (default: `grok-4.3`) |
+| `GROK_MODEL` | No | Model override (default: `grok-4.6`) |
+| `GROK_REASONING_EFFORT` | No | `low` / `medium` / `high` / `xhigh` (grok-4.6 default is `high`) |
+| `GROK_SERVICE_TIER` | No | Set `priority` for lower-latency scheduling |
 | `GROK_MAX_TOKENS` | No | Max tokens per response (default: 16384) |
 | `SOLANA_RPC_URL` | Yes | Solana RPC endpoint (mainnet-beta) |
 | `PHOENIX_API_URL` | No | Phoenix perps API (default: `https://perp-api.phoenix.trade`) |
@@ -108,7 +117,7 @@ Clawd Grok reads `~/.clawd/config.toml`:
 ```toml
 [grok]
 api_key = "xai-your-key-here"
-model = "grok-4.3"
+model = "grok-4.6"
 max_tokens = 16384
 
 [network]
@@ -336,7 +345,7 @@ src/
 │   └── agent.ts          # Grok AI agent orchestrator
 ├── grok/
 │   ├── client.ts         # xAI Grok API client (Chat Completions + Responses)
-│   ├── models.ts         # Grok model definitions (grok-4.3, 4.20, etc.)
+│   ├── models.ts         # Grok model definitions (grok-4.6, 4.3, 4.20, etc.)
 │   └── tools.ts          # Tool schemas (bash, search_web, search_x)
 ├── tools/
 │   ├── bash.ts           # Shell command execution

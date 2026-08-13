@@ -37,7 +37,7 @@ describe("media tools", () => {
       images: [{ uint8Array: new Uint8Array([9, 8, 7]), mediaType: "image/png" }],
       warnings: [],
       providerMetadata: { xai: { images: [{ url: "https://example.com/generated.png" }] } },
-      responses: [{ modelId: "grok-imagine-image" }],
+      responses: [{ modelId: "grok-imagine-image-quality" }],
     });
 
     const provider = {
@@ -66,7 +66,7 @@ describe("media tools", () => {
         },
       },
     });
-    expect(provider.image).toHaveBeenCalledWith("grok-imagine-image");
+    expect(provider.image).toHaveBeenCalledWith("grok-imagine-image-quality");
 
     const media = result.media ?? [];
     expect(media).toHaveLength(1);
@@ -88,7 +88,7 @@ describe("media tools", () => {
       videos: [{ uint8Array: new Uint8Array([1, 3, 5, 7]), mediaType: "video/mp4" }],
       warnings: [],
       providerMetadata: { xai: { videoUrl: "https://example.com/generated.mp4" } },
-      responses: [{ modelId: "grok-imagine-video" }],
+      responses: [{ modelId: "grok-imagine-video-1.5" }],
     });
 
     const provider = {
@@ -101,7 +101,7 @@ describe("media tools", () => {
         prompt: "Animate a slow camera push with blinking eyes",
         source: "https://example.com/start-frame.jpg",
         duration: 6,
-        resolution: "720p",
+        resolution: "1080p",
         poll_interval_ms: 2000,
         poll_timeout_ms: 900000,
         output_path: "clips/teaser",
@@ -118,13 +118,13 @@ describe("media tools", () => {
       duration: 6,
       providerOptions: {
         xai: {
-          resolution: "720p",
+          resolution: "1080p",
           pollIntervalMs: 2000,
           pollTimeoutMs: 900000,
         },
       },
     });
-    expect(provider.video).toHaveBeenCalledWith("grok-imagine-video");
+    expect(provider.video).toHaveBeenCalledWith("grok-imagine-video-1.5");
     const prompt = generateVideoMock.mock.calls[0]?.[0]?.prompt as { image?: string };
     expect(prompt.image?.startsWith("data:image/jpeg;base64,")).toBe(true);
 

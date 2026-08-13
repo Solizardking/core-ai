@@ -1,5 +1,14 @@
 # 🦞 Clawd Grok Changelog
 
+## Unreleased — Grok 4.6 Integration
+
+- **Default model is `grok-4.6`**: flagship reasoning over the xAI Responses API with `low` / `medium` / `high` / `xhigh` effort
+- **Conversation chaining**: follow-up turns send `previous_response_id` so encrypted thinking stays in context
+- **Priority processing**: `--priority` or `GROK_SERVICE_TIER=priority` for lower-latency scheduling
+- **Imagine models**: image generation uses `grok-imagine-image-quality`; video uses `grok-imagine-video-1.5` with 1080p
+- **Server-side tools**: `execute_code` (Python interpreter) plus web search domain filters and image understanding
+- **Multi-agent effort**: `grok-4.20-multi-agent` maps reasoning effort to 4 agents (`low`/`medium`) or 16 agents (`high`/`xhigh`)
+
 ## v1.0.0 — The World's First Grok-Powered Solana Perps CLI (2026-06-07)
 
 ### 🦞 Initial Public Launch

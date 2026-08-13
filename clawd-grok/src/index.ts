@@ -5,7 +5,7 @@ import readline from "readline";
 import packageJson from "../package.json" with { type: "json" };
 import { Agent } from "./agent/agent.js";
 import { completeDelegation, failDelegation, loadDelegation } from "./agent/delegations.js";
-import { MODELS, normalizeModelId } from "./grok/models.js";
+import { isReasoningEffortLevel, MODELS, normalizeModelId } from "./grok/models.js";
 import {
   createHeadlessJsonlEmitter,
   type HeadlessOutputFormat,
@@ -319,6 +319,19 @@ function resolveConfig(options: CliOptions) {
   if (typeof options.model === "string")
     saveUserSettings({ defaultModel: normalizeModelId(options.model) } as Record<string, unknown>);
 
+  const reasoningEffort = stringOption(options.reasoningEffort);
+  if (reasoningEffort) {
+    if (!isReasoningEffortLevel(reasoningEffort)) {
+      throw new InvalidArgumentError(
+        `Invalid reasoning effort "${reasoningEffort}". Expected low, medium, high, or xhigh.`,
+      );
+    }
+    process.env.GROK_REASONING_EFFORT = reasoningEffort;
+  }
+  if (options.priority === true) {
+    process.env.GROK_SERVICE_TIER = "priority";
+  }
+
   return { apiKey, baseURL, model, maxToolRounds, sandboxMode, sandboxSettings };
 }
 
@@ -348,7 +361,9 @@ program
   .argument("[message...]", "Initial message to send")
   .option("-k, --api-key <key>", "AI API key (OpenAI-compatible)")
   .option("-u, --base-url <url>", "AI API base URL")
-  .option("-m, --model <model>", "AI model to use")
+  .option("-m, --model <model>", "AI model to use (default: grok-4.6)")
+  .option("--reasoning-effort <effort>", "Reasoning effort for grok-4.6: low, medium, high, or xhigh")
+  .option("--priority", "Use xAI priority processing for lower latency")
   .option("-d, --directory <dir>", "Working directory", process.cwd())
   .option("-p, --prompt <prompt>", "Run a single prompt headlessly")
   .option("--verify", "Run the built-in verify flow headlessly")
@@ -445,7 +460,9 @@ program
   .description("Start the Telegram remote-control bridge without opening the TUI")
   .option("-k, --api-key <key>", "AI API key")
   .option("-u, --base-url <url>", "AI API base URL")
-  .option("-m, --model <model>", "AI model to use")
+  .option("-m, --model <model>", "AI model to use (default: grok-4.6)")
+  .option("--reasoning-effort <effort>", "Reasoning effort for grok-4.6: low, medium, high, or xhigh")
+  .option("--priority", "Use xAI priority processing for lower latency")
   .option("-d, --directory <dir>", "Working directory", process.cwd())
   .option("--sandbox", "Run agent shell commands inside a Shuru sandbox")
   .option("--no-sandbox", "Run agent shell commands directly on the host")
@@ -480,7 +497,11 @@ program
   .action(() => {
     console.log("\nAvailable AI Models:\n");
     for (const m of MODELS) {
-      const tags = [m.reasoning ? "reasoning" : "non-reasoning", m.multiAgent ? "multi-agent" : null].filter(Boolean);
+      const tags = [
+        m.reasoning ? "reasoning" : "non-reasoning",
+        m.multiAgent ? "multi-agent" : null,
+        m.preferResponses || m.responsesOnly ? "responses-api" : null,
+      ].filter(Boolean);
       const suffix = tags.length > 0 ? ` (${tags.join(", ")})` : "";
       console.log(`  \x1b[36m${m.id}\x1b[0m — ${m.name}${suffix}`);
       console.log(

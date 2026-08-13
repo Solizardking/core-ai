@@ -2,7 +2,7 @@ import { createXai } from "@ai-sdk/xai";
 import type { generateText } from "ai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as settings from "../utils/settings.js";
-import { generateRecap, resolveModelRuntime } from "./client.js";
+import { extractResponseId, generateRecap, isPreviousResponseNotFoundError, resolveModelRuntime } from "./client.js";
 
 const mockGenerateText = vi.hoisted(() => vi.fn());
 
@@ -59,35 +59,65 @@ describe("client", () => {
     });
   });
 
+  describe("response helpers", () => {
+    it("extracts a response id from the Responses API payload", () => {
+      expect(extractResponseId({ id: "resp_123" })).toBe("resp_123");
+      expect(extractResponseId({})).toBeUndefined();
+      expect(extractResponseId(null)).toBeUndefined();
+    });
+
+    it("detects previous_response_not_found errors", () => {
+      expect(isPreviousResponseNotFoundError(new Error("previous_response_not_found"))).toBe(true);
+      expect(isPreviousResponseNotFoundError("Previous response with id 'resp_abc' not found.")).toBe(true);
+      expect(isPreviousResponseNotFoundError(new Error("rate limit"))).toBe(false);
+    });
+  });
+
   describe("resolveModelRuntime", () => {
     describe("without configured reasoning effort", () => {
+      it("uses the Responses API for grok-4.6", () => {
+        const responsesSpy = vi.spyOn(mockProvider, "responses");
+        const chatSpy = vi.spyOn(mockProvider, "chat");
+        const runtime = resolveModelRuntime(mockProvider, "grok-4.6");
+        expect(runtime.modelId).toBe("grok-4.6");
+        expect(runtime.usesResponsesApi).toBe(true);
+        expect(runtime.providerOptions).toBeUndefined();
+        expect(responsesSpy).toHaveBeenCalledWith("grok-4.6");
+        expect(chatSpy).not.toHaveBeenCalled();
+        responsesSpy.mockRestore();
+        chatSpy.mockRestore();
+      });
+
       it("does not include providerOptions for grok-3-mini when no effort configured", () => {
         const runtime = resolveModelRuntime(mockProvider, "grok-3-mini");
         expect(runtime.modelId).toBe("grok-3-mini");
+        expect(runtime.usesResponsesApi).toBe(false);
         expect(runtime.providerOptions).toBeUndefined();
       });
 
-      it("normalizes retired flagship reasoning models to grok-4.3", () => {
+      it("normalizes retired flagship reasoning models to grok-4.6", () => {
         const runtime = resolveModelRuntime(mockProvider, "grok-4-0709");
-        expect(runtime.modelId).toBe("grok-4.3");
+        expect(runtime.modelId).toBe("grok-4.6");
+        expect(runtime.usesResponsesApi).toBe(true);
         expect(runtime.providerOptions).toBeUndefined();
       });
 
-      it("normalizes retired code models to grok-4.3", () => {
+      it("normalizes retired code models to grok-4.6", () => {
         const runtime = resolveModelRuntime(mockProvider, "grok-code-fast-1");
-        expect(runtime.modelId).toBe("grok-4.3");
+        expect(runtime.modelId).toBe("grok-4.6");
         expect(runtime.providerOptions).toBeUndefined();
       });
 
-      it("normalizes retired fast reasoning models to grok-4.3", () => {
+      it("normalizes retired fast reasoning models to grok-4.6", () => {
         const runtime = resolveModelRuntime(mockProvider, "grok-4-1-fast-reasoning");
-        expect(runtime.modelId).toBe("grok-4.3");
+        expect(runtime.modelId).toBe("grok-4.6");
         expect(runtime.providerOptions).toBeUndefined();
       });
 
       it("does not include providerOptions for grok-4.20-multi-agent", () => {
         const runtime = resolveModelRuntime(mockProvider, "grok-4.20-multi-agent");
         expect(runtime.modelId).toBe("grok-4.20-multi-agent-0309");
+        expect(runtime.usesResponsesApi).toBe(true);
         expect(runtime.providerOptions).toBeUndefined();
       });
 
@@ -105,6 +135,28 @@ describe("client", () => {
 
       afterEach(() => {
         vi.restoreAllMocks();
+      });
+
+      it("includes providerOptions with reasoningEffort for grok-4.6 when effort is configured", () => {
+        vi.spyOn(settings, "getReasoningEffortForModel").mockReturnValue("xhigh");
+        const runtime = resolveModelRuntime(mockProvider, "grok-4.6");
+        expect(runtime.modelId).toBe("grok-4.6");
+        expect(runtime.providerOptions).toEqual({
+          xai: {
+            reasoningEffort: "xhigh",
+          },
+        });
+      });
+
+      it("chains previousResponseId on grok-4.6 Responses API turns", () => {
+        const runtime = resolveModelRuntime(mockProvider, "grok-4.6", {
+          previousResponseId: "resp_abc",
+        });
+        expect(runtime.providerOptions).toEqual({
+          xai: {
+            previousResponseId: "resp_abc",
+          },
+        });
       });
 
       it("includes providerOptions with reasoningEffort for grok-3-mini when effort is configured", () => {
@@ -129,17 +181,28 @@ describe("client", () => {
         });
       });
 
+      it("maps multi-agent reasoning effort to agent count", () => {
+        vi.spyOn(settings, "getReasoningEffortForModel").mockReturnValue("high");
+        const runtime = resolveModelRuntime(mockProvider, "grok-4.20-multi-agent");
+        expect(runtime.modelId).toBe("grok-4.20-multi-agent-0309");
+        expect(runtime.providerOptions).toEqual({
+          xai: {
+            reasoningEffort: "high",
+          },
+        });
+      });
+
       it("does not include providerOptions for retired reasoning aliases even when effort is configured", () => {
         vi.spyOn(settings, "getReasoningEffortForModel").mockReturnValue("high");
         const runtime = resolveModelRuntime(mockProvider, "grok-4-0709");
-        expect(runtime.modelId).toBe("grok-4.3");
+        expect(runtime.modelId).toBe("grok-4.6");
         expect(runtime.providerOptions).toBeUndefined();
       });
 
       it("does not include providerOptions for retired code aliases even when effort is configured", () => {
         vi.spyOn(settings, "getReasoningEffortForModel").mockReturnValue("high");
         const runtime = resolveModelRuntime(mockProvider, "grok-code-fast-1");
-        expect(runtime.modelId).toBe("grok-4.3");
+        expect(runtime.modelId).toBe("grok-4.6");
         expect(runtime.providerOptions).toBeUndefined();
       });
 

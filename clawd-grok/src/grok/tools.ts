@@ -34,8 +34,9 @@ import {
   VIDEO_ASPECT_RATIOS,
   VIDEO_RESOLUTIONS,
 } from "./media.js";
+import { DEFAULT_MODEL } from "./models.js";
 
-const RESPONSES_SEARCH_MODEL = process.env.GROK_MODEL || "grok-4.3";
+const RESPONSES_SEARCH_MODEL = process.env.GROK_MODEL || DEFAULT_MODEL;
 
 interface CreateToolsOptions {
   runTask?: (request: TaskRequest, abortSignal?: AbortSignal) => Promise<ToolResult>;
@@ -60,10 +61,23 @@ export function createTools(
     query: string,
     toolName: "web_search" | "x_search",
     abortSignal?: AbortSignal,
+    options?: {
+      allowedDomains?: string[];
+      excludedDomains?: string[];
+      enableImageUnderstanding?: boolean;
+    },
   ): Promise<{ success: boolean; output: string }> => {
     try {
       const searchTools = {
-        ...(toolName === "web_search" ? { web_search: provider.tools.webSearch() } : {}),
+        ...(toolName === "web_search"
+          ? {
+              web_search: provider.tools.webSearch({
+                ...(options?.allowedDomains ? { allowedDomains: options.allowedDomains } : {}),
+                ...(options?.excludedDomains ? { excludedDomains: options.excludedDomains } : {}),
+                ...(options?.enableImageUnderstanding ? { enableImageUnderstanding: true } : {}),
+              }),
+            }
+          : {}),
         ...(toolName === "x_search" ? { x_search: provider.tools.xSearch() } : {}),
       } as unknown as ToolSet;
 
@@ -206,9 +220,27 @@ export function createTools(
         "Search the web for current information, documentation, APIs, tutorials, news, or any real-time data. Returns summarized results with sources.",
       inputSchema: z.object({
         query: z.string().describe("The search query"),
+        allowed_domains: z
+          .array(z.string())
+          .max(5)
+          .optional()
+          .describe("Only search these domains (max 5). Cannot be combined with excluded_domains."),
+        excluded_domains: z
+          .array(z.string())
+          .max(5)
+          .optional()
+          .describe("Exclude these domains from search (max 5). Cannot be combined with allowed_domains."),
+        enable_image_understanding: z
+          .boolean()
+          .optional()
+          .describe("Analyze images found while browsing search results"),
       }),
-      execute: async ({ query }, { abortSignal }) => {
-        return runResponsesSearch(query, "web_search", abortSignal);
+      execute: async ({ query, allowed_domains, excluded_domains, enable_image_understanding }, { abortSignal }) => {
+        return runResponsesSearch(query, "web_search", abortSignal, {
+          allowedDomains: allowed_domains,
+          excludedDomains: excluded_domains,
+          enableImageUnderstanding: enable_image_understanding,
+        });
       },
     }),
 
@@ -220,6 +252,37 @@ export function createTools(
       }),
       execute: async ({ query }, { abortSignal }) => {
         return runResponsesSearch(query, "x_search", abortSignal);
+      },
+    }),
+
+    execute_code: tool({
+      description:
+        "Run Python in xAI's sandboxed code interpreter for exact calculations, data analysis, statistics, and scientific computing. Use when numbers must be precise rather than estimated.",
+      inputSchema: z.object({
+        prompt: z
+          .string()
+          .describe("What to compute or analyze. Include any data inline; the sandbox has no external network or files."),
+      }),
+      execute: async ({ prompt }, { abortSignal }) => {
+        try {
+          const codeTools = {
+            code_execution: provider.tools.codeExecution(),
+          } as unknown as ToolSet;
+          const { text } = await generateText({
+            model: provider.responses(RESPONSES_SEARCH_MODEL),
+            maxOutputTokens: 4096,
+            prompt,
+            abortSignal,
+            tools: codeTools,
+          });
+          return {
+            success: true,
+            output: text || "No code execution result.",
+          };
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          return { success: false, output: `Code execution failed: ${msg}` };
+        }
       },
     }),
 
@@ -262,7 +325,7 @@ export function createTools(
           .enum(VIDEO_ASPECT_RATIOS)
           .optional()
           .describe("Optional output aspect ratio for text-to-video or to override image-to-video framing"),
-        resolution: z.enum(VIDEO_RESOLUTIONS).optional().describe("Optional output resolution: 480p or 720p"),
+        resolution: z.enum(VIDEO_RESOLUTIONS).optional().describe("Optional output resolution: 480p, 720p, or 1080p"),
         output_path: z
           .string()
           .optional()

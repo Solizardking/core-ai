@@ -3,10 +3,11 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, extname, isAbsolute, join, resolve } from "path";
 import type { MediaAsset, ToolResult } from "../types/index.js";
 import type { XaiProvider } from "./client.js";
+import { DEFAULT_IMAGE_MODEL, DEFAULT_VIDEO_MODEL } from "./models.js";
 
 const GENERATED_MEDIA_DIR = ".grok/generated-media";
-const IMAGE_MODEL_ID = "grok-imagine-image";
-const VIDEO_MODEL_ID = "grok-imagine-video";
+const IMAGE_MODEL_ID = DEFAULT_IMAGE_MODEL;
+const VIDEO_MODEL_ID = DEFAULT_VIDEO_MODEL;
 
 export const IMAGE_ASPECT_RATIOS = [
   "1:1",
@@ -27,7 +28,7 @@ export const IMAGE_ASPECT_RATIOS = [
 
 export const VIDEO_ASPECT_RATIOS = ["1:1", "16:9", "9:16", "4:3", "3:4", "3:2", "2:3"] as const;
 export const IMAGE_RESOLUTIONS = ["1k", "2k"] as const;
-export const VIDEO_RESOLUTIONS = ["480p", "720p"] as const;
+export const VIDEO_RESOLUTIONS = ["480p", "720p", "1080p"] as const;
 
 export type ImageAspectRatio = (typeof IMAGE_ASPECT_RATIOS)[number];
 export type VideoAspectRatio = (typeof VIDEO_ASPECT_RATIOS)[number];

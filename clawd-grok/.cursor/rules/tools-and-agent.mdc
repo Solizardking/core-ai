@@ -47,13 +47,14 @@ Tools should never throw — wrap errors in `{ success: false, error: "..." }`.
 | `BashTool` | `src/tools/bash.ts` | Execute any shell command |
 | `search_web` | via `GrokClient.searchWeb()` | Web search using Responses API |
 | `search_x` | via `GrokClient.searchX()` | X/Twitter search using Responses API |
+| `execute_code` | via Responses `code_execution` | Sandboxed Python interpreter |
 
 ## Grok Client
 
 `GrokClient` (in `src/grok/client.ts`) handles two API endpoints:
 
-- **Chat Completions** (`/v1/chat/completions`): Main agent loop with streaming and tool calling
-- **Responses API** (`/v1/responses`): X Search and Web Search with server-side tools
+- **Responses API** (`/v1/responses`): Preferred for `grok-4.6` and required for multi-agent — stateful turns, reasoning effort, encrypted thinking, X Search, Web Search, and code execution
+- **Chat Completions** (`/v1/chat/completions`): Streaming tool calling for models that do not prefer Responses
 
 ## Adding a New Tool
 

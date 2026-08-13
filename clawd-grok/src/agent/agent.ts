@@ -15,8 +15,10 @@ import {
 } from "../grok/batch.js";
 import {
   createProvider,
+  extractResponseId,
   generateRecap as genRecap,
   generateTitle as genTitle,
+  isPreviousResponseNotFoundError,
   resolveModelRuntime,
   type XaiProvider,
 } from "../grok/client.js";
@@ -100,8 +102,8 @@ import { containsEncryptedReasoning, sanitizeModelMessages } from "./reasoning.j
 import { buildVisionUserMessages } from "./vision-input.js";
 
 const MAX_TOOL_ROUNDS = 400;
-const VISION_MODEL = "gpt-4o";
-const COMPUTER_MODEL = "gpt-4o";
+const VISION_MODEL = DEFAULT_MODEL;
+const COMPUTER_MODEL = DEFAULT_MODEL;
 
 interface AgentOptions {
   persistSession?: boolean;
@@ -555,6 +557,8 @@ export class Agent {
   private batchApi = false;
   private sessionStartHookFired = false;
   private recapsEnabled = true;
+  private lastResponseId: string | null = null;
+  private lastResponseModelId: string | null = null;
 
   constructor(
     apiKey: string | undefined,
@@ -602,7 +606,12 @@ export class Agent {
   }
 
   setModel(model: string): void {
-    this.modelId = normalizeModelId(model);
+    const nextModelId = normalizeModelId(model);
+    if (nextModelId !== this.modelId) {
+      this.lastResponseId = null;
+      this.lastResponseModelId = null;
+    }
+    this.modelId = nextModelId;
     if (this.sessionStore && this.session) {
       this.sessionStore.setModel(this.session.id, this.modelId);
       this.session = this.sessionStore.getRequiredSession(this.session.id);
@@ -634,7 +643,12 @@ export class Agent {
       this.mode = mode;
       const modeModel = getModeSpecificModel(mode);
       if (modeModel) {
-        this.modelId = normalizeModelId(modeModel);
+        const nextModelId = normalizeModelId(modeModel);
+        if (nextModelId !== this.modelId) {
+          this.lastResponseId = null;
+          this.lastResponseModelId = null;
+        }
+        this.modelId = nextModelId;
       }
       if (this.sessionStore && this.session) {
         this.sessionStore.setMode(this.session.id, mode);
@@ -1872,6 +1886,11 @@ export class Agent {
     const modelInfo = runtime.modelInfo;
     this.planContext = null;
     let attemptedOverflowRecovery = false;
+    let attemptedPreviousResponseRecovery = false;
+    if (this.lastResponseModelId && this.lastResponseModelId !== runtime.modelId) {
+      this.lastResponseId = null;
+      this.lastResponseModelId = null;
+    }
 
     if (this.batchApi) {
       try {
@@ -1939,8 +1958,12 @@ export class Agent {
             }
           }
 
+          const turnRuntime = resolveModelRuntime(provider, this.modelId, {
+            previousResponseId: attemptedPreviousResponseRecovery ? undefined : (this.lastResponseId ?? undefined),
+          });
+
           const result = streamText({
-            model: runtime.model,
+            model: turnRuntime.model,
             system,
             messages: this.messages,
             tools,
@@ -1948,8 +1971,8 @@ export class Agent {
             maxRetries: 0,
             abortSignal: signal,
             temperature: 0.7,
-            ...(runtime.modelInfo?.supportsMaxOutputTokens === false ? {} : { maxOutputTokens: this.maxTokens }),
-            ...(runtime.providerOptions ? { providerOptions: runtime.providerOptions } : {}),
+            ...(turnRuntime.modelInfo?.supportsMaxOutputTokens === false ? {} : { maxOutputTokens: this.maxTokens }),
+            ...(turnRuntime.providerOptions ? { providerOptions: turnRuntime.providerOptions } : {}),
             experimental_onStepStart: (event: unknown) => {
               stepNumber = getStepNumber(event, stepNumber + 1);
               notifyObserver(observer?.onStepStart, {
@@ -1968,7 +1991,7 @@ export class Agent {
               });
             },
             onFinish: ({ totalUsage }) => {
-              this.recordUsage(totalUsage, "message", runtime.modelId);
+              this.recordUsage(totalUsage, "message", turnRuntime.modelId);
             },
           });
 
@@ -2122,11 +2145,26 @@ export class Agent {
           try {
             const response = await result.response;
             if (!signal.aborted) {
+              const responseId = extractResponseId(response);
+              if (responseId) {
+                this.lastResponseId = responseId;
+                this.lastResponseModelId = turnRuntime.modelId;
+              }
               this.appendCompletedTurn(userModelMessage, sanitizeModelMessages(response.messages));
               await this.refreshSessionRecap(signal);
               streamOk = true;
             }
           } catch (responseError: unknown) {
+            if (
+              !attemptedPreviousResponseRecovery &&
+              !assistantText.trim() &&
+              isPreviousResponseNotFoundError(responseError)
+            ) {
+              attemptedPreviousResponseRecovery = true;
+              this.lastResponseId = null;
+              this.lastResponseModelId = null;
+              continue;
+            }
             if (
               !attemptedOverflowRecovery &&
               !assistantText.trim() &&
@@ -2164,6 +2202,13 @@ export class Agent {
             yield { type: "content", content: "\n\n[Cancelled]" };
             yield { type: "done" };
             return;
+          }
+
+          if (!attemptedPreviousResponseRecovery && !assistantText.trim() && isPreviousResponseNotFoundError(err)) {
+            attemptedPreviousResponseRecovery = true;
+            this.lastResponseId = null;
+            this.lastResponseModelId = null;
+            continue;
           }
 
           if (!attemptedOverflowRecovery && !assistantText.trim() && modelInfo && isContextLimitError(err)) {

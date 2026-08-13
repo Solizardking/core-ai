@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, afterEach, describe, expect, it } from "vitest";
 import type { AgentMode } from "../types/index.js";
-import { getCurrentModel, parseSubAgentsRawList } from "./settings.js";
+import { getCurrentModel, getReasoningEffortForModel, getServiceTier, parseSubAgentsRawList } from "./settings.js";
 
 describe("parseSubAgentsRawList", () => {
   it("returns empty for non-array or missing", () => {
@@ -60,6 +60,7 @@ describe("parseSubAgentsRawList", () => {
 describe("getCurrentModel with modeModels", () => {
   beforeEach(() => {
     delete process.env.GROK_MODEL;
+    delete process.env.CLAWD_MODEL;
   });
 
   it("respects mode-specific models when provided", () => {
@@ -77,3 +78,32 @@ describe("getCurrentModel with modeModels", () => {
     expect(result).toBe("grok-4-special-test");
   });
 });
+
+describe("grok-4.6 runtime settings", () => {
+  const originalEffort = process.env.GROK_REASONING_EFFORT;
+  const originalXaiEffort = process.env.XAI_REASONING_EFFORT;
+  const originalTier = process.env.GROK_SERVICE_TIER;
+  const originalXaiTier = process.env.XAI_SERVICE_TIER;
+
+  afterEach(() => {
+    restoreEnv("GROK_REASONING_EFFORT", originalEffort);
+    restoreEnv("XAI_REASONING_EFFORT", originalXaiEffort);
+    restoreEnv("GROK_SERVICE_TIER", originalTier);
+    restoreEnv("XAI_SERVICE_TIER", originalXaiTier);
+  });
+
+  it("reads GROK_REASONING_EFFORT for grok-4.6", () => {
+    process.env.GROK_REASONING_EFFORT = "xhigh";
+    expect(getReasoningEffortForModel("grok-4.6")).toBe("xhigh");
+  });
+
+  it("reads GROK_SERVICE_TIER priority", () => {
+    process.env.GROK_SERVICE_TIER = "priority";
+    expect(getServiceTier()).toBe("priority");
+  });
+});
+
+function restoreEnv(name: string, value: string | undefined): void {
+  if (value === undefined) delete process.env[name];
+  else process.env[name] = value;
+}

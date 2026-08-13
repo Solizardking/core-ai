@@ -93,7 +93,7 @@ Read the relevant `SKILL.md` before implementing. It tells you which reference f
 
 Set the appropriate API key env var and pass `--model`:
 
-- `XAI_API_KEY` → `grok-4-20`, `grok-4.20-multi-agent`
+- `XAI_API_KEY` → `grok-4.6`, `grok-4.20-multi-agent`
 - `ANTHROPIC_API_KEY` → `claude-opus-4-8`, `claude-sonnet-4-6`
 - `DEEPSEEK_API_KEY` → `deepseek-r1`, `deepseek-v3`
 - `OPENROUTER_API_KEY` → any OpenRouter model ID

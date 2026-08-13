@@ -6,7 +6,7 @@
 
 - **Language**: TypeScript (ES2022, ESNext modules)
 - **Runtime**: Bun (primary)
-- **AI Brain**: xAI Grok (grok-4.3, grok-4.20, grok-3-mini) via OpenAI-compatible Chat Completions API
+- **AI Brain**: xAI Grok (grok-4.6, grok-4.3, grok-4.20, grok-3-mini) via OpenAI-compatible Chat Completions API and the Responses API
 - **UI Framework**: React with [OpenTUI](https://github.com/anomalyco/opentui) for terminal rendering
 - **Build**: `tsc` (TypeScript compiler)
 - **Package Manager**: Bun
@@ -65,10 +65,11 @@ src/
 
 ## Clawd Grok Models
 
-- `grok-4.3` — recommended flagship reasoning
+- `grok-4.6` — recommended flagship reasoning (Responses API, configurable effort)
+- `grok-4.3` — previous flagship reasoning
 - `grok-4.20-non-reasoning` — recommended non-reasoning
-- `grok-4.20-multi-agent-0309` — multi-agent, 2M context
-- `grok-4.20-0309-reasoning` — reasoning, 2M context
+- `grok-4.20-multi-agent-0309` — multi-agent research; effort selects 4 or 16 agents
+- `grok-4.20-0309-reasoning` — reasoning, long context
 - `grok-3-mini` — compact model with reasoning effort controls
 
 ## CI/CD

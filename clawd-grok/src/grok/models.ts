@@ -2,6 +2,14 @@
  * xAI Grok model definitions and metadata.
  */
 
+export const REASONING_EFFORTS = ["low", "medium", "high", "xhigh"] as const;
+export type ReasoningEffortLevel = (typeof REASONING_EFFORTS)[number];
+
+export const GROK_46_REASONING_EFFORTS: ReasoningEffortLevel[] = ["low", "medium", "high", "xhigh"];
+export const GROK_45_REASONING_EFFORTS: ReasoningEffortLevel[] = ["low", "medium", "high"];
+export const MULTI_AGENT_REASONING_EFFORTS: ReasoningEffortLevel[] = ["low", "medium", "high", "xhigh"];
+export const GROK_3_MINI_REASONING_EFFORTS: ReasoningEffortLevel[] = ["low", "high"];
+
 export interface ModelDefinition {
   id: string;
   name: string;
@@ -12,19 +20,36 @@ export interface ModelDefinition {
   reasoning?: boolean;
   multiAgent?: boolean;
   responsesOnly?: boolean;
+  preferResponses?: boolean;
   supportsClientTools?: boolean;
   supportsMaxOutputTokens?: boolean;
   reasoningEfforts?: string[];
   aliases?: string[];
 }
 
-export const DEFAULT_MODEL = "grok-4.3";
+export const DEFAULT_MODEL = "grok-4.6";
+export const DEFAULT_IMAGE_MODEL = "grok-imagine-image-quality";
+export const DEFAULT_VIDEO_MODEL = "grok-imagine-video-1.5";
 
 export const MODELS: ModelDefinition[] = [
   {
+    id: "grok-4.6",
+    name: "Grok 4.6",
+    description:
+      "xAI flagship reasoning model — Responses API, configurable effort (low/medium/high/xhigh), encrypted thinking, and agentic tool use",
+    contextWindow: 256_000,
+    inputPrice: 3.0,
+    outputPrice: 15.0,
+    reasoning: true,
+    preferResponses: true,
+    supportsClientTools: true,
+    reasoningEfforts: [...GROK_46_REASONING_EFFORTS],
+    aliases: ["grok-4-6", "grok", "grok-latest"],
+  },
+  {
     id: "grok-4.3",
     name: "Grok 4.3",
-    description: "xAI flagship reasoning model — best for agent tasks, code, and market analysis",
+    description: "Previous xAI flagship reasoning model — strong for agent tasks, code, and market analysis",
     contextWindow: 256_000,
     inputPrice: 3.0,
     outputPrice: 15.0,
@@ -45,13 +70,16 @@ export const MODELS: ModelDefinition[] = [
   {
     id: "grok-4.20-multi-agent-0309",
     name: "Grok 4.20 Multi-Agent",
-    description: "Specialized Grok model for multi-agent orchestration — responses API only",
-    contextWindow: 256_000,
+    description:
+      "Realtime multi-agent research — Responses API only. reasoning.effort selects 4 agents (low/medium) or 16 agents (high/xhigh)",
+    contextWindow: 2_000_000,
     inputPrice: 2.0,
     outputPrice: 10.0,
     multiAgent: true,
     responsesOnly: true,
     supportsClientTools: false,
+    supportsMaxOutputTokens: false,
+    reasoningEfforts: [...MULTI_AGENT_REASONING_EFFORTS],
     aliases: ["grok-4.20-multi-agent", "x-ai/grok-4.20-multi-agent-beta"],
   },
   {
@@ -74,7 +102,7 @@ export const MODELS: ModelDefinition[] = [
     outputPrice: 0.5,
     reasoning: true,
     supportsClientTools: true,
-    reasoningEfforts: ["low", "high"],
+    reasoningEfforts: [...GROK_3_MINI_REASONING_EFFORTS],
     aliases: ["grok3-mini"],
   },
   {
@@ -132,6 +160,11 @@ export function getModelIds(): string[] {
   return listModelIds();
 }
 
+export function usesResponsesApi(idOrInfo?: string | ModelDefinition): boolean {
+  const info = typeof idOrInfo === "string" ? getModel(idOrInfo) : idOrInfo;
+  return Boolean(info?.responsesOnly || info?.preferResponses);
+}
+
 export function getSupportedReasoningEfforts(id: string): string[] {
   const info = getModel(id);
   return info?.reasoningEfforts ?? [];
@@ -142,4 +175,8 @@ export function getEffectiveReasoningEffort(id: string, effort?: string): string
   if (supported.length === 0) return undefined;
   if (effort && supported.includes(effort)) return effort;
   return undefined;
+}
+
+export function isReasoningEffortLevel(value: string): value is ReasoningEffortLevel {
+  return (REASONING_EFFORTS as readonly string[]).includes(value);
 }

@@ -24,7 +24,7 @@
 ### Environment
 
 - **Bun** must be installed (>= 1.0).
-- `GROK_API_KEY` environment variable is required for xAI Grok AI agent reasoning.
+- `GROK_API_KEY` environment variable is required for xAI Grok AI agent reasoning (`XAI_API_KEY` is also accepted).
 - `SOLANA_RPC_URL` environment variable is required for Solana blockchain connectivity.
 - `PHOENIX_API_URL` (optional) for Phoenix perpetuals API access.
 
@@ -35,7 +35,7 @@
 - The agent loop is in `src/agent/agent.ts` — model-agnostic, supports any OpenAI-compatible provider, designed for xAI Grok.
 - UI is built with OpenTUI React (`@opentui/react`).
 - Solana wallet management lives in `src/wallet/manager.ts`.
-- xAI Grok API client lives in `src/grok/client.ts` (Chat Completions + Responses API).
+- xAI Grok API client lives in `src/grok/client.ts` (Chat Completions + Responses API; grok-4.6 prefers Responses).
 - Tools are bash-based — all file operations happen through shell commands.
 - MCP server lives in `src/mcp/`.
 
@@ -43,7 +43,7 @@
 
 - **Agent loop**: `Agent.processMessage()` is an async generator that yields `StreamChunk` objects — Grok responds, tools execute, results feed back until no more tool calls remain.
 - **Bash-only tools**: The agent uses bash for everything (file editing, searching, git, builds, etc.).
-- **X Search & Web Search**: Integrated via the xAI Responses API for real-time information.
+- **X Search, Web Search, and Code Execution**: Integrated via the xAI Responses API for real-time information and sandboxed Python.
 - **Settings hierarchy**: Environment variables → User-level (`~/.clawd/user-settings.json`) → Project-level (`.grok/settings.json`).
 - **Custom instructions**: `~/.clawd/AGENTS.md`, then `AGENTS.override.md` / `AGENTS.md` per directory from git root through the workspace cwd (Codex-style merge).
 - **ESM only**: The project uses `"type": "module"` — all imports use `.js` extensions for compiled output.
@@ -51,10 +51,11 @@
 
 ### Grok Models
 
-- `grok-4.3` — recommended flagship reasoning
+- `grok-4.6` — recommended flagship reasoning (Responses API, `low`/`medium`/`high`/`xhigh` effort)
+- `grok-4.3` — previous flagship reasoning
 - `grok-4.20-non-reasoning` — recommended non-reasoning
-- `grok-4.20-multi-agent-0309` — multi-agent, 2M context
-- `grok-4.20-0309-reasoning` — reasoning, 2M context
+- `grok-4.20-multi-agent-0309` — multi-agent research; effort selects 4 or 16 agents
+- `grok-4.20-0309-reasoning` — reasoning, long context
 - `grok-3-mini` — compact model with reasoning effort controls
 
 ### Adding a New Tool

@@ -27,7 +27,7 @@ This fork keeps the Helius Solana infrastructure surface and replaces the old as
 | [`helius-skills`](./helius-skills) | Standalone Clawd Code skills for building on Solana | `./install.sh` |
 | [`helius-plugin`](./helius-plugin) | Clawd Code plugin — bundles all skills and auto-starts the MCP server | `clawd --plugin-dir ./helius-plugin` |
 | [`clawd-code`](./clawd-code) | Curl-installable Solana-native AI coding CLI (xAI / Anthropic / DeepSeek / OpenRouter) with paper-gated perps workflows | `curl -fsSL https://raw.githubusercontent.com/Solizardking/solana-clawd/main/clawd-code/install.sh \| sh` |
-| [`clawd-grok`](./clawd-grok) | Bun-native Clawd / Grok agent runtime — REPL, headless, audio, LSP, MCP, payments, wallet, verify | `bun install && bun run dev` |
+| [`clawd-grok`](./clawd-grok) | Bun-native Clawd / Grok agent runtime — default `grok-4.6` Responses API, REPL, headless, audio, LSP, MCP, payments, wallet, verify | `bun install && bun run dev` |
 | [`clawd-perps-agent`](./clawd-perps-agent) | Specialized perps agent: Phoenix Rise, Vulcan, Imperial WS, on-chain MM, TWAMM, Telegram | `cd clawd-perps-agent && npm install && npm run build` |
 | [`mcp-server`](./mcp-server) | Standalone MCP server for pump-sdk and related tooling | `npm install && npm run build` |
 | [`solana-mcp`](./solana-mcp) | Official Solana documentation MCP server with RAG search, section listing, and canonical documentation retrieval | `pnpm install && pnpm build` |
@@ -197,6 +197,9 @@ The routed domain tools take a Helius action name in `action`, for example `heli
 | `SOLANA_RPC_URL` | `mcp-server`, Clawd Code | Single Solana RPC endpoint |
 | `SOLANA_RPC_URLS` | `mcp-server` | Comma-separated RPC failover endpoints |
 | `XAI_API_KEY` | `clawd-code`, `clawd-grok` | xAI model access |
+| `GROK_MODEL` | `clawd-grok` | Model override (default: `grok-4.6`) |
+| `GROK_REASONING_EFFORT` | `clawd-grok` | Reasoning depth: `low` / `medium` / `high` / `xhigh` |
+| `GROK_SERVICE_TIER` | `clawd-grok` | Set `priority` for lower-latency xAI scheduling |
 | `ANTHROPIC_API_KEY` | `clawd-code` | Anthropic model access |
 | `DEEPSEEK_API_KEY` | `clawd-code` | DeepSeek model access |
 | `OPENROUTER_API_KEY` | `clawd-code` | OpenRouter model access |

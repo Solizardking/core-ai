@@ -510,6 +510,7 @@ export interface ClawdSettings {
   sandbox?: unknown;
   apiKey?: string;
   reasoningEffortByModel?: Record<string, string>;
+  serviceTier?: "default" | "priority";
 }
 
 export interface SubAgentConfig {
@@ -581,7 +582,7 @@ export interface ModelInfo {
   [key: string]: any;
 }
 
-export type ReasoningEffort = "low" | "high" | string;
+export type ReasoningEffort = "low" | "medium" | "high" | "xhigh" | string;
 export const MODES: Array<{ id: AgentMode; label: string; color: string }> = [
   { id: "agent", label: "Agent", color: "cyan" },
   { id: "ask", label: "Ask", color: "blue" },

@@ -6,7 +6,7 @@ import type { AgentMode, ClawdSettings, McpServerConfig, SolanaConfig, SubAgentC
 
 export type { McpServerConfig } from "../types/index.js";
 
-import { getModelInfo, normalizeModelId } from "../grok/models.js";
+import { DEFAULT_MODEL, getModelInfo, normalizeModelId } from "../grok/models.js";
 
 // === Path Constants ===
 
@@ -314,11 +314,11 @@ export type McpRemoteTransport = "stdio" | "sse" | "http";
 export type LspSettings = NormalizedLspSettings;
 
 const MODE_DEFAULTS: Record<string, string> = {
-  agent: "grok-4.3",
-  explore: "grok-4.3",
-  vision: "grok-4.3",
-  verify: "grok-4.3",
-  general: "grok-4.3",
+  agent: DEFAULT_MODEL,
+  explore: DEFAULT_MODEL,
+  vision: DEFAULT_MODEL,
+  verify: DEFAULT_MODEL,
+  general: DEFAULT_MODEL,
 };
 
 export function getModeSpecificModel(mode?: AgentMode): string | undefined {
@@ -331,7 +331,17 @@ export function getCurrentModel(mode?: AgentMode): string {
   if (envModel?.trim()) return envModel.trim();
   const settingsModel = loadUserSettings().defaultModel;
   if (settingsModel?.trim()) return settingsModel.trim();
-  return getModeSpecificModel(mode) || "grok-4.3";
+  return getModeSpecificModel(mode) || DEFAULT_MODEL;
+}
+
+export type XaiServiceTier = "default" | "priority";
+
+export function getServiceTier(): XaiServiceTier | undefined {
+  const env = (process.env.GROK_SERVICE_TIER || process.env.XAI_SERVICE_TIER || "").trim().toLowerCase();
+  if (env === "priority" || env === "default") return env;
+  const settingsTier = loadUserSettings().serviceTier;
+  if (settingsTier === "priority" || settingsTier === "default") return settingsTier;
+  return undefined;
 }
 
 export function parseSubAgentsRawList(value: unknown): SubAgentConfig[] {
@@ -367,8 +377,13 @@ export function loadRecapsEnabled(): boolean {
   return true;
 }
 
-export function getReasoningEffortForModel(_modelId: string): string | undefined {
-  return undefined;
+export function getReasoningEffortForModel(modelId: string): string | undefined {
+  const env = (process.env.GROK_REASONING_EFFORT || process.env.XAI_REASONING_EFFORT || "").trim();
+  if (env) return env;
+  const map = loadUserSettings().reasoningEffortByModel ?? {};
+  const canonical = normalizeModelId(modelId);
+  const effort = map[canonical] ?? map[modelId];
+  return typeof effort === "string" && effort.trim() ? effort.trim() : undefined;
 }
 
 export function getCurrentLspSettings(): LspSettings {
