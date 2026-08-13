@@ -8,7 +8,7 @@ import { loadKeypair } from "helius-sdk/auth/loadKeypair";
 import { PLAN_CATALOG } from "helius-sdk/auth/planCatalog";
 import { outputJson, createSpinner, exitWithError, handleCommandError, type OutputOptions } from "../lib/output.js";
 
-const DEFAULT_KEYPAIR_PATH = path.join(os.homedir(), ".helius", "keypair.json");
+const DEFAULT_KEYPAIR_PATH = path.join(os.homedir(), ".clawd", "keypair.json");
 
 interface KeygenOptions extends OutputOptions {
   output?: string;

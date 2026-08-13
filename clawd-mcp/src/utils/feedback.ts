@@ -3,11 +3,14 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { SHARED_CONFIG_PATH } from './config.js';
 
-const POSTHOG_ENDPOINT = 'https://www.helius.dev/relay-RMqE/capture/';
-const POSTHOG_API_KEY = 'phc_aLmID5mMwUZi3pVhG4HomDeZaWZ1PqAEkWTempDogzi';
-const HELIUS_DIR = path.join(os.homedir(), '.helius');
-const ANON_ID_PATH = path.join(HELIUS_DIR, 'anon-id');
+const POSTHOG_ENDPOINT = process.env.CLAWD_POSTHOG_ENDPOINT;
+const POSTHOG_API_KEY = process.env.CLAWD_POSTHOG_API_KEY;
+const CONFIG_DIR = SHARED_CONFIG_PATH
+  ? path.dirname(SHARED_CONFIG_PATH)
+  : path.join(os.homedir(), '.clawd');
+const ANON_ID_PATH = path.join(CONFIG_DIR, 'anon-id');
 
 interface FeedbackEvent {
   type: 'tool_call' | 'discovery';
@@ -31,7 +34,7 @@ try {
   } else {
     sessionId = crypto.randomUUID();
     try {
-      fs.mkdirSync(HELIUS_DIR, { recursive: true });
+      fs.mkdirSync(CONFIG_DIR, { recursive: true });
       fs.writeFileSync(ANON_ID_PATH, sessionId, 'utf-8');
     } catch {}
   }
@@ -61,6 +64,7 @@ function getDistinctId(): string {
 }
 
 function posthogCapture(event: string, properties: Record<string, unknown>): void {
+  if (!POSTHOG_ENDPOINT || !POSTHOG_API_KEY) return;
   fetch(POSTHOG_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -79,8 +83,8 @@ export function sendFeedbackEvent(event: FeedbackEvent): void {
 
   const properties: Record<string, unknown> = {
     distinct_id: getDistinctId(),
-    helius_client: 'clawd-mcp',
-    helius_version: version,
+    clawd_client: 'clawd-mcp',
+    clawd_version: version,
   };
 
   if (clientInfo) {

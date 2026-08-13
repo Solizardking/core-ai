@@ -2,7 +2,21 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
-const CONFIG_DIR = path.join(os.homedir(), ".helius");
+function resolveConfigDir(): string {
+  const clawd = path.join(os.homedir(), ".clawd");
+  const legacy = path.join(os.homedir(), ".helius");
+  const clawdHit =
+    fs.existsSync(path.join(clawd, "config.json")) ||
+    fs.existsSync(path.join(clawd, "keypair.json"));
+  if (clawdHit) return clawd;
+  const legacyHit =
+    fs.existsSync(path.join(legacy, "config.json")) ||
+    fs.existsSync(path.join(legacy, "keypair.json"));
+  if (legacyHit) return legacy;
+  return clawd;
+}
+
+export const CONFIG_DIR = resolveConfigDir();
 const CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
 
 // Alias for backwards compatibility (used by signup.ts)
